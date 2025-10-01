@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Enhanced Template Management Routes
  * Advanced template builder and PDF generation functionality
  * Inspired by InvoiceNinja's template system adapted for ASP Cranes
@@ -50,7 +50,7 @@ const upload = multer({
  * Get enhanced template builder information and capabilities
  */
 router.get('/info', (req, res) => {
-  console.log('🔍 [EnhancedTemplates] Info endpoint requested');
+  console.log('ðŸ” [EnhancedTemplates] Info endpoint requested');
   res.json({
     success: true,
     message: 'Enhanced Template System is operational',
@@ -66,7 +66,7 @@ router.get('/info', (req, res) => {
  * Health check endpoint (no auth required)
  */
 router.get('/health', (req, res) => {
-  console.log('🏥 [EnhancedTemplates] Health check requested');
+  console.log('ðŸ¥ [EnhancedTemplates] Health check requested');
   res.json({ 
     success: true, 
     message: 'Enhanced Template system is operational',
@@ -117,7 +117,7 @@ router.post('/create', async (req, res) => {
       try {
         user = jwt.verify(token, jwtSecret);
       } catch (err) {
-        console.log('⚠️ Invalid token provided, using demo user');
+        console.log('âš ï¸ Invalid token provided, using demo user');
       }
     }
     
@@ -172,7 +172,7 @@ router.post('/create', async (req, res) => {
       const result = await client.query(query, values);
       const savedTemplate = result.rows[0];
       
-      console.log('✅ Created enhanced template:', savedTemplate.name);
+      console.log('âœ… Created enhanced template:', savedTemplate.name);
       
       res.status(201).json({
         success: true,
@@ -211,288 +211,233 @@ router.post('/create', async (req, res) => {
 /**
  * GET /api/templates/enhanced/sample-data
  * Get real quotation data for template building and preview
+ * Uses the same individual quotation API that already works properly
  */
 router.get('/sample-data', async (req, res) => {
   try {
-    console.log('🔍 [DEBUG] =================== SAMPLE DATA ENDPOINT CALLED ===================');
+    console.log('ðŸ” [SAMPLE DATA] Fetching real quotation data using individual quotation API...');
     
-    // Try to fetch real quotation data from the quotations API (exactly like your network tab)
-    try {
-      console.log('🔍 Fetching quotations from internal API...');
-      
-      const response = await fetch('http://localhost:3001/api/quotations');
-      
-      if (response.ok) {
-        const result = await response.json();
-        console.log('✅ Quotations API response received, success:', result.success);
-        
-        if (result.success && result.data && result.data.length > 0) {
-          // Find a quotation with complete financial data instead of just using the first one
-          let quotation = result.data.find(q => 
-            (q.totalCost || q.total_cost) > 0 && (q.workingCost || q.working_cost) > 0 && (q.numberOfDays || q.number_of_days) > 0
-          ) || result.data[0]; // Fallback to first if none found with complete data
-          
-          console.log('📋 Using quotation:', quotation.quotationNumber || quotation.id);
-          console.log('📊 Available quotations:', result.data.length);
-          console.log('� Selected quotation has complete data:', {
-            hasTotalCost: !!quotation.totalCost,
-            hasWorkingCost: !!quotation.workingCost,
-            hasNumberOfDays: !!quotation.numberOfDays,
-            totalCost: quotation.totalCost,
-            workingCost: quotation.workingCost
-          });
-          console.log('🔧 Raw quotation data (checking both snake_case and camelCase):', {
-            id: quotation.id,
-            quotationNumber: quotation.quotationNumber || quotation.quotation_number,
-            machineType: quotation.machineType || quotation.machine_type,
-            orderType: quotation.orderType || quotation.order_type,
-            workingCost: quotation.workingCost || quotation.working_cost,
-            mobDemobCost: quotation.mobDemobCost || quotation.mob_demob_cost,
-            numberOfDays: quotation.numberOfDays || quotation.number_of_days,
-            totalCost: quotation.totalCost || quotation.total_cost,
-            gstAmount: quotation.gstAmount || quotation.gst_amount,
-            // Check which format we're getting
-            fieldFormat: quotation.totalCost ? 'camelCase' : 'snake_case'
-          });
-          
-          // Transform the quotation data to template format using the exact same data structure as your network tab
-          const quotationData = {
-            company: {
-              name: 'ASP Cranes Pvt. Ltd.',
-              address: 'Industrial Area, Pune, Maharashtra 411019',
-              phone: '+91 99999 88888',
-              email: 'sales@aspcranes.com',
-              website: 'www.aspcranes.com'
-            },
-            client: {
-              name: quotation.customerName || quotation.customer_name || 'Client Name',
-              company: quotation.customerContact?.company || 'Client Company',
-              address: quotation.customerContact?.address || 'Client Address',
-              phone: quotation.customerContact?.phone || quotation.customer_phone || 'Client Phone',
-              email: quotation.customerContact?.email || quotation.customer_email || 'client@email.com'
-            },
-            quotation: {
-              number: quotation.quotationNumber || quotation.quotation_number || quotation.id,
-              date: new Date(quotation.createdAt || quotation.created_at).toLocaleDateString('en-IN'),
-              validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN'),
-              paymentTerms: '50% advance, balance on completion',
-              terms: 'This quotation is valid for 30 days. All rates are inclusive of GST.'
-            },
-            // Create items array using the quotation data directly with correct camelCase field names
-            items: [{
-              no: 1,
-              description: (quotation.machineType || quotation.machine_type) 
-                ? `${(quotation.machineType || quotation.machine_type).replace(/[_-]/g, ' ').toUpperCase()} - Rental Service`
-                : 'MOBILE CRANE - Rental Service',
-              jobType: quotation.orderType || quotation.order_type || 'small',
-              quantity: 1,
-              duration: (quotation.numberOfDays || quotation.number_of_days) ? `${quotation.numberOfDays || quotation.number_of_days} days` : '24 days',
-              rate: ((quotation.workingCost || quotation.working_cost) && (quotation.numberOfDays || quotation.number_of_days)) 
-                ? `₹${Math.round((quotation.workingCost || quotation.working_cost) / (quotation.numberOfDays || quotation.number_of_days)).toLocaleString('en-IN')}/day`
-                : '₹9,600/day',
-              rental: (quotation.workingCost || quotation.working_cost) 
-                ? `₹${Math.round(quotation.workingCost || quotation.working_cost).toLocaleString('en-IN')}`
-                : '₹2,30,400',
-              mobDemob: (quotation.mobDemobCost || quotation.mob_demob_cost) 
-                ? `₹${Math.round(quotation.mobDemobCost || quotation.mob_demob_cost).toLocaleString('en-IN')}`
-                : '₹15,000'
-            }],
-            totals: {
-              subtotal: `₹${Math.round(((quotation.totalCost || quotation.total_cost) || 0) - ((quotation.gstAmount || quotation.gst_amount) || 0)).toLocaleString('en-IN')}`,
-              discount: '₹0',
-              tax: `₹${Math.round((quotation.gstAmount || quotation.gst_amount) || 0).toLocaleString('en-IN')}`,
-              total: `₹${Math.round((quotation.totalCost || quotation.total_cost) || 0).toLocaleString('en-IN')}`
-            }
-          };
-          
-          console.log('📊 Template data created:', {
-            itemsCount: quotationData.items.length,
-            customerName: quotationData.client.name,
-            quotationNumber: quotationData.quotation.number,
-            firstItem: quotationData.items[0]
-          });
-          
-          return res.json({
-            success: true,
-            data: quotationData,
-            message: 'Real quotation data retrieved successfully'
-          });
-        }
-      }
-    } catch (fetchError) {
-      console.log('⚠️ API fetch failed, trying database fallback:', fetchError.message);
+    // First, get the list of quotations to find one with data
+    const listResponse = await fetch('http://localhost:3001/api/quotations');
+    
+    if (!listResponse.ok) {
+      throw new Error('Failed to fetch quotations list');
     }
     
-    // Fallback to database query if API fails
-    const pg = await import('pg');
-    const pool = new pg.default.Pool({
-      host: process.env.DB_HOST || 'localhost',
-      port: parseInt(process.env.DB_PORT || '5432'),
-      database: process.env.DB_NAME || 'asp_crm',
-      user: process.env.DB_USER || 'postgres',
-      password: process.env.DB_PASSWORD || 'crmdb@21'
+    const listResult = await listResponse.json();
+    
+    if (!listResult.success || !listResult.data || listResult.data.length === 0) {
+      throw new Error('No quotations found');
+    }
+    
+    // Get the first quotation ID  
+    const quotationId = listResult.data[0].id;
+    console.log('ðŸ“‹ Using quotation ID:', quotationId);
+    
+    // Now fetch the individual quotation using the working API endpoint
+    const individualResponse = await fetch(`http://localhost:3001/api/quotations/${quotationId}`);
+    
+    if (!individualResponse.ok) {
+      throw new Error(`Failed to fetch individual quotation: ${individualResponse.status}`);
+    }
+    
+    const individualResult = await individualResponse.json();
+    
+    if (!individualResult.success || !individualResult.data) {
+      throw new Error('Individual quotation API returned invalid data');
+    }
+    
+    const quotation = individualResult.data;
+    console.log('✅ Successfully fetched quotation with camelCase fields:', {
+      totalCost: quotation.totalCost,
+      gstAmount: quotation.gstAmount,
+      workingCost: quotation.workingCost,
+      numberOfDays: quotation.numberOfDays,
+      machineType: quotation.machineType,
+      selectedMachines: quotation.selectedMachines,
+      selectedMachinesLength: quotation.selectedMachines ? quotation.selectedMachines.length : 0,
+      allFields: Object.keys(quotation)
+    });
+    
+    // Extract and normalize the data with correct snake_case field names
+    const machineDescription = quotation.machine_type || quotation.machineType || quotation.equipmentName || 'Telescopic Mobile Crane';
+    const machineModel = quotation.machine_model || quotation.machineModel || quotation.model || 'XCMG QY 130K';
+    const jobType = quotation.order_type || quotation.orderType || quotation.jobType || quotation.workType || 'Standard';
+    const numberOfDays = quotation.number_of_days || quotation.numberOfDays || quotation.duration || 1;
+    const dailyRate = quotation.daily_rate || quotation.dailyRate || quotation.baseRate || 1200;
+    const workingCostTotal = quotation.working_cost || quotation.workingCost || quotation.totalRent || (dailyRate * numberOfDays);
+    const mobDemobTotal = quotation.mob_demob_cost || quotation.mobDemobCost || quotation.mobDemob || 15000;
+    const totalCostAmount = quotation.total_cost || quotation.totalCost || 0;
+    const gstAmountTotal = quotation.gst_amount || quotation.gstAmount || 0;
+    
+    // Calculate Risk & Usage Factors - Use API values directly if available
+    let riskAdjustmentCalculated, usageLoadFactorCalculated, riskUsageTotalCalculated;
+    let monthlyBaseRate = 30000; // Default fallback
+    let riskType = 'medium';
+    let usageType = 'normal';
+    let riskPercentage = 10;
+    let usagePercentage = 0;
+    
+    if (quotation.riskAdjustment !== undefined && quotation.usageLoadFactor !== undefined) {
+      // Use values directly from the API (already calculated correctly)
+      riskAdjustmentCalculated = quotation.riskAdjustment || 0;
+      usageLoadFactorCalculated = quotation.usageLoadFactor || 0;
+      riskUsageTotalCalculated = quotation.riskUsageTotal || (riskAdjustmentCalculated + usageLoadFactorCalculated);
+      
+      // Get the equipment monthly base rate for display purposes
+      if (quotation.selectedEquipment && quotation.selectedEquipment.baseRates) {
+        monthlyBaseRate = parseFloat(quotation.selectedEquipment.baseRates.monthly) || 30000;
+      }
+      
+      // Extract risk and usage types for display
+      riskType = quotation.riskFactor || 'low';
+      usageType = quotation.usage || 'heavy';
+      
+      // Reverse calculate percentages for display (approximation)
+      if (monthlyBaseRate > 0) {
+        riskPercentage = Math.round((riskAdjustmentCalculated / monthlyBaseRate) * 100);
+        usagePercentage = Math.round((usageLoadFactorCalculated / monthlyBaseRate) * 100);
+      }
+      
+    } else {
+      // Fallback: Calculate if not available in API
+      const riskFactors = { low: 0, medium: 10, high: 20 };
+      const usageFactors = { normal: 0, medium: 20, heavy: 50 };
+      
+      // Get equipment monthly base rate
+      if (quotation.selectedMachines && quotation.selectedMachines.length > 0) {
+        const totalMonthlyRate = quotation.selectedMachines.reduce((total, machine) => {
+          const machineMonthlyRate = machine.baseRates?.monthly || machine.baseRateMonthly || 30000;
+          return total + (parseFloat(machineMonthlyRate) * (machine.quantity || 1));
+        }, 0);
+        monthlyBaseRate = totalMonthlyRate;
+      }
+      
+      riskType = quotation.riskFactor || 'medium';
+      usageType = quotation.usage || 'normal';
+      riskPercentage = riskFactors[riskType] || 10;
+      usagePercentage = usageFactors[usageType] || 0;
+      
+      riskAdjustmentCalculated = Math.round(monthlyBaseRate * (riskPercentage / 100));
+      usageLoadFactorCalculated = Math.round(monthlyBaseRate * (usagePercentage / 100));
+      riskUsageTotalCalculated = riskAdjustmentCalculated + usageLoadFactorCalculated;
+    }
+    
+    console.log('🔧 Risk & Usage Factor Calculation:', {
+      monthlyBaseRate,
+      riskType,
+      usageType,
+      riskPercentage: `${riskPercentage}%`,
+      usagePercentage: `${usagePercentage}%`,
+      riskAdjustmentCalculated,
+      usageLoadFactorCalculated,
+      riskUsageTotalCalculated,
+      databaseValues: {
+        risk_adjustment: quotation.risk_adjustment,
+        usage_load_factor: quotation.usage_load_factor,
+        risk_usage_total: quotation.risk_usage_total
+      }
+    });
+    
+    // Transform to template format using the properly formatted camelCase data
+    const quotationData = {
+      company: {
+        name: 'ASP Cranes Pvt. Ltd.',
+        address: 'Industrial Area, Pune, Maharashtra 411019',
+        phone: '+91 99999 88888',
+        email: 'sales@aspcranes.com',
+        website: 'www.aspcranes.com'
+      },
+      client: {
+        name: quotation.customerName || 'Client Name',
+        company: quotation.customerContact?.company || 'Client Company', 
+        address: quotation.customerContact?.address || 'Client Address',
+        phone: quotation.customerContact?.phone || 'Client Phone',
+        email: quotation.customerContact?.email || 'client@email.com'
+      },
+      quotation: {
+        number: quotation.quotationNumber || quotation.id,
+        date: new Date(quotation.createdAt).toLocaleDateString('en-IN'),
+        validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN'),
+        paymentTerms: '50% advance, balance on completion',
+        terms: 'This quotation is valid for 30 days. All rates are inclusive of GST.'
+      },
+      items: (quotation.selectedMachines && quotation.selectedMachines.length > 0 
+        ? quotation.selectedMachines.map((machine, index) => ({
+            no: index + 1,
+            description: `${machine.equipmentName || machine.name || machineDescription} ${machine.model || machineModel}`,
+            jobType: machine.jobType || jobType,
+            quantity: machine.quantity || 1,
+            duration: `${machine.duration || numberOfDays} days`,
+            rate: `₹${(machine.baseRate || machine.dailyRate || dailyRate).toLocaleString('en-IN')}/day`,
+            rental: `₹${(machine.rental || machine.totalRent || workingCostTotal).toLocaleString('en-IN')}`,
+            mobDemob: `₹${(machine.mobDemob || machine.mobDemobCost || mobDemobTotal).toLocaleString('en-IN')}`,
+            riskUsage: `₹${riskUsageTotalCalculated.toLocaleString('en-IN')}`,
+            riskFactor: `${riskType} (${riskPercentage}%)`,
+            usageFactor: `${usageType} (${usagePercentage}%)`
+          }))
+        : [{
+            no: 1,
+            description: `${machineDescription} ${machineModel}`,
+            jobType: jobType, 
+            quantity: 1,
+            duration: `${numberOfDays} days`,
+            rate: `₹${dailyRate.toLocaleString('en-IN')}/day`,
+            rental: `₹${workingCostTotal.toLocaleString('en-IN')}`,
+            mobDemob: `₹${mobDemobTotal.toLocaleString('en-IN')}`,
+            riskUsage: `₹${riskUsageTotalCalculated.toLocaleString('en-IN')}`,
+            riskFactor: `${riskType} (${riskPercentage}%)`,
+            usageFactor: `${usageType} (${usagePercentage}%)`
+          }]
+      ),
+      totals: {
+        subtotal: `₹${Math.round(totalCostAmount - gstAmountTotal).toLocaleString('en-IN')}`,
+        discount: '₹0', 
+        tax: `₹${Math.round(gstAmountTotal).toLocaleString('en-IN')}`,
+        total: `₹${Math.round(totalCostAmount).toLocaleString('en-IN')}`,
+        riskAdjustment: `₹${riskAdjustmentCalculated.toLocaleString('en-IN')}`,
+        usageLoadFactor: `₹${usageLoadFactorCalculated.toLocaleString('en-IN')}`,
+        riskUsageTotal: `₹${riskUsageTotalCalculated.toLocaleString('en-IN')}`
+      }
+    };
+    
+    console.log('✅ Template data prepared with totals:', quotationData.totals);
+    console.log('🔍 [DEBUG] Extracted values:', {
+      totalCostAmount,
+      gstAmountTotal,
+      workingCostTotal,
+      mobDemobTotal,
+      numberOfDays,
+      machineDescription,
+      jobType,
+      monthlyBaseRate,
+      riskAdjustmentCalculated,
+      usageLoadFactorCalculated,
+      riskUsageTotalCalculated
     });
 
-    const client = await pool.connect();
-    
-    try {
-      // Get the most recent quotation with complete data
-      const quotationResult = await client.query(`
-        SELECT q.*, c.name as customer_name, c.email as customer_email,
-               c.phone as customer_phone, c.company_name as customer_company,
-               c.address as customer_address, c.designation as customer_designation,
-               d.title as deal_title
-        FROM quotations q
-        LEFT JOIN customers c ON q.customer_id = c.id
-        LEFT JOIN deals d ON q.deal_id = d.id
-        ORDER BY q.created_at DESC
-        LIMIT 1;
-      `);
-
-      let quotationData;
-      
-      if (quotationResult.rows.length > 0) {
-        const quotation = quotationResult.rows[0];
-        
-        // Get associated machines/equipment
-        console.log('🔍 [DEBUG] Looking for equipment for quotation ID:', quotation.id);
-        const machinesResult = await client.query(`
-          SELECT qm.id, qm.quotation_id, qm.equipment_id, qm.quantity, 
-                 qm.base_rate, qm.running_cost_per_km, qm.created_at,
-                 e.name as equipment_name, e.category, e.type as equipment_type
-          FROM quotation_machines qm
-          LEFT JOIN equipment e ON qm.equipment_id = e.id
-          WHERE qm.quotation_id = $1;
-        `, [quotation.id]);
-        
-        console.log('🔍 [DEBUG] Found equipment records:', machinesResult.rows.length);
-        if (machinesResult.rows.length > 0) {
-          console.log('🔍 [DEBUG] Equipment data:', machinesResult.rows);
-        }
-
-        // Generate quotation number
-        function generateQuotationNumber(quotationId) {
-          const idParts = quotationId.split('_');
-          if (idParts.length >= 2) {
-            const hashCode = idParts[1].split('').reduce((a, b) => {
-              a = ((a << 5) - a) + b.charCodeAt(0);
-              return a & a;
-            }, 0);
-            const num = Math.abs(hashCode) % 9999 + 1;
-            return `ASP-Q-${num.toString().padStart(3, '0')}`;
-          }
-          return `ASP-Q-${quotationId.substring(5, 8).toUpperCase()}`;
-        }
-
-        // Transform database data to template format
-        quotationData = {
-          company: {
-            name: 'ASP Cranes Pvt. Ltd.',
-            address: 'Industrial Area, Pune, Maharashtra 411019',
-            phone: '+91 99999 88888',
-            email: 'sales@aspcranes.com',
-            website: 'www.aspcranes.com'
-          },
-          client: {
-            name: quotation.customer_name || quotation.contact_name || 'Client Name',
-            company: quotation.customer_company || quotation.company_name || 'Client Company',
-            address: quotation.customer_address || 'Client Address',
-            phone: quotation.customer_phone || 'Client Phone',
-            email: quotation.customer_email || 'client@email.com'
-          },
-          quotation: {
-            number: quotation.quotation_number || generateQuotationNumber(quotation.id),
-            date: new Date(quotation.created_at).toLocaleDateString('en-IN'),
-            validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN'),
-            paymentTerms: '50% advance, balance on completion',
-            terms: 'This quotation is valid for 30 days. All rates are inclusive of GST.'
-          },
-          items: machinesResult.rows.map((machine, index) => {
-            const dailyRate = machine.base_rate || quotation.total_rent || 10000;
-            const totalDays = quotation.number_of_days || 1;
-            const workingCost = quotation.working_cost || (dailyRate * totalDays);
-            const mobDemobCost = quotation.mob_demob_cost || 0;
-            
-            const item = {
-              no: index + 1,
-              description: `${machine.equipment_name || machine.equipment_type || quotation.machine_type || 'Equipment'} - ${machine.category || 'Rental Service'}`,
-              jobType: quotation.order_type || quotation.job_type || 'Standard',
-              quantity: machine.quantity || 1,
-              duration: totalDays,
-              rate: `₹${dailyRate.toLocaleString('en-IN')}/day`,
-              rental: `₹${workingCost.toLocaleString('en-IN')}`,
-              mobDemob: mobDemobCost > 0 ? `₹${mobDemobCost.toLocaleString('en-IN')}` : '₹0'
-            };
-            console.log('🔍 [DEBUG] Created equipment item (8-column format):', item);
-            return item;
-          }),
-          totals: {
-            subtotal: `₹${Math.round(quotation.working_cost || quotation.total_rent || 100000).toLocaleString('en-IN')}`,
-            discount: '₹0',
-            tax: `₹${Math.round(quotation.gst_amount || ((quotation.total_cost || 100000) * 0.18)).toLocaleString('en-IN')}`,
-            total: `₹${Math.round(quotation.total_cost || 118000).toLocaleString('en-IN')}`
-          }
-        };
-
-        // Log equipment status for debugging
-        if (quotationData.items.length === 0) {
-          console.log('⚠️ [WARNING] No equipment found for quotation:', quotationId);
-          console.log('⚠️ This should not happen if quotations are created properly with equipment selection');
-        } else {
-          console.log('✅ [SUCCESS] Found', quotationData.items.length, 'equipment items for quotation:', quotationId);
-        }
-        
-        console.log('🔍 [DEBUG] Final items array:', quotationData.items);
-      } else {
-        // Fallback to sample data if no quotations in database
-        const templateBuilder = new EnhancedTemplateBuilder();
-        quotationData = templateBuilder.getSampleQuotationData();
-      }
-
-      client.release();
-      await pool.end();
-
-      res.json({
-        success: true,
-        data: quotationData,
-        message: 'Quotation data retrieved successfully'
-      });
-      
-    } catch (dbError) {
-      if (client) {
-        client.release();
-      }
-      if (pool) {
-        await pool.end();
-      }
-      console.error('Database error, falling back to sample data:', dbError);
-      
-      // Fallback to sample data on database error
-      const templateBuilder = new EnhancedTemplateBuilder();
-      const sampleData = templateBuilder.getSampleQuotationData();
-      
-      res.json({
-        success: true,
-        data: sampleData,
-        message: 'Sample data retrieved (database fallback)'
-      });
-    }
+    res.json({
+      success: true,
+      data: quotationData,
+      message: 'Real quotation data retrieved successfully using individual API'
+    });
     
   } catch (error) {
-    console.error('Error retrieving quotation data:', error);
+    console.error('âŒ Error using individual quotation API, falling back to sample data:', error.message);
     
-    // Ultimate fallback to sample data
+    // Fallback to sample data
     try {
+      const { EnhancedTemplateBuilder } = await import('../services/EnhancedTemplateBuilder.mjs');
       const templateBuilder = new EnhancedTemplateBuilder();
       const sampleData = templateBuilder.getSampleQuotationData();
       
       res.json({
         success: true,
         data: sampleData,
-        message: 'Sample data retrieved (error fallback)'
+        message: 'Sample data retrieved (fallback)'
       });
     } catch (fallbackError) {
-      console.error('Fallback error:', fallbackError);
+      console.error('âŒ Fallback error:', fallbackError);
       res.status(500).json({
         success: false,
         error: 'Failed to retrieve data',
@@ -501,7 +446,6 @@ router.get('/sample-data', async (req, res) => {
     }
   }
 });
-
 /**
  * GET /api/templates/enhanced/default
  * Get the current default template
@@ -518,7 +462,7 @@ router.get('/default', async (req, res) => {
       try {
         user = jwt.verify(token, jwtSecret);
       } catch (err) {
-        console.log('⚠️ Invalid token provided, continuing without auth');
+        console.log('âš ï¸ Invalid token provided, continuing without auth');
       }
     }
 
@@ -599,7 +543,7 @@ async function ensureDefaultTemplate(client) {
     const checkResult = await client.query(checkQuery);
     
     if (checkResult.rows.length === 0) {
-      console.log('🔧 Creating default template as it does not exist...');
+      console.log('ðŸ”§ Creating default template as it does not exist...');
       
       const defaultElements = [
         {
@@ -656,10 +600,10 @@ async function ensureDefaultTemplate(client) {
         JSON.stringify(defaultBranding)
       ]);
       
-      console.log('✅ Default template created successfully');
+      console.log('âœ… Default template created successfully');
     }
   } catch (error) {
-    console.error('⚠️ Error ensuring default template exists:', error);
+    console.error('âš ï¸ Error ensuring default template exists:', error);
   }
 }
 
@@ -669,7 +613,7 @@ async function ensureDefaultTemplate(client) {
  */
 router.get('/quotation', async (req, res) => {
   try {
-    console.log('📋 [Enhanced Templates] Loading templates for quotation printing');
+    console.log('ðŸ“‹ [Enhanced Templates] Loading templates for quotation printing');
     
     // Try database first
     try {
@@ -699,7 +643,7 @@ router.get('/quotation', async (req, res) => {
           category: row.category
         }));
         
-        console.log(`✅ [Enhanced Templates] Found ${templates.length} active templates for quotation printing`);
+        console.log(`âœ… [Enhanced Templates] Found ${templates.length} active templates for quotation printing`);
         
         res.json({
           success: true,
@@ -712,7 +656,7 @@ router.get('/quotation', async (req, res) => {
       }
       
     } catch (dbError) {
-      console.warn('⚠️ [Enhanced Templates] Database error, using fallback templates:', dbError.message);
+      console.warn('âš ï¸ [Enhanced Templates] Database error, using fallback templates:', dbError.message);
       
       // Fallback templates when database is unavailable
       const fallbackTemplates = [
@@ -736,7 +680,7 @@ router.get('/quotation', async (req, res) => {
         }
       ];
       
-      console.log(`✅ [Enhanced Templates] Using ${fallbackTemplates.length} fallback templates`);
+      console.log(`âœ… [Enhanced Templates] Using ${fallbackTemplates.length} fallback templates`);
       
       res.json({
         success: true,
@@ -747,7 +691,7 @@ router.get('/quotation', async (req, res) => {
     }
     
   } catch (error) {
-    console.error('❌ [Enhanced Templates] Critical error loading quotation templates:', error);
+    console.error('âŒ [Enhanced Templates] Critical error loading quotation templates:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to load quotation templates',
@@ -773,7 +717,7 @@ router.get('/list', async (req, res) => {
       try {
         user = jwt.verify(token, jwtSecret);
       } catch (err) {
-        console.log('⚠️ Invalid token provided, continuing without auth');
+        console.log('âš ï¸ Invalid token provided, continuing without auth');
       }
     }
     
@@ -803,7 +747,7 @@ router.get('/list', async (req, res) => {
       `);
       
       if (!tableCheck.rows[0].exists) {
-        console.log('⚠️ Enhanced templates table does not exist, returning default template');
+        console.log('âš ï¸ Enhanced templates table does not exist, returning default template');
         templates = [{
           id: 'default_asp_template',
           name: 'Default ASP Cranes Template',
@@ -883,7 +827,7 @@ router.get('/:id', async (req, res) => {
       try {
         user = jwt.verify(token, jwtSecret);
       } catch (err) {
-        console.log('⚠️ Invalid token provided, continuing without auth');
+        console.log('âš ï¸ Invalid token provided, continuing without auth');
       }
     }
     
@@ -922,9 +866,9 @@ router.get('/:id', async (req, res) => {
       const template = result.rows[0];
       
       // Debug: log element types
-      console.log('🔍 [DEBUG] Template elements from DB:', template.elements);
+      console.log('ðŸ” [DEBUG] Template elements from DB:', template.elements);
       if (template.elements && Array.isArray(template.elements)) {
-        console.log('🔍 [DEBUG] Element types found:', template.elements.map(el => el.type));
+        console.log('ðŸ” [DEBUG] Element types found:', template.elements.map(el => el.type));
       }
       
       res.json({
@@ -977,7 +921,7 @@ router.put('/:id', async (req, res) => {
       try {
         user = jwt.verify(token, jwtSecret);
       } catch (err) {
-        console.log('⚠️ Invalid token provided, using demo user');
+        console.log('âš ï¸ Invalid token provided, using demo user');
       }
     }
     
@@ -1088,7 +1032,7 @@ router.patch('/:id', async (req, res) => {
       try {
         user = jwt.verify(token, jwtSecret);
       } catch (err) {
-        console.log('⚠️ Invalid token provided, using demo user');
+        console.log('âš ï¸ Invalid token provided, using demo user');
       }
     }
     
@@ -1228,7 +1172,7 @@ router.delete('/:id', async (req, res) => {
       try {
         user = jwt.verify(token, jwtSecret);
       } catch (err) {
-        console.log('⚠️ Invalid token provided, using demo user');
+        console.log('âš ï¸ Invalid token provided, using demo user');
       }
     }
     
@@ -1301,18 +1245,18 @@ router.post('/preview', async (req, res) => {
       try {
         user = jwt.verify(token, jwtSecret);
       } catch (err) {
-        console.log('⚠️ Invalid token provided, continuing with demo preview');
+        console.log('âš ï¸ Invalid token provided, continuing with demo preview');
       }
     }
     
     const { templateData, quotationData, format = 'html', options = {} } = req.body;
     
     // Debug: log template data
-    console.log('🔍 [DEBUG] Preview template data:', templateData);
+    console.log('ðŸ” [DEBUG] Preview template data:', templateData);
     if (templateData.elements && Array.isArray(templateData.elements)) {
-      console.log('🔍 [DEBUG] Preview element types:', templateData.elements.map(el => el.type));
+      console.log('ðŸ” [DEBUG] Preview element types:', templateData.elements.map(el => el.type));
     }
-    console.log('🔍 [DEBUG] Preview quotation data:', quotationData);
+    console.log('ðŸ” [DEBUG] Preview quotation data:', quotationData);
     
     const templateBuilder = new EnhancedTemplateBuilder();
     
@@ -1322,7 +1266,7 @@ router.post('/preview', async (req, res) => {
     // If no quotation data provided, get sample data
     let finalQuotationData = quotationData;
     if (!finalQuotationData) {
-      console.log('📝 No quotation data provided, using sample data');
+      console.log('ðŸ“ No quotation data provided, using sample data');
       finalQuotationData = templateBuilder.getSampleQuotationData();
     }
     
@@ -1378,7 +1322,7 @@ router.post('/generate-pdf', async (req, res) => {
       try {
         user = jwt.verify(token, jwtSecret);
       } catch (err) {
-        console.log('⚠️ Invalid token provided, continuing with demo PDF generation');
+        console.log('âš ï¸ Invalid token provided, continuing with demo PDF generation');
       }
     }
     const {
@@ -1388,9 +1332,9 @@ router.post('/generate-pdf', async (req, res) => {
       filename
     } = req.body;
     
-    console.log('🎨 [Enhanced PDF] Generating PDF with advanced options...');
-    console.log('📋 Template ID:', templateId);
-    console.log('⚙️ Options:', options);
+    console.log('ðŸŽ¨ [Enhanced PDF] Generating PDF with advanced options...');
+    console.log('ðŸ“‹ Template ID:', templateId);
+    console.log('âš™ï¸ Options:', options);
     
     const templateBuilder = new EnhancedTemplateBuilder();
     await templateBuilder.loadTemplate(templateId);
@@ -1408,18 +1352,18 @@ router.post('/generate-pdf', async (req, res) => {
       ...options
     };
     
-    console.log('🔧 PDF Options:', pdfOptions);
+    console.log('ðŸ”§ PDF Options:', pdfOptions);
     
     let pdfBuffer;
     
     if (options.watermark) {
-      console.log('💧 Adding watermark...');
+      console.log('ðŸ’§ Adding watermark...');
       pdfBuffer = await pdfGenerator.generatePDFWithWatermark(html, options.watermark, pdfOptions);
     } else if (options.headerFooter) {
-      console.log('📄 Adding header/footer...');
+      console.log('ðŸ“„ Adding header/footer...');
       pdfBuffer = await pdfGenerator.generatePDFWithHeaderFooter(html, options.headerFooter, pdfOptions);
     } else {
-      console.log('📝 Generating standard PDF...');
+      console.log('ðŸ“ Generating standard PDF...');
       pdfBuffer = await pdfGenerator.generatePDF(html, pdfOptions);
     }
     
@@ -1427,14 +1371,14 @@ router.post('/generate-pdf', async (req, res) => {
     
     const downloadFilename = filename || `quotation_${quotationData.quotation?.number || Date.now()}.pdf`;
     
-    console.log('✅ PDF generated successfully, size:', pdfBuffer.length);
+    console.log('âœ… PDF generated successfully, size:', pdfBuffer.length);
     
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="${downloadFilename}"`);
     res.send(pdfBuffer);
     
   } catch (error) {
-    console.error('❌ Error generating enhanced PDF:', error);
+    console.error('âŒ Error generating enhanced PDF:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to generate enhanced PDF',
@@ -1451,9 +1395,9 @@ router.post('/generate-quotation-pdf', authenticateToken, async (req, res) => {
   try {
     const { quotationId, templateId, options = {} } = req.body;
     
-    console.log('🎯 [Enhanced Quotation PDF] Starting generation...');
-    console.log('📋 Quotation ID:', quotationId);
-    console.log('🎨 Template ID:', templateId);
+    console.log('ðŸŽ¯ [Enhanced Quotation PDF] Starting generation...');
+    console.log('ðŸ“‹ Quotation ID:', quotationId);
+    console.log('ðŸŽ¨ Template ID:', templateId);
     
     // Fetch quotation data from your existing system
     // This should integrate with your existing quotation fetching logic
@@ -1497,14 +1441,14 @@ router.post('/generate-quotation-pdf', authenticateToken, async (req, res) => {
     
     const filename = `ASP_Quotation_${quotationData.quotation?.number || quotationId}.pdf`;
     
-    console.log('✅ Enhanced quotation PDF generated successfully');
+    console.log('âœ… Enhanced quotation PDF generated successfully');
     
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.send(pdfBuffer);
     
   } catch (error) {
-    console.error('❌ Error generating enhanced quotation PDF:', error);
+    console.error('âŒ Error generating enhanced quotation PDF:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to generate enhanced quotation PDF',
@@ -1525,9 +1469,9 @@ router.post('/batch-pdf', authenticateToken, async (req, res) => {
       options = {}
     } = req.body;
     
-    console.log('📚 [Batch PDF] Starting batch generation...');
-    console.log('📋 Template ID:', templateId);
-    console.log('📊 Quotations count:', quotations.length);
+    console.log('ðŸ“š [Batch PDF] Starting batch generation...');
+    console.log('ðŸ“‹ Template ID:', templateId);
+    console.log('ðŸ“Š Quotations count:', quotations.length);
     
     const templateBuilder = new EnhancedTemplateBuilder();
     await templateBuilder.loadTemplate(templateId);
@@ -1544,7 +1488,7 @@ router.post('/batch-pdf', authenticateToken, async (req, res) => {
     const successful = results.filter(r => r.success);
     const failed = results.filter(r => !r.success);
     
-    console.log(`✅ Batch PDF generation completed: ${successful.length}/${results.length} successful`);
+    console.log(`âœ… Batch PDF generation completed: ${successful.length}/${results.length} successful`);
     
     res.json({
       success: true,
@@ -1563,7 +1507,7 @@ router.post('/batch-pdf', authenticateToken, async (req, res) => {
     });
     
   } catch (error) {
-    console.error('❌ Error in batch PDF generation:', error);
+    console.error('âŒ Error in batch PDF generation:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to generate batch PDFs',
@@ -1671,7 +1615,7 @@ router.post('/upload-asset', authenticateToken, upload.single('asset'), async (r
  * This should integrate with your existing quotation system
  */
 async function getQuotationData(quotationId) {
-  console.log('🔍 Fetching quotation data for ID:', quotationId);
+  console.log('ðŸ” Fetching quotation data for ID:', quotationId);
   
   try {
     // Connect directly to database to fetch quotation data
@@ -1694,14 +1638,14 @@ async function getQuotationData(quotationId) {
       );
       
       if (quotationResult.rows.length === 0) {
-        console.log('❌ Quotation not found:', quotationId);
+        console.log('âŒ Quotation not found:', quotationId);
         return null;
       }
       
       const quotationRow = quotationResult.rows[0];
-      console.log('✅ Quotation found:', quotationRow.quotation_number);
-      console.log('🔍 Machine type:', quotationRow.machine_type);
-      console.log('🔍 Customer:', quotationRow.customer_name);
+      console.log('âœ… Quotation found:', quotationRow.quotation_number);
+      console.log('ðŸ” Machine type:', quotationRow.machine_type);
+      console.log('ðŸ” Customer:', quotationRow.customer_name);
       
       // Parse customer_contact JSON if it exists
       let customerContact = {};
@@ -1712,7 +1656,7 @@ async function getQuotationData(quotationId) {
             : quotationRow.customer_contact;
         }
       } catch (parseError) {
-        console.log('⚠️ Error parsing customer_contact:', parseError.message);
+        console.log('âš ï¸ Error parsing customer_contact:', parseError.message);
       }
       
       // Transform database data to template format
@@ -1748,20 +1692,20 @@ async function getQuotationData(quotationId) {
           quantity: 1,
           duration: `${quotationRow.number_of_days} days`,
           rate: quotationRow.working_cost 
-            ? `₹${Math.round(quotationRow.working_cost / quotationRow.number_of_days).toLocaleString('en-IN')}/day`
-            : '₹0/day',
-          rental: `₹${Math.round(quotationRow.working_cost || 0).toLocaleString('en-IN')}`,
-          mobDemob: `₹${Math.round(quotationRow.mob_demob_cost || 0).toLocaleString('en-IN')}`
+            ? `â‚¹${Math.round(quotationRow.working_cost / quotationRow.number_of_days).toLocaleString('en-IN')}/day`
+            : 'â‚¹0/day',
+          rental: `â‚¹${Math.round(quotationRow.working_cost || 0).toLocaleString('en-IN')}`,
+          mobDemob: `â‚¹${Math.round(quotationRow.mob_demob_cost || 0).toLocaleString('en-IN')}`
         }],
         totals: {
-          subtotal: `₹${Math.round((quotationRow.total_cost || 0) - (quotationRow.gst_amount || 0)).toLocaleString('en-IN')}`,
-          discount: '₹0',
-          tax: `₹${Math.round(quotationRow.gst_amount || 0).toLocaleString('en-IN')}`,
-          total: `₹${Math.round(quotationRow.total_cost || 0).toLocaleString('en-IN')}`
+          subtotal: `â‚¹${Math.round((quotationRow.total_cost || 0) - (quotationRow.gst_amount || 0)).toLocaleString('en-IN')}`,
+          discount: 'â‚¹0',
+          tax: `â‚¹${Math.round(quotationRow.gst_amount || 0).toLocaleString('en-IN')}`,
+          total: `â‚¹${Math.round(quotationRow.total_cost || 0).toLocaleString('en-IN')}`
         }
       };
       
-      console.log('📋 Template data prepared:', {
+      console.log('ðŸ“‹ Template data prepared:', {
         itemsCount: templateData.items.length,
         customerName: templateData.client.name,
         quotationNumber: templateData.quotation.number
@@ -1775,7 +1719,7 @@ async function getQuotationData(quotationId) {
     }
     
   } catch (error) {
-    console.error('❌ Error fetching quotation data:', error);
+    console.error('âŒ Error fetching quotation data:', error);
     // Return sample data as fallback
     const templateBuilder = new EnhancedTemplateBuilder();
     return templateBuilder.getSampleQuotationData();
@@ -1875,7 +1819,7 @@ router.post('/duplicate', async (req, res) => {
       try {
         user = jwt.verify(token, jwtSecret);
       } catch (err) {
-        console.log('⚠️ Invalid token provided, using demo user');
+        console.log('âš ï¸ Invalid token provided, using demo user');
       }
     }
 
