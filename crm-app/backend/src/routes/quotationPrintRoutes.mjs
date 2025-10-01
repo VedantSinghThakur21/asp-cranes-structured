@@ -164,36 +164,47 @@ router.post('/pdf', optionalAuth, async (req, res) => {
       return res.status(404).json({ success: false, error: 'Quotation not found' });
     }
     
-    // Get template (use default from config if none specified)
+    // Use Enhanced Template System for proper template rendering
+    const { EnhancedTemplateBuilder } = await import('../services/EnhancedTemplateBuilder.mjs');
+    const templateBuilder = new EnhancedTemplateBuilder();
+    
     let template;
     if (templateId) {
-      template = await templateService.getTemplateById(templateId);
+      console.log('🎨 [PDF Route] Loading specific template:', templateId);
+      await templateBuilder.loadTemplate(templateId);
+      template = templateBuilder.template;
     } else {
       // Try to get configured default template first
       try {
         const defaultConfig = await getDefaultTemplateConfig();
-        if (defaultConfig?.defaultTemplateId) {
-          template = await templateService.getTemplateById(defaultConfig.defaultTemplateId);
-          console.log('📋 Using configured default template:', defaultConfig.defaultTemplateId);
+        if (defaultConfig?.template_id || defaultConfig?.defaultTemplateId) {
+          const configTemplateId = defaultConfig.template_id || defaultConfig.defaultTemplateId;
+          await templateBuilder.loadTemplate(configTemplateId);
+          template = templateBuilder.template;
+          console.log('📋 [PDF Route] Using configured default template:', configTemplateId);
+        } else {
+          throw new Error('No configured default template');
         }
       } catch (configError) {
-        console.warn('Could not load default template config:', configError);
-      }
-      
-      // Fallback to database default template
-      if (!template) {
-        template = await templateService.getDefaultTemplate();
-        console.log('📋 Using database default template');
+        console.log('⚠️ [PDF Route] No configured default, using database default');
+        const defaultTemplate = await templateService.getDefaultTemplate();
+        await templateBuilder.loadTemplate(defaultTemplate.id);
+        template = templateBuilder.template;
       }
     }
 
-    // Generate enhanced HTML using the professional renderer
+    // Generate enhanced HTML using EnhancedTemplateBuilder
     const mappedData = templateService.mapQuotationData(quotationData);
-    console.log('🗺️ Mapped quotation data:', { hasCustomer: !!mappedData.customer, hasClient: !!mappedData.client });
+    console.log('🗺️ [PDF Route] Mapped data for template:', {
+      hasCompany: !!mappedData.company,
+      hasClient: !!mappedData.client,
+      hasQuotation: !!mappedData.quotation,
+      itemsCount: mappedData.items?.length || 0
+    });
     
-    // Use enhanced template rendering
-    const html = await htmlGeneratorService.generateHTML(template, mappedData);
-    console.log('🎨 Generated HTML length:', html.length);
+    // Use EnhancedTemplateBuilder for template rendering
+    const html = templateBuilder.generateQuotationHTML(mappedData);
+    console.log('🎨 [PDF Route] Generated HTML with template:', template.name, 'length:', html.length);
     
     // Generate PDF with proper error handling
     const pdfResult = await pdfService.generateFromHTML(html, { 
@@ -700,15 +711,48 @@ router.post('/print/print', async (req, res) => {
       });
     }
 
-    // Step 2: Get template (Enhanced Template System)
-    const template = templateId 
-      ? await templateService.getTemplateById(templateId)
-      : await templateService.getDefaultTemplate();
+    // Step 2: Use Enhanced Template System for proper template rendering
+    const { EnhancedTemplateBuilder } = await import('../services/EnhancedTemplateBuilder.mjs');
+    const templateBuilder = new EnhancedTemplateBuilder();
+    
+    let template;
+    if (templateId) {
+      console.log('🎨 [PrintRoutes] Loading specific template:', templateId);
+      await templateBuilder.loadTemplate(templateId);
+      template = templateBuilder.template;
+    } else {
+      console.log('🎨 [PrintRoutes] Loading default template');
+      // Try to get configured default template first
+      try {
+        const defaultConfig = await getDefaultTemplateConfig();
+        if (defaultConfig?.template_id) {
+          await templateBuilder.loadTemplate(defaultConfig.template_id);
+          template = templateBuilder.template;
+          console.log('📋 [PrintRoutes] Using configured default template:', defaultConfig.template_id);
+        } else {
+          throw new Error('No configured default template');
+        }
+      } catch (configError) {
+        console.log('⚠️ [PrintRoutes] No configured default, using database default');
+        const defaultTemplate = await templateService.getDefaultTemplate();
+        await templateBuilder.loadTemplate(defaultTemplate.id);
+        template = templateBuilder.template;
+      }
+    }
 
-    // Step 3: Generate HTML for printing
-    const html = await htmlGeneratorService.generateBasicHTML(template, quotationData);
+    // Step 3: Map quotation data to template format
+    const mappedData = templateService.mapQuotationData(quotationData);
+    console.log('🗺️ [PrintRoutes] Mapped data for template:', {
+      hasCompany: !!mappedData.company,
+      hasClient: !!mappedData.client,
+      hasQuotation: !!mappedData.quotation,
+      itemsCount: mappedData.items?.length || 0
+    });
 
-    console.log('✅ [PrintRoutes] Print HTML generated successfully');
+    // Step 4: Generate HTML using EnhancedTemplateBuilder
+    const html = templateBuilder.generateQuotationHTML(mappedData);
+
+    console.log('✅ [PrintRoutes] Print HTML generated successfully with template:', template.name);
     res.json({
       success: true,
       html: html,

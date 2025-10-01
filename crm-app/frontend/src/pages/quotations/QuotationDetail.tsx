@@ -159,8 +159,9 @@ const QuotationDetail: React.FC = () => {
 
   const handlePrint = () => {
     if (id) {
-      // Open the iframe preview route in a new tab for printing
-      window.open(`/api/quotations-preview/${id}/preview/iframe`, '_blank');
+      // Open the iframe preview route in a new tab for printing with selected template
+      const templateParam = selectedTemplate && selectedTemplate !== 'default' ? `?templateId=${selectedTemplate}` : '';
+      window.open(`/api/quotations-preview/${id}/preview/iframe${templateParam}`, '_blank');
     }
   };
 
@@ -168,7 +169,7 @@ const QuotationDetail: React.FC = () => {
     try {
       if (!id) return;
       
-      // Use the correct endpoint for PDF generation
+      // Use the correct endpoint for PDF generation with selected template
       const response = await fetch(`/api/quotations/print/pdf`, {
         method: 'POST',
         headers: {
@@ -176,8 +177,8 @@ const QuotationDetail: React.FC = () => {
           'X-Bypass-Auth': 'development-only-123'
         },
         body: JSON.stringify({ 
-          quotationId: id
-          // templateId not specified - backend will use default template
+          quotationId: id,
+          templateId: selectedTemplate || undefined // Use selected template if available
         })
       });
 

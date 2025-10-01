@@ -175,20 +175,28 @@ router.get('/:id/preview', async (req, res) => {
     if (templateId) {
       // Use specific template
       try {
+        console.log('🎨 [Preview] Loading specific template:', templateId);
         await templateBuilder.loadTemplate(templateId);
         template = templateBuilder.template;
         console.log('📋 [Preview] Using specific template:', template.name);
       } catch (error) {
-        console.warn('⚠️ [Preview] Specific template not found, using default');
+        console.warn('⚠️ [Preview] Specific template not found, using default:', error.message);
         template = await getDefaultTemplate(templateBuilder);
       }
     } else {
       // Use default template
+      console.log('🎨 [Preview] Loading default template');
       template = await getDefaultTemplate(templateBuilder);
     }
 
-    // Step 3: Generate preview HTML
+    // Step 3: Generate preview HTML with proper data mapping
     const previewData = mapQuotationToTemplateData(quotationData);
+    console.log('🗺️ [Preview] Mapped data for template:', {
+      hasCompany: !!previewData.company,
+      hasClient: !!previewData.client,
+      hasQuotation: !!previewData.quotation,
+      itemsCount: previewData.items?.length || 0
+    });
     const html = templateBuilder.generatePreviewHTML(previewData);
 
     if (format === 'json') {
@@ -258,24 +266,31 @@ router.get('/:id/preview/iframe', async (req, res) => {
     
     if (templateId) {
       try {
+        console.log('🎨 [Preview] Loading specific template for iframe:', templateId);
         await templateBuilder.loadTemplate(templateId);
         template = templateBuilder.template;
         console.log('📋 [Preview] Using specific template:', template.name);
       } catch (error) {
-        console.warn('⚠️ [Preview] Specific template not found, using default');
+        console.warn('⚠️ [Preview] Specific template not found, using default:', error.message);
         template = await getDefaultTemplate(templateBuilder);
       }
     } else {
+      console.log('🎨 [Preview] Loading default template for iframe');
       template = await getDefaultTemplate(templateBuilder);
     }
 
     console.log('🎨 [Preview] Using template:', template.name);
 
     const previewData = mapQuotationToTemplateData(quotationData);
-    console.log('📋 [Preview] Mapped data keys:', Object.keys(previewData));
+    console.log('�️ [Preview] Mapped data for iframe preview:', {
+      hasCompany: !!previewData.company,
+      hasClient: !!previewData.client,
+      hasQuotation: !!previewData.quotation,
+      itemsCount: previewData.items?.length || 0
+    });
     
     const html = templateBuilder.generatePreviewHTML(previewData);
-    console.log('✅ [Preview] HTML generated, length:', html.length);
+    console.log('✅ [Preview] HTML generated for iframe, length:', html.length);
 
     res.setHeader('Content-Type', 'text/html');
     res.setHeader('Cache-Control', 'no-cache');
