@@ -160,7 +160,7 @@ export class EnhancedTemplateBuilder {
       const client = await pool.connect();
       try {
         const result = await client.query(
-          'SELECT * FROM quotation_templates WHERE id = $1',
+          'SELECT * FROM enhanced_templates WHERE id = $1',
           [templateId]
         );
 
@@ -482,12 +482,12 @@ export class EnhancedTemplateBuilder {
       const client = await pool.connect();
       try {
         const query = this.template.id ? 
-          `UPDATE quotation_templates SET 
+          `UPDATE enhanced_templates SET 
            name = $1, description = $2, theme = $3, layout = $4, 
            elements = $5, settings = $6, branding = $7, 
            is_active = $8, is_default = $9, updated_at = $10, version = version + 1
            WHERE id = $11 RETURNING *` :
-          `INSERT INTO quotation_templates 
+          `INSERT INTO enhanced_templates 
            (name, description, theme, layout, elements, settings, branding, 
             is_active, is_default, created_by, created_at, updated_at, version)
            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *`;
@@ -736,14 +736,15 @@ export class EnhancedTemplateBuilder {
     
     // Enhanced column configuration based on frontend Items Table
     const defaultColumns = [
-      { key: 'no', label: 'S.No.', width: '8%', alignment: 'center' },
-      { key: 'description', label: 'Description/Equipment Name', width: '35%', alignment: 'left' },
-      { key: 'jobType', label: 'Job Type', width: '12%', alignment: 'center' },
-      { key: 'quantity', label: 'Quantity', width: '10%', alignment: 'center' },
-      { key: 'duration', label: 'Duration/Days', width: '12%', alignment: 'center' },
-      { key: 'rate', label: 'Rate', width: '12%', alignment: 'right' },
-      { key: 'rental', label: 'Total Rental', width: '15%', alignment: 'right' },
-      { key: 'mobDemob', label: 'Mob/Demob', width: '12%', alignment: 'right' }
+      { key: 'no', label: 'S.No.', width: '6%', alignment: 'center' },
+      { key: 'description', label: 'Description/Equipment Name', width: '25%', alignment: 'left' },
+      { key: 'jobType', label: 'Job Type', width: '10%', alignment: 'center' },
+      { key: 'quantity', label: 'Quantity', width: '8%', alignment: 'center' },
+      { key: 'duration', label: 'Duration/Days', width: '10%', alignment: 'center' },
+      { key: 'rate', label: 'Rate', width: '10%', alignment: 'right' },
+      { key: 'rental', label: 'Total Rental', width: '12%', alignment: 'right' },
+      { key: 'mobDemob', label: 'Mob/Demob', width: '10%', alignment: 'right' },
+      { key: 'riskUsage', label: 'Risk & Usage', width: '12%', alignment: 'right' }
     ];
     
     // Filter columns based on element configuration
@@ -789,7 +790,13 @@ export class EnhancedTemplateBuilder {
     console.log('🔍 [DEBUG] Totals data received:', totals);
     
     const fields = element.content?.fields || [
+      { label: 'Working Cost', value: '{{totals.workingCost}}', showIf: 'always' },
+      { label: 'Mob/Demob Cost', value: '{{totals.mobDemobCost}}', showIf: 'always' },
+      { label: 'Risk Adjustment', value: '{{totals.riskAdjustment}}', showIf: 'always' },
+      { label: 'Usage Load Factor', value: '{{totals.usageLoadFactor}}', showIf: 'always' },
+      { label: 'Risk & Usage Total', value: '{{totals.riskUsageTotal}}', showIf: 'always' },
       { label: 'Subtotal', value: '{{totals.subtotal}}', showIf: 'always' },
+      { label: 'Tax (GST)', value: '{{totals.tax}}', showIf: 'always' },
       { label: 'Total', value: '{{totals.total}}', showIf: 'always', emphasized: true }
     ];
     

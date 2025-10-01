@@ -598,6 +598,69 @@ function createDefaultQuotationTemplate(templateBuilder) {
  * Map quotation data to template format
  */
 function mapQuotationToTemplateData(quotationData) {
+  // Calculate Risk & Usage Factors - Use API values directly if available
+  let riskAdjustmentCalculated, usageLoadFactorCalculated, riskUsageTotalCalculated;
+  let monthlyBaseRate = 30000; // Default fallback
+  let riskType = 'medium';
+  let usageType = 'normal';
+  let riskPercentage = 10;
+  let usagePercentage = 0;
+  
+  if (quotationData.risk_adjustment !== undefined && quotationData.usage_load_factor !== undefined) {
+    // Use values directly from the API (already calculated correctly)
+    riskAdjustmentCalculated = quotationData.risk_adjustment || 0;
+    usageLoadFactorCalculated = quotationData.usage_load_factor || 0;
+    riskUsageTotalCalculated = quotationData.risk_usage_total || (riskAdjustmentCalculated + usageLoadFactorCalculated);
+    
+    // Get the equipment monthly base rate for display purposes
+    if (quotationData.selectedEquipment && quotationData.selectedEquipment.baseRates) {
+      monthlyBaseRate = parseFloat(quotationData.selectedEquipment.baseRates.monthly) || 30000;
+    }
+    
+    // Extract risk and usage types for display
+    riskType = quotationData.risk_factor || 'low';
+    usageType = quotationData.usage || 'heavy';
+    
+    // Reverse calculate percentages for display (approximation)
+    if (monthlyBaseRate > 0) {
+      riskPercentage = Math.round((riskAdjustmentCalculated / monthlyBaseRate) * 100);
+      usagePercentage = Math.round((usageLoadFactorCalculated / monthlyBaseRate) * 100);
+    }
+    
+    console.log('✅ [Preview] Using calculated risk & usage values:', {
+      riskAdjustment: riskAdjustmentCalculated,
+      usageLoadFactor: usageLoadFactorCalculated,
+      riskUsageTotal: riskUsageTotalCalculated,
+      monthlyBaseRate,
+      riskType,
+      usageType
+    });
+  } else {
+    // Fallback: Calculate if not available in API
+    const riskFactors = { low: 0, medium: 10, high: 20 };
+    const usageFactors = { normal: 0, medium: 20, heavy: 50 };
+    
+    // Get equipment monthly base rate
+    if (quotationData.selectedMachines && quotationData.selectedMachines.length > 0) {
+      const totalMonthlyRate = quotationData.selectedMachines.reduce((total, machine) => {
+        const machineMonthlyRate = machine.baseRates?.monthly || machine.baseRateMonthly || 30000;
+        return total + (parseFloat(machineMonthlyRate) * (machine.quantity || 1));
+      }, 0);
+      monthlyBaseRate = totalMonthlyRate;
+    }
+    
+    riskType = quotationData.risk_factor || 'medium';
+    usageType = quotationData.usage || 'normal';
+    riskPercentage = riskFactors[riskType] || 10;
+    usagePercentage = usageFactors[usageType] || 0;
+    
+    riskAdjustmentCalculated = Math.round(monthlyBaseRate * (riskPercentage / 100));
+    usageLoadFactorCalculated = Math.round(monthlyBaseRate * (usagePercentage / 100));
+    riskUsageTotalCalculated = riskAdjustmentCalculated + usageLoadFactorCalculated;
+    
+    console.log('⚠️ [Preview] Calculating risk & usage values (API values not available)');
+  }
+
   return {
     company: quotationData.company,
     client: quotationData.customer,
@@ -609,14 +672,22 @@ function mapQuotationToTemplateData(quotationData) {
       validUntil: quotationData.valid_until || new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN'),
       paymentTerms: '50% advance, balance on completion'
     },
-    items: quotationData.items || [],
+    items: (quotationData.items || []).map((item, index) => ({
+      ...item,
+      riskUsage: formatCurrency(riskUsageTotalCalculated),
+      riskFactor: `${riskType} (${riskPercentage}%)`,
+      usageFactor: `${usageType} (${usagePercentage}%)`
+    })),
     totals: {
       subtotal: formatCurrency(quotationData.total_rent || 0),
       tax: formatCurrency(quotationData.gst_amount || 0),
       total: formatCurrency(quotationData.total_cost || 0),
       workingCost: formatCurrency(quotationData.working_cost || 0),
       mobDemobCost: formatCurrency(quotationData.mob_demob_cost || 0),
-      foodAccomCost: formatCurrency(quotationData.food_accom_cost || 0)
+      foodAccomCost: formatCurrency(quotationData.food_accom_cost || 0),
+      riskAdjustment: formatCurrency(riskAdjustmentCalculated),
+      usageLoadFactor: formatCurrency(usageLoadFactorCalculated),
+      riskUsageTotal: formatCurrency(riskUsageTotalCalculated)
     }
   };
 }
