@@ -270,8 +270,11 @@ router.get('/:id/preview/iframe', async (req, res) => {
         await templateBuilder.loadTemplate(templateId);
         template = templateBuilder.template;
         console.log('📋 [Preview] Using specific template:', template.name);
+        console.log('🔍 [Preview] Template elements:', template.elements?.length, 'elements');
+        console.log('🔍 [Preview] Template elements types:', template.elements?.map(e => e.type));
       } catch (error) {
         console.warn('⚠️ [Preview] Specific template not found, using default:', error.message);
+        console.error('🔍 [Preview] Template loading error details:', error);
         template = await getDefaultTemplate(templateBuilder);
       }
     } else {
@@ -334,6 +337,8 @@ async function getQuotationWithDetails(quotationId) {
         q.working_cost,
         q.mob_demob_cost,
         q.food_accom_cost,
+        q.usage_load_factor,
+        q.risk_adjustment,
         q.gst_amount,
         q.status,
         q.notes,
@@ -343,6 +348,8 @@ async function getQuotationWithDetails(quotationId) {
         q.shift,
         q.food_resources,
         q.accom_resources,
+        q.rigger_amount,
+        q.helper_amount,
         q.created_at,
         q.updated_at,
         c.name as customer_db_name,
@@ -406,6 +413,10 @@ async function getQuotationWithDetails(quotationId) {
       working_cost: row.working_cost,
       mob_demob_cost: row.mob_demob_cost,
       food_accom_cost: row.food_accom_cost,
+      usage_load_factor: row.usage_load_factor,
+      risk_adjustment: row.risk_adjustment,
+      rigger_amount: row.rigger_amount,
+      helper_amount: row.helper_amount,
       gst_amount: row.gst_amount,
       site_distance: row.site_distance,
       usage: row.usage,

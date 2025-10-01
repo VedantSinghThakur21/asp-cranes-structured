@@ -561,6 +561,10 @@ export class EnhancedTemplateBuilder {
   renderTemplate(data, options = {}) {
     const theme = TEMPLATE_THEMES[this.template.theme] || TEMPLATE_THEMES.MODERN;
     
+    console.log('🎨 [TemplateBuilder] Rendering template:', this.template.name);
+    console.log('🎨 [TemplateBuilder] Template has', this.template.elements?.length, 'elements');
+    console.log('🎨 [TemplateBuilder] Element types:', this.template.elements?.map(e => `${e.type}(${e.visible !== false ? 'visible' : 'hidden'})`));
+    
     let html = `
 <!DOCTYPE html>
 <html lang="en">
@@ -587,15 +591,18 @@ export class EnhancedTemplateBuilder {
    */
   renderElement(element, data) {
     // Check if element should be visible (default to true if not specified)
-    if (element.visible === false) return '';
+    if (element.visible === false) {
+      console.log('🔍 [RenderElement] Skipping hidden element:', element.type, element.id);
+      return '';
+    }
 
     const elementClass = `element-${element.type}`;
     const elementStyle = this.generateElementStyle(element.style || {});
 
     // Debug logging to trace element types
-    console.log('🔍 [DEBUG] Rendering element type:', element.type);
-    console.log('🔍 [DEBUG] Available TEMPLATE_ELEMENT_TYPES:', Object.values(TEMPLATE_ELEMENT_TYPES));
-    console.log('🔍 [DEBUG] Type match found:', Object.values(TEMPLATE_ELEMENT_TYPES).includes(element.type));
+    console.log('🔍 [RenderElement] Rendering element:', element.type, element.id);
+    console.log('🔍 [RenderElement] Element content:', JSON.stringify(element.content, null, 2));
+    console.log('🔍 [RenderElement] Type match found:', Object.values(TEMPLATE_ELEMENT_TYPES).includes(element.type));
 
     switch (element.type) {
       case TEMPLATE_ELEMENT_TYPES.HEADER:
@@ -789,12 +796,14 @@ export class EnhancedTemplateBuilder {
     const totals = data?.totals || {};
     console.log('🔍 [DEBUG] Totals data received:', totals);
     
+    // Comprehensive list of all financial fields that should be displayed
     const fields = element.content?.fields || [
       { label: 'Working Cost', value: '{{totals.workingCost}}', showIf: 'always' },
       { label: 'Mob/Demob Cost', value: '{{totals.mobDemobCost}}', showIf: 'always' },
-      { label: 'Risk Adjustment', value: '{{totals.riskAdjustment}}', showIf: 'always' },
-      { label: 'Usage Load Factor', value: '{{totals.usageLoadFactor}}', showIf: 'always' },
-      { label: 'Risk & Usage Total', value: '{{totals.riskUsageTotal}}', showIf: 'always' },
+      { label: 'Food & Accommodation Cost', value: '{{totals.foodAccomCost}}', showIf: 'hasFoodAccom' },
+      { label: 'Usage Load Factor', value: '{{totals.usageLoadFactor}}', showIf: 'hasUsageLoad' },
+      { label: 'Risk Adjustment', value: '{{totals.riskAdjustment}}', showIf: 'hasRiskAdjustment' },
+      { label: 'Risk & Usage Total', value: '{{totals.riskUsageTotal}}', showIf: 'hasRiskUsage' },
       { label: 'Subtotal', value: '{{totals.subtotal}}', showIf: 'always' },
       { label: 'Tax (GST)', value: '{{totals.tax}}', showIf: 'always' },
       { label: 'Total', value: '{{totals.total}}', showIf: 'always', emphasized: true }
@@ -914,7 +923,13 @@ export class EnhancedTemplateBuilder {
       .replace(/\{\{company\.phone\}\}/g, data?.company?.phone || 'Company Phone')
       .replace(/\{\{company\.email\}\}/g, data?.company?.email || 'company@email.com')
       
-      // Totals placeholders
+      // Totals placeholders - comprehensive mapping for all financial fields
+      .replace(/\{\{totals\.workingCost\}\}/g, data?.totals?.workingCost || '₹0')
+      .replace(/\{\{totals\.mobDemobCost\}\}/g, data?.totals?.mobDemobCost || '₹0')
+      .replace(/\{\{totals\.foodAccomCost\}\}/g, data?.totals?.foodAccomCost || '₹0')
+      .replace(/\{\{totals\.usageLoadFactor\}\}/g, data?.totals?.usageLoadFactor || '₹0')
+      .replace(/\{\{totals\.riskAdjustment\}\}/g, data?.totals?.riskAdjustment || '₹0')
+      .replace(/\{\{totals\.riskUsageTotal\}\}/g, data?.totals?.riskUsageTotal || '₹0')
       .replace(/\{\{totals\.subtotal\}\}/g, data?.totals?.subtotal || '₹0')
       .replace(/\{\{totals\.tax\}\}/g, data?.totals?.tax || '₹0')
       .replace(/\{\{totals\.total\}\}/g, data?.totals?.total || '₹0')
@@ -1122,10 +1137,19 @@ export class EnhancedTemplateBuilder {
   }
 
   shouldShowTotalField(field, data) {
+    const parseAmount = (amount) => {
+      if (!amount) return 0;
+      return parseFloat(amount.toString().replace(/[^\d.-]/g, ''));
+    };
+
     switch (field.showIf) {
       case 'always': return true;
-      case 'hasDiscount': return data.totals?.discount && parseFloat(data.totals.discount.replace(/[^\d.-]/g, '')) > 0;
-      case 'hasTax': return data.totals?.tax && parseFloat(data.totals.tax.replace(/[^\d.-]/g, '')) > 0;
+      case 'hasDiscount': return parseAmount(data.totals?.discount) > 0;
+      case 'hasTax': return parseAmount(data.totals?.tax) > 0;
+      case 'hasFoodAccom': return parseAmount(data.totals?.foodAccomCost) > 0;
+      case 'hasUsageLoad': return parseAmount(data.totals?.usageLoadFactor) > 0;
+      case 'hasRiskAdjustment': return parseAmount(data.totals?.riskAdjustment) > 0;
+      case 'hasRiskUsage': return parseAmount(data.totals?.riskUsageTotal) > 0;
       default: return true;
     }
   }

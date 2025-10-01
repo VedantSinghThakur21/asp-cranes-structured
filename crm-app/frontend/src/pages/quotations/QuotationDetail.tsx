@@ -153,7 +153,8 @@ const QuotationDetail: React.FC = () => {
     if (isPreviewOpen && quotation && previewFrameRef.current) {
       console.log('🔄 Refreshing preview with template:', templateId);
       const templateParam = templateId !== 'default' ? `?templateId=${templateId}` : '';
-      previewFrameRef.current.src = `/api/quotations-preview/${quotation.id}/preview/iframe${templateParam}`;
+      const cacheBuster = `${templateParam ? '&' : '?'}t=${Date.now()}`;
+      previewFrameRef.current.src = `/api/quotations-preview/${quotation.id}/preview/iframe${templateParam}${cacheBuster}`;
     }
   };
 
