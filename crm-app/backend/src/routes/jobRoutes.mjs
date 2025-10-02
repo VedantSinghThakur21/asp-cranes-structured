@@ -27,6 +27,60 @@ router.get('/', async (_req, res) => {
   }
 });
 
+// Get leads with won deals (for job scheduling dropdown)
+router.get('/leads/won-deals', async (req, res) => {
+  try {
+    console.log('🎯 Fetching leads with won deals for job scheduling...');
+    
+    // Import required modules
+    const { db } = await import('../lib/dbClient.js');
+    
+    // Query to get leads that have won deals
+    const query = `
+      SELECT DISTINCT l.id, l.company_name, l.contact_name, l.email, l.phone, l.status,
+             d.id as deal_id, d.value as deal_value, d.stage, d.closing_date,
+             l.created_at, l.updated_at
+      FROM leads l
+      INNER JOIN deals d ON l.id = d.lead_id
+      WHERE d.stage = 'won' AND l.status = 'converted'
+      ORDER BY d.closing_date DESC, l.company_name ASC
+    `;
+    
+    const results = await db.any(query);
+    
+    // Transform for frontend consumption
+    const transformedResults = results.map(row => ({
+      id: row.id,
+      companyName: row.company_name,
+      contactName: row.contact_name,
+      email: row.email,
+      phone: row.phone,
+      status: row.status,
+      dealId: row.deal_id,
+      dealValue: row.deal_value,
+      dealStage: row.stage,
+      closingDate: row.closing_date,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at
+    }));
+    
+    console.log(`✅ Found ${transformedResults.length} leads with won deals`);
+    
+    res.json({
+      success: true,
+      data: transformedResults,
+      count: transformedResults.length
+    });
+    
+  } catch (error) {
+    console.error('❌ Error fetching leads with won deals:', error);
+    res.status(500).json({ 
+      success: false,
+      error: getErrorMessage(error) 
+    });
+  }
+});
+
 // Get job by ID
 router.get('/:id', async (req, res) => {
   try {

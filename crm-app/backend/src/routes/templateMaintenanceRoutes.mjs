@@ -2,20 +2,16 @@ import express from 'express';
 import pool from '../lib/dbConnection.js';
 import { authenticateToken } from '../middleware/authMiddleware.mjs';
 
-// Lightweight auth (allow bypass header like other routes)
-const optionalAuth = (req, res, next) => {
-  const bypassHeader = req.headers['x-bypass-auth'];
-  if (bypassHeader === 'development-only-123' || bypassHeader === 'true') {
-    req.user = { uid: 'bypass-user', role: 'admin' };
-    return next();
-  }
-  return authenticateToken(req, res, next);
-};
+// Import proper auth from centralized middleware
+import { authenticateToken, authorizeRoles } from '../middleware/authMiddleware.mjs';
+
+// Define admin roles for maintenance operations
+const MAINTENANCE_ROLES = ['admin', 'operations_manager'];
 
 const router = express.Router();
 
-// GET /api/templates/enhanced/:id/raw – raw DB row (safe for debugging only)
-router.get('/enhanced/:id/raw', optionalAuth, async (req, res) => {
+// GET /api/templates/enhanced/:id/raw – raw DB row (admin only)
+router.get('/enhanced/:id/raw', authenticateToken, authorizeRoles(MAINTENANCE_ROLES), async (req, res) => {
   const { id } = req.params;
   try {
     const client = await pool.connect();
@@ -52,8 +48,8 @@ router.get('/enhanced/:id/raw', optionalAuth, async (req, res) => {
   }
 });
 
-// POST /api/templates/enhanced/maintenance/repair – normalize malformed JSON columns
-router.post('/enhanced/maintenance/repair', optionalAuth, async (req, res) => {
+// POST /api/templates/enhanced/maintenance/repair – normalize malformed JSON columns (admin only)
+router.post('/enhanced/maintenance/repair', authenticateToken, authorizeRoles(MAINTENANCE_ROLES), async (req, res) => {
   const report = [];
   const client = await pool.connect();
   try {

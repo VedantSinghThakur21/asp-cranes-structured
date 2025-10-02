@@ -10,16 +10,8 @@ import { pdfService } from '../services/PdfService.mjs';
 
 const router = express.Router();
 
-// Optional auth for selected endpoints: allows bypass header regardless of NODE_ENV
-const optionalAuth = (req, res, next) => {
-  const bypassHeader = req.headers['x-bypass-auth'];
-  if (bypassHeader === 'development-only-123' || bypassHeader === 'true') {
-    console.log('⚠️ OptionalAuth(Print): bypassing auth based on header');
-    req.user = { uid: 'bypass-user', email: 'bypass@example.com', role: 'admin' };
-    return next();
-  }
-  return authenticateToken(req, res, next);
-};
+// Import optionalAuth from centralized middleware
+import { optionalAuth } from '../middleware/authMiddleware.mjs';
 
 /**
  * Helper function to get default template configuration

@@ -213,6 +213,9 @@ const QuotationDetail: React.FC = () => {
     try {
       if (!id) return;
       
+      console.log('📥 Starting PDF download for quotation:', id);
+      console.log('🎨 Using template:', selectedTemplate);
+      
       // Use the correct endpoint for PDF generation with selected template
       const response = await fetch(`/api/quotations/print/pdf`, {
         method: 'POST',
@@ -226,38 +229,87 @@ const QuotationDetail: React.FC = () => {
         })
       });
 
+      console.log('📥 Download response status:', response.status);
+      console.log('📥 Download response headers:', Object.fromEntries(response.headers.entries()));
+
       if (response.ok) {
         const contentType = response.headers.get('content-type');
+        console.log('📄 Content type:', contentType);
         
         if (contentType && contentType.includes('application/pdf')) {
-          // Handle PDF response
-          const blob = await response.blob();
-          const url = window.URL.createObjectURL(blob);
+          // Handle PDF response - use proper binary handling
+          console.log('📄 Processing PDF response...');
+          const arrayBuffer = await response.arrayBuffer();
+          const blob = new Blob([arrayBuffer], { type: 'application/pdf' });
+          
+          // Validate blob size
+          if (blob.size === 0) {
+            throw new Error('PDF file is empty or corrupted');
+          }
+          
+          console.log('📄 PDF blob size:', blob.size, 'bytes');
+          
+          // Create download link without using blob URLs over insecure connection
+          const filename = `quotation_${id}_${Date.now()}.pdf`;
+          
+          // For modern browsers, use the download API
+          if ('showSaveFilePicker' in window && typeof (window as any).showSaveFilePicker === 'function') {
+            try {
+              const fileHandle = await (window as any).showSaveFilePicker({
+                suggestedName: filename,
+                types: [{
+                  description: 'PDF files',
+                  accept: { 'application/pdf': ['.pdf'] }
+                }]
+              });
+              const writable = await fileHandle.createWritable();
+              await writable.write(blob);
+              await writable.close();
+              console.log('✅ PDF saved successfully using File System Access API');
+              return;
+            } catch (e) {
+              console.log('📥 File System Access API failed, falling back to traditional download');
+            }
+          }
+          
+          // Fallback to traditional blob download
+          const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
-          a.download = `quotation_${id}.pdf`;
+          a.download = filename;
+          a.style.display = 'none';
           document.body.appendChild(a);
           a.click();
-          window.URL.revokeObjectURL(url);
-          document.body.removeChild(a);
-        } else {
+          
+          // Clean up after download
+          setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+          }, 100);
+          
+          console.log('✅ PDF download initiated successfully');
+          
+        } else if (contentType && contentType.includes('text/html')) {
           // Handle HTML fallback (when PDF generation fails)
+          console.log('📄 Processing HTML fallback response...');
           const html = await response.text();
           const printWindow = window.open('', '_blank');
           if (printWindow) {
             printWindow.document.write(html);
             printWindow.document.close();
-            printWindow.print();
+            console.log('✅ HTML fallback opened for printing');
           } else {
             alert('Please allow popups to download/print the quotation');
           }
+        } else {
+          throw new Error(`Unexpected content type: ${contentType}`);
         }
       } else {
         const error = await response.text();
-        throw new Error(`Failed to download PDF: ${error}`);
+        throw new Error(`Server error (${response.status}): ${error}`);
       }
     } catch (error) {
-      console.error('Download error:', error);
+      console.error('❌ Download error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       alert(`Failed to download PDF: ${errorMessage}`);
     }

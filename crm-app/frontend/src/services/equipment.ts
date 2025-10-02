@@ -5,7 +5,7 @@ export async function updateEquipment(equipmentId: string, updates: Partial<Equi
   const apiUrl = import.meta.env.VITE_API_URL || '/api';
   const response = await fetch(`${apiUrl}/equipment/${equipmentId}`, {
     method: 'PATCH',
-    headers: { ...getHeaders(), 'Content-Type': 'application/json', 'X-Bypass-Auth': 'development-only-123' },
+    headers: { ...getHeaders(), 'Content-Type': 'application/json' },
     body: JSON.stringify(updates),
     credentials: 'include',
   });
@@ -19,7 +19,7 @@ export async function deleteEquipment(equipmentId: string): Promise<void> {
   const apiUrl = import.meta.env.VITE_API_URL || '/api';
   const response = await fetch(`${apiUrl}/equipment/${equipmentId}`, {
     method: 'DELETE',
-    headers: { ...getHeaders(), 'X-Bypass-Auth': 'development-only-123' },
+    headers: getHeaders(),
     credentials: 'include',
   });
   if (!response.ok) {
@@ -31,7 +31,7 @@ export async function createEquipment(equipment: Partial<Equipment>): Promise<Eq
   const apiUrl = import.meta.env.VITE_API_URL || '/api';
   const response = await fetch(`${apiUrl}/equipment`, {
     method: 'POST',
-    headers: { ...getHeaders(), 'Content-Type': 'application/json', 'X-Bypass-Auth': 'development-only-123' },
+    headers: { ...getHeaders(), 'Content-Type': 'application/json' },
     body: JSON.stringify(equipment),
     credentials: 'include',
   });
@@ -50,7 +50,7 @@ export async function getEquipmentByCategory(category: string): Promise<Equipmen
 
   const response = await fetch(url, {
     method: 'GET',
-    headers: { ...getHeaders(), 'X-Bypass-Auth': 'development-only-123' },
+    headers: getHeaders(),
     credentials: 'include',
   });
 
@@ -80,10 +80,7 @@ export async function getEquipment(): Promise<Equipment[]> {
     // Always include authentication headers since endpoint requires auth
     const response = await fetch(fullUrl, {
       method: 'GET',
-      headers: {
-        ...getHeaders(),
-        'X-Bypass-Auth': 'development-only-123'
-      },
+      headers: getHeaders(),
       credentials: 'include',
     });
     
@@ -99,10 +96,7 @@ export async function getEquipment(): Promise<Equipment[]> {
         console.log('🔄 Retrying with authentication headers...');
         const authResponse = await fetch(fullUrl, {
           method: 'GET',
-          headers: {
-            ...getHeaders(),
-            'X-Bypass-Auth': 'development-only-123'
-          },
+          headers: getHeaders(),
           credentials: 'include',
         });
         

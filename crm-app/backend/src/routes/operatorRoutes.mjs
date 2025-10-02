@@ -11,8 +11,10 @@ const getErrorMessage = (error) => {
   return String(error);
 };
 
+import { authenticateToken } from '../middleware/authMiddleware.mjs';
+
 // Get all operators
-router.get('/', async (req, res) => {
+router.get('/', authenticateToken, async (req, res) => {
   try {
     const operators = await getOperators();
     res.json(operators);

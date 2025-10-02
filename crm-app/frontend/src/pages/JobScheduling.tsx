@@ -14,13 +14,10 @@ import { Modal } from '../components/common/Modal';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { Toast } from '../components/common/Toast';
 import { useAuthStore } from '../store/authStore';
-import { getJobs, getAllEquipment, getAllOperators, createJob, getEquipmentById } from '../services/job';
-import { getLeads } from '../services/lead';
-import { getDealById, getDeals } from '../services/deal';
+import { getJobs, getAllEquipment, getAllOperators, createJob, getEquipmentById, getLeadsWithWonDeals } from '../services/job';
+import { getDealById } from '../services/deal';
 import { getQuotationsForLead } from '../services/quotation';
 import { Job, Equipment, Operator } from '../types/job';
-import { Lead } from '../types/lead';
-import { Deal } from '../types/deal';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { jobApiClient } from '../services/job';
 
@@ -32,7 +29,7 @@ export function JobScheduling() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [jobs, setJobs] = useState<Job[]>([]);
   const [equipment, setEquipment] = useState<Equipment[]>([]);
-  const [operators, setOperators] = useState<Operator[]>([]);  const [leads, setLeads] = useState<Lead[]>([]);
+  const [operators, setOperators] = useState<Operator[]>([]);  const [leads, setLeads] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
@@ -107,26 +104,26 @@ export function JobScheduling() {
 
   const fetchData = async () => {
     try {
-      const [jobsData, equipmentData, operatorsData, leadsData, dealsData] = await Promise.all([
+      console.log('🔄 Fetching job scheduling data...');
+      
+      const [jobsData, equipmentData, operatorsData, leadsData] = await Promise.all([
         getJobs(),
         getAllEquipment(),
         getAllOperators(),
-        getLeads(),
-        getDeals(), // Fetch all deals too
+        getLeadsWithWonDeals(), // Use the new dedicated endpoint
       ]);
 
-      setJobs(jobsData);
-      setEquipment(equipmentData);
-      setOperators(operatorsData);
-      
-      // Filter leads - keep only those associated with won deals
-      const wonDeals = dealsData.filter((deal: Deal) => deal.stage === 'won');
-      const wonDealLeadIds = wonDeals.map((deal: Deal) => deal.leadId);
-      const relevantLeads = leadsData.filter((lead: Lead) => 
-        lead.status === 'converted' && wonDealLeadIds.includes(lead.id)
-      );
-      
-      setLeads(relevantLeads);
+      console.log('📊 Data fetched:', {
+        jobs: jobsData?.length || 0,
+        equipment: equipmentData?.length || 0,
+        operators: operatorsData?.length || 0,
+        leads: leadsData?.length || 0
+      });
+
+      setJobs(jobsData || []);
+      setEquipment(equipmentData || []);
+      setOperators(operatorsData || []);
+      setLeads(leadsData || []);
       
       // If we have a won deal ID from URL parameters, fetch deal details
       if (wonDealId) {
@@ -636,7 +633,7 @@ export function JobScheduling() {
               { value: '', label: '-- Select a customer with a won deal --' },
               ...(Array.isArray(leads) ? leads.map(lead => ({
                 value: lead.id,
-                label: `${lead.customerName} - Won Deal`,
+                label: `${lead.companyName || lead.contactName || 'Unknown Company'} - Won Deal (₹${lead.dealValue?.toLocaleString() || '0'})`,
               })) : [])
             ]}
             value={formData.leadId}

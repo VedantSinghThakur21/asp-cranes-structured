@@ -190,7 +190,7 @@ export function LeadManagement() {
       const response = await fetch(url, {
         headers: {
           'Content-Type': 'application/json',
-          'X-Bypass-Auth': 'development-only-123'
+
         }
       });
       if (response.ok) {
