@@ -38,6 +38,47 @@ router.get('/test', (req, res) => {
   });
 });
 
+// Debug route to check template differences
+router.get('/debug/templates', async (req, res) => {
+  try {
+    const client = await pool.connect();
+    try {
+      const result = await client.query(`
+        SELECT 
+          id, 
+          name, 
+          description, 
+          theme,
+          LENGTH(elements::text) as elements_size,
+          (SELECT COUNT(*) FROM json_array_elements(elements)) as element_count,
+          created_at, 
+          updated_at
+        FROM enhanced_templates 
+        ORDER BY created_at DESC
+      `);
+      
+      const templates = result.rows.map(row => ({
+        ...row,
+        elements_preview: row.elements ? JSON.parse(row.elements).slice(0, 2).map(e => ({ type: e.type, id: e.id })) : []
+      }));
+      
+      res.json({
+        success: true,
+        count: templates.length,
+        templates
+      });
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    console.error('Debug templates error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 // Test route to verify template generation without database
 router.get('/test-template', async (req, res) => {
   try {
@@ -178,7 +219,9 @@ router.get('/:id/preview', async (req, res) => {
         console.log('🎨 [Preview] Loading specific template:', templateId);
         await templateBuilder.loadTemplate(templateId);
         template = templateBuilder.template;
-        console.log('📋 [Preview] Using specific template:', template.name);
+        console.log('📋 [Preview] Using specific template:', template.name, 'ID:', template.id);
+        console.log('🔍 [Preview] Template elements:', template.elements?.length, 'elements');
+        console.log('🔍 [Preview] Template description:', template.description);
       } catch (error) {
         console.warn('⚠️ [Preview] Specific template not found, using default:', error.message);
         template = await getDefaultTemplate(templateBuilder);
@@ -198,7 +241,8 @@ router.get('/:id/preview', async (req, res) => {
       itemsCount: previewData.items?.length || 0
     });
     const html = templateBuilder.generatePreviewHTML(previewData);
-    const augmentedHtml = `<!-- TEMPLATE_ID:${template.id} ELEMENTS:${template.elements?.length || 0} GENERATED:${new Date().toISOString()} -->\n` + html;
+    const debugInfo = `<!-- TEMPLATE_DEBUG: ID=${template.id} NAME="${template.name}" DESCRIPTION="${template.description || 'No description'}" ELEMENTS=${template.elements?.length || 0} THEME=${template.theme || 'MODERN'} GENERATED=${new Date().toISOString()} REQUESTED_ID=${templateId || 'default'} -->`;
+    const augmentedHtml = debugInfo + '\n' + html;
 
     if (format === 'json') {
       return res.json({
@@ -275,9 +319,15 @@ router.get('/:id/preview/iframe', async (req, res) => {
         console.log('🎨 [Preview] Loading specific template for iframe:', templateId);
         await templateBuilder.loadTemplate(templateId);
         template = templateBuilder.template;
-        console.log('📋 [Preview] Using specific template:', template.name);
+        console.log('📋 [Preview] Using specific template:', template.name, 'ID:', template.id);
         console.log('🔍 [Preview] Template elements:', template.elements?.length, 'elements');
         console.log('🔍 [Preview] Template elements types:', template.elements?.map(e => e.type));
+        console.log('🔍 [Preview] Template description:', template.description);
+        console.log('🔍 [Preview] Template theme:', template.theme);
+        // Log first few elements for debugging
+        if (template.elements && template.elements.length > 0) {
+          console.log('🔍 [Preview] First element sample:', JSON.stringify(template.elements[0], null, 2));
+        }
       } catch (error) {
         console.warn('⚠️ [Preview] Specific template not found, using default:', error.message);
         console.error('🔍 [Preview] Template loading error details:', error);
@@ -299,8 +349,10 @@ router.get('/:id/preview/iframe', async (req, res) => {
     });
     
     const html = templateBuilder.generatePreviewHTML(previewData);
-    const augmentedHtml = `<!-- TEMPLATE_ID:${template.id} ELEMENTS:${template.elements?.length || 0} GENERATED:${new Date().toISOString()} -->\n` + html;
+    const debugInfo = `<!-- TEMPLATE_DEBUG: ID=${template.id} NAME="${template.name}" DESCRIPTION="${template.description || 'No description'}" ELEMENTS=${template.elements?.length || 0} THEME=${template.theme || 'MODERN'} GENERATED=${new Date().toISOString()} REQUESTED_ID=${templateId || 'default'} -->`;
+    const augmentedHtml = debugInfo + '\n' + html;
     console.log('✅ [Preview] HTML generated for iframe, length:', html.length);
+    console.log('🔍 [Preview] Debug info added to HTML:', debugInfo);
 
     res.setHeader('Content-Type', 'text/html');
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');

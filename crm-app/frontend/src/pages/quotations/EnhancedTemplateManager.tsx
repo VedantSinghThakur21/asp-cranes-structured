@@ -27,7 +27,7 @@ const EnhancedTemplateManager = () => {
   const [selectedTemplate, setSelectedTemplate] = useState<EnhancedTemplate | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [templateToDelete, setTemplateToDelete] = useState<EnhancedTemplate | null>(null);
-  const [isCreatingNew, setIsCreatingNew] = useState(false);
+  const [previewMode, setPreviewMode] = useState(false);
 
   useEffect(() => {
     loadTemplates();
@@ -68,20 +68,20 @@ const EnhancedTemplateManager = () => {
   const handleCreateNew = () => {
     setSelectedTemplate(null);
     setShowBuilder(true);
-    setIsCreatingNew(true);
+    setPreviewMode(false);
   };
 
   const handleEditTemplate = (template: EnhancedTemplate) => {
     setSelectedTemplate(template);
     setShowBuilder(true);
-    setIsCreatingNew(false);
+    setPreviewMode(false);
   };
 
   const handleCloseBuilder = () => {
     setShowBuilder(false);
     setSelectedTemplate(null);
     loadTemplates(); // Refresh the list
-    setIsCreatingNew(false);
+    setPreviewMode(false);
   };
 
   const handleSaveTemplate = (templateData: any) => {
@@ -138,7 +138,7 @@ const EnhancedTemplateManager = () => {
     // Use the builder in read-only autoPreview mode for consistent UX
     setSelectedTemplate(template);
     setShowBuilder(true);
-    setIsCreatingNew(false);
+    setPreviewMode(true);
     // The builder will auto-generate preview via autoPreview prop
   };
 
@@ -158,8 +158,8 @@ const EnhancedTemplateManager = () => {
         templateId={selectedTemplate?.id || null}
         onClose={handleCloseBuilder}
         onSave={handleSaveTemplate}
-        autoPreview={true}
-        readOnly={!isCreatingNew && Boolean(selectedTemplate)}
+        autoPreview={previewMode}
+        readOnly={previewMode}
       />
     );
   }

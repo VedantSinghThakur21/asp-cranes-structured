@@ -1779,11 +1779,15 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
 
   // Auto preview effect
   useEffect(() => {
-    if (autoPreview && !previewMode) {
-      generatePreview();
+    if (autoPreview && !previewMode && template.elements && template.elements.length > 0) {
+      // Add a small delay to ensure template is fully loaded
+      const timer = setTimeout(() => {
+        generatePreview();
+      }, 500);
+      return () => clearTimeout(timer);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoPreview]);
+  }, [autoPreview, template.elements]);
 
   if (previewMode) {
     return (
