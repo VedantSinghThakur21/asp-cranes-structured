@@ -31,6 +31,53 @@ import { QuotationTableBuilder } from '../utils/quotationTableBuilder.mjs';
 
 const router = express.Router();
 
+// Helper functions to extract incident and custom amounts from frontend data structure
+function extractIncidentAmount(quotationData, incidentKey) {
+  // First check if there's a custom amount specified
+  if (quotationData.customIncidentAmounts && quotationData.customIncidentAmounts[incidentKey]) {
+    return quotationData.customIncidentAmounts[incidentKey];
+  }
+  
+  // Check if this incident is selected in the incidentalCharges array
+  if (quotationData.incidentalCharges && quotationData.incidentalCharges.includes(incidentKey)) {
+    // Return default amounts based on incident type
+    const defaultAmounts = {
+      'incident1': 5000,
+      'incident2': 10000,  
+      'incident3': 15000
+    };
+    return defaultAmounts[incidentKey] || 0;
+  }
+  
+  return null; // Not selected
+}
+
+function extractCustomAmount(quotationData, amountKey) {
+  return quotationData[amountKey] || null;
+}
+
+function extractOtherFactorsAmount(quotationData, factorKey) {
+  // Check if this factor is selected in the otherFactors array
+  if (quotationData.otherFactors && quotationData.otherFactors.includes(factorKey)) {
+    // Check for custom amount first
+    if (quotationData.customRiggerAmount && factorKey === 'rigger') {
+      return quotationData.customRiggerAmount;
+    }
+    if (quotationData.customHelperAmount && factorKey === 'helper') {
+      return quotationData.customHelperAmount;
+    }
+    
+    // Return default amounts
+    const defaultAmounts = {
+      'rigger': 40000,
+      'helper': 12000
+    };
+    return defaultAmounts[factorKey] || 0;
+  }
+  
+  return 0;
+}
+
 // Optional auth for selected endpoints: allows bypass header regardless of NODE_ENV
 const optionalAuth = (req, res, next) => {
   const bypassHeader = req.headers['x-bypass-auth'];
@@ -469,7 +516,20 @@ router.post('/', authenticateToken, async (req, res) => {
       numberOfDays: quotationData.numberOfDays,
       leadId: quotationData.leadId,
       selectedEquipment: quotationData.selectedEquipment,
-      primaryEquipmentId: quotationData.primaryEquipmentId
+      primaryEquipmentId: quotationData.primaryEquipmentId,
+      incidentalCharges: quotationData.incidentalCharges,
+      customIncidentAmounts: quotationData.customIncidentAmounts,
+      otherFactors: quotationData.otherFactors,
+      customRiggerAmount: quotationData.customRiggerAmount,
+      customHelperAmount: quotationData.customHelperAmount,
+      // Cost calculations from frontend
+      totalCost: quotationData.totalCost,
+      totalAmount: quotationData.totalAmount,
+      workingCost: quotationData.workingCost,
+      mobDemobCost: quotationData.mobDemobCost,
+      foodAccomCost: quotationData.foodAccomCost,
+      mobDemob: quotationData.mobDemob,
+      calculations: quotationData.calculations
     });
     // Validate required fields
     const requiredFields = ['customerName', 'machineType', 'orderType', 'numberOfDays'];
@@ -553,10 +613,10 @@ router.post('/', authenticateToken, async (req, res) => {
         'high': 'high'
       };
       
-      // Use calculated costs from frontend or defaults
-      const totalCost = quotationData.totalCost || quotationData.calculations?.totalAmount || 100000;
-      const gstAmount = quotationData.gstAmount || quotationData.calculations?.gstAmount || (totalCost * 0.18);
-      const finalTotal = quotationData.totalAmount || (totalCost + gstAmount);
+      // Use calculated costs from frontend (no fallbacks to avoid incorrect data)
+      const totalCost = quotationData.totalCost || quotationData.calculations?.totalAmount || 0;
+      const gstAmount = quotationData.gstAmount || quotationData.calculations?.gstAmount || 0;
+      const finalTotal = quotationData.totalAmount || quotationData.calculations?.finalTotal || 0;
       
       const customerContact = {
         name: quotationData.customerName,
@@ -631,37 +691,65 @@ router.post('/', authenticateToken, async (req, res) => {
         }
       }
 
+      // Extract and log incident/rigger/helper amounts for debugging
+      const incident1Amount = extractIncidentAmount(quotationData, 'incident1');
+      const incident2Amount = extractIncidentAmount(quotationData, 'incident2');
+      const incident3Amount = extractIncidentAmount(quotationData, 'incident3');
+      const riggerAmount = extractOtherFactorsAmount(quotationData, 'rigger');
+      const helperAmount = extractOtherFactorsAmount(quotationData, 'helper');
+      
+      console.log('💰 DEBUG: Extracted amounts and costs:', {
+        incident1Amount,
+        incident2Amount, 
+        incident3Amount,
+        riggerAmount,
+        helperAmount,
+        incidentalCharges: quotationData.incidentalCharges,
+        otherFactors: quotationData.otherFactors,
+        customIncidentAmounts: quotationData.customIncidentAmounts,
+        customRiggerAmount: quotationData.customRiggerAmount,
+        // Cost breakdown being saved
+        workingCost: quotationData.workingCost || quotationData.calculations?.workingCost,
+        mobDemobCost: quotationData.mobDemobCost || quotationData.calculations?.mobDemobCost,
+        foodAccomCost: quotationData.foodAccomCost || quotationData.calculations?.foodAccomCost,
+        mobDemob: quotationData.mobDemob || quotationData.calculations?.mobDemob,
+        extraCharge: quotationData.extraCharge,
+        totalCost: totalCost,
+        gstAmount: gstAmount,
+        finalTotal: finalTotal
+      });
+
       const values = [
         id,
         customerId,
         quotationData.customerName,
         quotationData.machineType,
         mappedOrderType,
-        quotationData.numberOfDays || 1,
-        quotationData.workingHours || 8,
+        quotationData.numberOfDays,
+        quotationData.workingHours,
         mappedFoodResources,
         mappedAccomResources,
-        Number(quotationData.siteDistance) || 0,
-        quotationData.usage || 'normal', // EXACT usage from frontend with safe fallback
-        mappedRiskFactor || 'low',
-        shiftMapping[quotationData.shift] || 'single',
+        Number(quotationData.siteDistance),
+        quotationData.usage,
+        mappedRiskFactor,
+        shiftMapping[quotationData.shift],
         'day', // day_night (will be enhanced later)
-        15000, // mob_demob (default)
-        0, // mob_relaxation
-        quotationData.extraCharge || 0,
-        0, // other_factors_charge
+        quotationData.mobDemob || quotationData.calculations?.mobDemob, // mob_demob - use frontend value
+        quotationData.mobRelaxation || quotationData.calculations?.mobRelaxation, // mob_relaxation
+        quotationData.extraCharge,
+        riggerAmount + helperAmount, // other_factors_charge - sum of rigger and helper
         'gst', // billing
         true, // include_gst
         'no', // sunday_working
         JSON.stringify(customerContact),
         totalCost,
         finalTotal,
-        quotationData.workingCost || quotationData.calculations?.workingCost || (totalCost * 0.8), // working_cost
-        quotationData.mobDemobCost || quotationData.calculations?.mobDemobCost || 15000, // mob_demob_cost
-        quotationData.foodAccomCost || quotationData.calculations?.foodAccomCost || 0, // food_accom_cost - requires proper calculation
-        quotationData.riskAdjustment || quotationData.calculations?.riskAdjustment || 0, // risk_adjustment
-        quotationData.usageLoadFactor || quotationData.calculations?.usageLoadFactor || 0, // usage_load_factor
-        quotationData.riskUsageTotal || quotationData.calculations?.riskUsageTotal || 0, // risk_usage_total
+        quotationData.workingCost || quotationData.calculations?.workingCost, // working_cost
+        quotationData.mobDemobCost || quotationData.calculations?.mobDemobCost, // mob_demob_cost
+        quotationData.foodAccomCost || quotationData.calculations?.foodAccomCost, // food_accom_cost
+        quotationData.riskAdjustment || quotationData.calculations?.riskAdjustment, // risk_adjustment
+        quotationData.usageLoadFactor || quotationData.calculations?.usageLoadFactor, // usage_load_factor
+        quotationData.riskUsageTotal || quotationData.calculations?.riskUsageTotal, // risk_usage_total
         gstAmount,
         req.user.id, // created_by (will be replaced with actual user)
         'draft',
@@ -670,11 +758,11 @@ router.post('/', authenticateToken, async (req, res) => {
         quotationData.leadId || null,
         quotationData.primaryEquipmentId || quotationData.selectedEquipment?.equipmentId || quotationData.selectedEquipment?.id || null, // primary_equipment_id
         quotationData.equipmentSnapshot ? JSON.stringify(quotationData.equipmentSnapshot) : (quotationData.selectedEquipment ? JSON.stringify(quotationData.selectedEquipment) : null), // equipment_snapshot
-        quotationData.incident1 || null, // incident1
-        quotationData.incident2 || null, // incident2
-        quotationData.incident3 || null, // incident3
-        quotationData.riggerAmount || 0, // rigger_amount
-        quotationData.helperAmount || 0  // helper_amount
+        incident1Amount, // incident1
+        incident2Amount, // incident2  
+        incident3Amount, // incident3
+        riggerAmount, // rigger_amount
+        helperAmount  // helper_amount
       ];
       await client.query(insertQuery, values);
       
@@ -936,7 +1024,7 @@ router.put('/:id', async (req, res) => {
         food_accom_cost,
         risk_adjustment,
         usage_load_factor,
-        riskUsageTotal || calculations?.riskUsageTotal || (risk_adjustment || 0) + (usage_load_factor || 0),
+        riskUsageTotal || calculations?.riskUsageTotal,
         gst_amount,
         total_rent,
         total_cost,
@@ -949,11 +1037,11 @@ router.put('/:id', async (req, res) => {
         sunday_working,
         primary_equipment_id,
         JSON.stringify(equipment_snapshot),
-        incident1,
-        incident2,
-        incident3,
-        rigger_amount_mapped,
-        helper_amount_mapped,
+        extractIncidentAmount(req.body, 'incident1') || incident1,
+        extractIncidentAmount(req.body, 'incident2') || incident2,
+        extractIncidentAmount(req.body, 'incident3') || incident3,
+        extractOtherFactorsAmount(req.body, 'rigger') || rigger_amount_mapped,
+        extractOtherFactorsAmount(req.body, 'helper') || helper_amount_mapped,
         id
       ]);
       
