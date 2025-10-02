@@ -49,23 +49,45 @@ router.get('/debug/templates', async (req, res) => {
           name, 
           description, 
           theme,
-          LENGTH(elements::text) as elements_size,
-          (SELECT COUNT(*) FROM json_array_elements(elements)) as element_count,
+          elements,
           created_at, 
           updated_at
         FROM enhanced_templates 
         ORDER BY created_at DESC
       `);
       
-      const templates = result.rows.map(row => ({
-        ...row,
-        elements_preview: row.elements ? JSON.parse(row.elements).slice(0, 2).map(e => ({ type: e.type, id: e.id })) : []
-      }));
+      const templates = result.rows.map(row => {
+        let elementsPreview = [];
+        let elementCount = 0;
+        try {
+          const elements = row.elements ? JSON.parse(row.elements) : [];
+          elementCount = elements.length;
+          elementsPreview = elements.slice(0, 3).map(e => ({
+            type: e.type,
+            id: e.id,
+            content: typeof e.content === 'object' ? JSON.stringify(e.content).substring(0, 100) + '...' : e.content
+          }));
+        } catch (e) {
+          console.error('Error parsing elements for template:', row.id, e.message);
+        }
+        
+        return {
+          id: row.id,
+          name: row.name,
+          description: row.description,
+          theme: row.theme,
+          elementCount,
+          elementsPreview,
+          createdAt: row.created_at,
+          updatedAt: row.updated_at
+        };
+      });
       
       res.json({
         success: true,
         count: templates.length,
-        templates
+        templates,
+        message: `Found ${templates.length} templates in database`
       });
     } finally {
       client.release();
@@ -217,14 +239,50 @@ router.get('/:id/preview', async (req, res) => {
       // Use specific template
       try {
         console.log('🎨 [Preview] Loading specific template:', templateId);
+        
+        // Check if template exists first
+        const client = await pool.connect();
+        let templateExists = false;
+        try {
+          const checkResult = await client.query(
+            'SELECT id, name, description FROM enhanced_templates WHERE id = $1',
+            [templateId]
+          );
+          templateExists = checkResult.rows.length > 0;
+          if (templateExists) {
+            console.log('✅ [Preview] Template found in database:', checkResult.rows[0]);
+          } else {
+            console.error('❌ [Preview] Template not found in database:', templateId);
+          }
+        } finally {
+          client.release();
+        }
+        
+        if (!templateExists) {
+          throw new Error(`Template with ID '${templateId}' does not exist in database`);
+        }
+        
         await templateBuilder.loadTemplate(templateId);
         template = templateBuilder.template;
-        console.log('📋 [Preview] Using specific template:', template.name, 'ID:', template.id);
+        console.log('📋 [Preview] Successfully loaded template:', template.name, 'ID:', template.id);
         console.log('🔍 [Preview] Template elements:', template.elements?.length, 'elements');
         console.log('🔍 [Preview] Template description:', template.description);
+        
+        // Verify the loaded template matches what was requested
+        if (template.id !== templateId) {
+          console.error('❌ [Preview] MISMATCH! Requested:', templateId, 'but loaded:', template.id);
+          throw new Error(`Template ID mismatch: requested ${templateId}, got ${template.id}`);
+        }
       } catch (error) {
-        console.warn('⚠️ [Preview] Specific template not found, using default:', error.message);
-        template = await getDefaultTemplate(templateBuilder);
+        console.error('❌ [Preview] Failed to load template:', templateId);
+        console.error('❌ [Preview] Error details:', error.message);
+        
+        return res.status(404).json({
+          success: false,
+          error: 'Template not found',
+          message: `Template '${templateId}' could not be loaded: ${error.message}`,
+          templateId: templateId
+        });
       }
     } else {
       // Use default template
@@ -317,21 +375,61 @@ router.get('/:id/preview/iframe', async (req, res) => {
     if (templateId) {
       try {
         console.log('🎨 [Preview] Loading specific template for iframe:', templateId);
+        
+        // First check if template exists in database
+        const client = await pool.connect();
+        let templateExists = false;
+        try {
+          const checkResult = await client.query(
+            'SELECT id, name, description FROM enhanced_templates WHERE id = $1',
+            [templateId]
+          );
+          templateExists = checkResult.rows.length > 0;
+          if (templateExists) {
+            console.log('✅ [Preview] Template found in database:', checkResult.rows[0]);
+          } else {
+            console.error('❌ [Preview] Template not found in database:', templateId);
+          }
+        } finally {
+          client.release();
+        }
+        
+        if (!templateExists) {
+          throw new Error(`Template with ID '${templateId}' does not exist in database`);
+        }
+        
         await templateBuilder.loadTemplate(templateId);
         template = templateBuilder.template;
-        console.log('📋 [Preview] Using specific template:', template.name, 'ID:', template.id);
+        console.log('📋 [Preview] Successfully loaded template:', template.name, 'ID:', template.id);
         console.log('🔍 [Preview] Template elements:', template.elements?.length, 'elements');
         console.log('🔍 [Preview] Template elements types:', template.elements?.map(e => e.type));
         console.log('🔍 [Preview] Template description:', template.description);
         console.log('🔍 [Preview] Template theme:', template.theme);
+        
+        // Verify the loaded template matches what was requested
+        if (template.id !== templateId) {
+          console.error('❌ [Preview] MISMATCH! Requested:', templateId, 'but loaded:', template.id);
+          throw new Error(`Template ID mismatch: requested ${templateId}, got ${template.id}`);
+        }
+        
         // Log first few elements for debugging
         if (template.elements && template.elements.length > 0) {
           console.log('🔍 [Preview] First element sample:', JSON.stringify(template.elements[0], null, 2));
         }
       } catch (error) {
-        console.warn('⚠️ [Preview] Specific template not found, using default:', error.message);
-        console.error('🔍 [Preview] Template loading error details:', error);
-        template = await getDefaultTemplate(templateBuilder);
+        console.error('❌ [Preview] Failed to load template:', templateId);
+        console.error('❌ [Preview] Error details:', error.message);
+        console.error('❌ [Preview] Error stack:', error.stack);
+        
+        // Return error instead of fallback to avoid confusion
+        return res.status(404).send(`
+          <div style="padding: 40px; text-align: center; font-family: Arial, sans-serif;">
+            <h2 style="color: #dc2626;">Template Not Found</h2>
+            <p>The requested template '${templateId}' could not be loaded.</p>
+            <p style="color: #666; font-size: 0.9em;">Error: ${error.message}</p>
+            <p><a href="javascript:history.back()" style="color: #2563eb;">← Go Back</a></p>
+          </div>
+        `);
       }
     } else {
       console.log('🎨 [Preview] Loading default template for iframe');
