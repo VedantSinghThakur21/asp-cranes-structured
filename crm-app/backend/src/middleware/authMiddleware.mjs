@@ -80,3 +80,45 @@ export const authorizeRoles = (allowedRoles) => {
     return res.status(403).json({ message: 'Insufficient permissions' });
   };
 };
+
+/**
+ * Optional authentication middleware - allows requests without authentication
+ * but still validates tokens when provided
+ */
+export const optionalAuth = (req, res, next) => {
+  // Skip authentication check if we're in development mode with bypass header
+  if (
+    process.env.NODE_ENV === 'development' && 
+    (
+      req.headers['x-bypass-auth'] === 'development-only-123' ||
+      req.headers['x-bypass-auth'] === 'true'
+    )
+  ) {
+    console.log('⚠️ Bypassing authentication in development mode (optional)');
+    req.user = { uid: 'dev-user', email: 'dev@example.com', role: 'admin' };
+    return next();
+  }
+
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  
+  if (!token) {
+    // No token provided, but that's okay for optional auth - just continue without user
+    console.log('ℹ️ No token provided for optional auth endpoint');
+    return next();
+  }
+  
+  // Get JWT_SECRET from environment with fallback for development
+  const jwtSecret = process.env.JWT_SECRET || 'default_jwt_secret_for_development';
+  
+  jwt.verify(token, jwtSecret, (err, user) => {
+    if (err) {
+      console.log('❌ Invalid token in optional auth:', err.message);
+      // For optional auth, we don't fail - just continue without user
+      return next();
+    }
+    
+    req.user = user;
+    next();
+  });
+};
