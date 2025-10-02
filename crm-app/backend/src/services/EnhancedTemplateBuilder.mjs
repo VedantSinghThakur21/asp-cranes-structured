@@ -206,11 +206,38 @@ export class EnhancedTemplateBuilder {
         const parsedSettings = safeParse(templateData.settings, {}, 'settings');
         const parsedBranding = safeParse(templateData.branding, {}, 'branding');
 
+        // Ensure layout has proper default structure
+        const defaultLayout = {
+          margins: {
+            top: 20,
+            right: 20,
+            bottom: 20,
+            left: 20
+          },
+          spacing: {
+            elementGap: 15,
+            sectionGap: 30
+          }
+        };
+        
+        const finalLayout = (parsedLayout && typeof parsedLayout === 'object' && !Array.isArray(parsedLayout)) ? {
+          ...defaultLayout,
+          ...parsedLayout,
+          margins: {
+            ...defaultLayout.margins,
+            ...(parsedLayout.margins || {})
+          },
+          spacing: {
+            ...defaultLayout.spacing,
+            ...(parsedLayout.spacing || {})
+          }
+        } : defaultLayout;
+
         this.template = {
           ...this.template,
             ...templateData,
             elements: Array.isArray(parsedElements) ? parsedElements : [],
-            layout: (parsedLayout && typeof parsedLayout === 'object' && !Array.isArray(parsedLayout)) ? parsedLayout : {},
+            layout: finalLayout,
             settings: (parsedSettings && typeof parsedSettings === 'object' && !Array.isArray(parsedSettings)) ? parsedSettings : {},
             branding: (parsedBranding && typeof parsedBranding === 'object' && !Array.isArray(parsedBranding)) ? parsedBranding : {},
             __meta: {
@@ -1005,8 +1032,8 @@ export class EnhancedTemplateBuilder {
         max-width: 800px;
         margin: ${options.preview ? '20px auto' : '0 auto'};
         background: white;
-        padding: ${this.template.layout.margins.top}px ${this.template.layout.margins.right}px 
-                  ${this.template.layout.margins.bottom}px ${this.template.layout.margins.left}px;
+        padding: ${(this.template.layout?.margins?.top || 20)}px ${(this.template.layout?.margins?.right || 20)}px 
+                  ${(this.template.layout?.margins?.bottom || 20)}px ${(this.template.layout?.margins?.left || 20)}px;
         ${options.preview ? 'box-shadow: 0 2px 10px rgba(0,0,0,0.1);' : ''}
       }
       

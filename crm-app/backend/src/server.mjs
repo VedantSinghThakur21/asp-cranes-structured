@@ -40,6 +40,7 @@ import dbConfigRoutes from './routes/dbConfigRoutes.mjs';
 import enhancedTemplateRoutes from './routes/enhancedTemplateRoutes.mjs';
 import quotationPrintRoutes from './routes/quotationPrintRoutes.mjs';
 import quotationPreviewRoutes from './routes/quotationPreviewRoutes.mjs';
+import templateMaintenanceRoutes from './routes/templateMaintenanceRoutes.mjs';
 
 // Import AI routes for CrewAI integration
 import aiRoutes from './routes/aiRoutes.mjs';
@@ -214,6 +215,11 @@ console.log('✅ Quotation print routes mounted successfully');
 console.log('🔧 Mounting /api/quotations-preview routes...');
 app.use('/api/quotations-preview', quotationPreviewRoutes);
 console.log('✅ Quotation preview routes mounted successfully');
+
+// Mount template maintenance routes
+console.log('🔧 Mounting /api/templates maintenance routes...');
+app.use('/api/templates', templateMaintenanceRoutes);
+console.log('✅ Template maintenance routes mounted successfully');
 
 // Mount database config routes
 app.use('/api/dbconfig', dbConfigRoutes);
