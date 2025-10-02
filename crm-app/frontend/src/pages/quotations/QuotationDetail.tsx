@@ -577,15 +577,27 @@ const QuotationDetail: React.FC = () => {
                   Quotation Preview
                 </h2>
                 <div className="flex items-center space-x-2">
-                  <Button onClick={handlePreview} variant="outline" size="sm">
+                  <Button
+                    onClick={handlePreview}
+                    size="sm"
+                    className={`$${''} ${isPreviewOpen ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-white text-blue-600 border border-blue-600 hover:bg-blue-50'}`}
+                  >
                     <Eye className="h-4 w-4 mr-2" />
                     {isPreviewOpen ? 'Hide Preview' : 'Show Preview'}
                   </Button>
-                  <Button onClick={handlePrint} variant="outline" size="sm">
+                  <Button
+                    onClick={handlePrint}
+                    size="sm"
+                    className="bg-white text-indigo-600 border border-indigo-600 hover:bg-indigo-50"
+                  >
                     <Printer className="h-4 w-4 mr-2" />
                     Print
                   </Button>
-                  <Button onClick={handleDownload} size="sm">
+                  <Button
+                    onClick={handleDownload}
+                    size="sm"
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                  >
                     <Download className="h-4 w-4 mr-2" />
                     Download PDF
                   </Button>
@@ -650,25 +662,23 @@ const QuotationDetail: React.FC = () => {
         <div className="bg-white rounded-lg shadow-sm border p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Button 
+            <Button
               onClick={handlePreview}
-              className="flex items-center justify-center space-x-2"
-              variant={isPreviewOpen ? "default" : "outline"}
+              className={`flex items-center justify-center space-x-2 ${isPreviewOpen ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-white text-blue-600 border border-blue-600 hover:bg-blue-50'}`}
             >
               <Eye className="h-4 w-4" />
               <span>{isPreviewOpen ? 'Hide Preview' : 'Show Preview'}</span>
             </Button>
-            <Button 
+            <Button
               onClick={handlePrint}
-              className="flex items-center justify-center space-x-2"
-              variant="outline"
+              className="flex items-center justify-center space-x-2 bg-white text-indigo-600 border border-indigo-600 hover:bg-indigo-50"
             >
               <Printer className="h-4 w-4" />
               <span>Print</span>
             </Button>
-            <Button 
+            <Button
               onClick={handleDownload}
-              className="flex items-center justify-center space-x-2"
+              className="flex items-center justify-center space-x-2 bg-green-600 hover:bg-green-700 text-white"
             >
               <Download className="h-4 w-4" />
               <span>Download PDF</span>

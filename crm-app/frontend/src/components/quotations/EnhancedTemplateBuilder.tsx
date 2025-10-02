@@ -96,6 +96,8 @@ interface EnhancedTemplateBuilderProps {
   templateId?: string | null;  // Add templateId prop for editing existing templates
   onClose: () => void;
   onSave: (template: Template) => void;
+  autoPreview?: boolean; // when true, builder opens directly in preview mode with sample data
+  readOnly?: boolean;    // when true, hide editing controls (used for manager card preview)
 }
 
 // Enhanced Template Element Types
@@ -1090,7 +1092,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
 };
 
 // Main Enhanced Template Builder Component
-const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quotationId, templateId, onClose, onSave }) => {
+const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quotationId, templateId, onClose, onSave, autoPreview = false, readOnly = false }) => {
   const [template, setTemplate] = useState<Template>({
     id: templateId || null,
     name: 'New Template',
@@ -1775,6 +1777,14 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
     };
   };
 
+  // Auto preview effect
+  useEffect(() => {
+    if (autoPreview && !previewMode) {
+      generatePreview();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoPreview]);
+
   if (previewMode) {
     return (
       <div className="fixed inset-0 bg-white z-50">
@@ -1810,20 +1820,32 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
                 <ZoomIn className="w-5 h-5" />
               </button>
             </div>
-            <button
-              onClick={downloadPDF}
-              disabled={isLoading}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 flex items-center space-x-2"
-            >
-              <Download className="w-4 h-4" />
-              <span>{isLoading ? 'Generating...' : 'Download PDF'}</span>
-            </button>
-            <button
-              onClick={() => setPreviewMode(false)}
-              className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
-            >
-              Back to Editor
-            </button>
+            {!readOnly && (
+              <>
+                <button
+                  onClick={downloadPDF}
+                  disabled={isLoading}
+                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 flex items-center space-x-2"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>{isLoading ? 'Generating...' : 'Download PDF'}</span>
+                </button>
+                <button
+                  onClick={() => setPreviewMode(false)}
+                  className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+                >
+                  Back to Editor
+                </button>
+              </>
+            )}
+            {readOnly && (
+              <button
+                onClick={onClose}
+                className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+              >
+                Close
+              </button>
+            )}
           </div>
         </div>
         <div className="p-8 bg-gray-100 min-h-screen">

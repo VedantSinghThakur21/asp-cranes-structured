@@ -279,10 +279,11 @@ router.get('/sample-data', async (req, res) => {
     let usagePercentage = 0;
     
     if (quotation.riskAdjustment !== undefined && quotation.usageLoadFactor !== undefined) {
-      // Use values directly from the API (already calculated correctly)
-      riskAdjustmentCalculated = quotation.riskAdjustment || 0;
-      usageLoadFactorCalculated = quotation.usageLoadFactor || 0;
-      riskUsageTotalCalculated = quotation.riskUsageTotal || (riskAdjustmentCalculated + usageLoadFactorCalculated);
+      // Use values directly from the API (already calculated correctly) - preserve explicit zeros
+      riskAdjustmentCalculated = quotation.riskAdjustment ?? 0;
+      usageLoadFactorCalculated = quotation.usageLoadFactor ?? 0;
+      const providedRiskUsageTotal = quotation.riskUsageTotal ?? quotation.risk_usage_total;
+      riskUsageTotalCalculated = providedRiskUsageTotal ?? (riskAdjustmentCalculated + usageLoadFactorCalculated);
       
       // Get the equipment monthly base rate for display purposes
       if (quotation.selectedEquipment && quotation.selectedEquipment.baseRates) {
@@ -290,8 +291,8 @@ router.get('/sample-data', async (req, res) => {
       }
       
       // Extract risk and usage types for display
-      riskType = quotation.riskFactor || 'low';
-      usageType = quotation.usage || 'heavy';
+  riskType = quotation.riskFactor ?? quotation.risk_factor ?? 'low';
+  usageType = quotation.usage ?? quotation.usage_type ?? 'heavy';
       
       // Reverse calculate percentages for display (approximation)
       if (monthlyBaseRate > 0) {
@@ -313,10 +314,10 @@ router.get('/sample-data', async (req, res) => {
         monthlyBaseRate = totalMonthlyRate;
       }
       
-      riskType = quotation.riskFactor || 'medium';
-      usageType = quotation.usage || 'normal';
-      riskPercentage = riskFactors[riskType] || 10;
-      usagePercentage = usageFactors[usageType] || 0;
+  riskType = quotation.riskFactor ?? quotation.risk_factor ?? 'medium';
+  usageType = quotation.usage ?? quotation.usage_type ?? 'normal';
+  riskPercentage = riskFactors[riskType] ?? 10;
+  usagePercentage = usageFactors[usageType] ?? 0;
       
       riskAdjustmentCalculated = Math.round(monthlyBaseRate * (riskPercentage / 100));
       usageLoadFactorCalculated = Math.round(monthlyBaseRate * (usagePercentage / 100));
