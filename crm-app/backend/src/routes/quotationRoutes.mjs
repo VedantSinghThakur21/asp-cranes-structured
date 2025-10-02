@@ -956,30 +956,51 @@ router.put('/:id', async (req, res) => {
       customerName, // Handle camelCase from frontend
       customer_contact,
       machine_type,
+      machineType, // Handle camelCase from frontend
       order_type,
+      orderType, // Handle camelCase from frontend
       number_of_days,
+      numberOfDays, // Handle camelCase from frontend
       working_hours,
+      workingHours, // Handle camelCase from frontend
       site_distance,
+      siteDistance, // Handle camelCase from frontend
       usage,
       risk_factor,
+      riskFactor, // Handle camelCase from frontend
       shift,
       day_night,
+      dayNight, // Handle camelCase from frontend
       food_resources,
+      foodResources, // Handle camelCase from frontend
       accom_resources,
+      accomResources, // Handle camelCase from frontend
       mob_demob,
+      mobDemob, // Handle camelCase from frontend
       mob_relaxation,
+      mobRelaxation, // Handle camelCase from frontend
       extra_charge,
+      extraCharge, // Handle camelCase from frontend
       other_factors_charge,
+      otherFactorsCharge, // Handle camelCase from frontend
       working_cost,
+      workingCost, // Handle camelCase from frontend
       mob_demob_cost,
+      mobDemobCost, // Handle camelCase from frontend
       food_accom_cost,
+      foodAccomCost, // Handle camelCase from frontend
       risk_adjustment,
+      riskAdjustment, // Handle camelCase from frontend
       usage_load_factor,
+      usageLoadFactor, // Handle camelCase from frontend
       riskUsageTotal,
       calculations,
       gst_amount,
+      gstAmount, // Handle camelCase from frontend
       total_rent,
+      totalRent, // Handle camelCase from frontend
       total_cost,
+      totalCost, // Handle camelCase from frontend
       notes,
       status,
       selectedMachines,
@@ -987,7 +1008,9 @@ router.put('/:id', async (req, res) => {
       otherFactors,
       // Fields that will be added to database schema
       primary_equipment_id,
+      primaryEquipmentId, // Handle camelCase from frontend
       equipment_snapshot,
+      equipmentSnapshot, // Handle camelCase from frontend
       incident1,
       incident2,
       incident3,
@@ -995,7 +1018,9 @@ router.put('/:id', async (req, res) => {
       helperAmount,
       billing,
       include_gst,
-      sunday_working
+      includeGst, // Handle camelCase from frontend
+      sunday_working,
+      sundayWorking // Handle camelCase from frontend
     } = req.body;
 
     // Parse incidentalCharges if it comes as a string
@@ -1024,9 +1049,43 @@ router.put('/:id', async (req, res) => {
     const rigger_amount_mapped = riggerAmount;
     const helper_amount_mapped = helperAmount;
 
+    // Get existing quotation to preserve required fields if not provided
     const client = await pool.connect();
     
     try {
+      // First, get the existing quotation to preserve required fields
+      const existingResult = await client.query('SELECT * FROM quotations WHERE id = $1', [id]);
+      if (existingResult.rows.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: 'Quotation not found'
+        });
+      }
+      
+      const existing = existingResult.rows[0];
+      
+      console.log('🔧 UPDATE DEBUG: Request body keys:', Object.keys(req.body));
+      console.log('🔧 UPDATE DEBUG: machine_type fields:', { 
+        machine_type, 
+        machineType, 
+        existing_machine_type: existing.machine_type 
+      });
+      
+      // Map camelCase to snake_case with fallbacks to existing values for required fields
+      const mappedCustomerName = customer_name || customerName || existing.customer_name;
+      const mappedMachineType = machine_type || machineType || existing.machine_type;
+      const mappedOrderType = order_type || orderType || existing.order_type;
+      const mappedNumberOfDays = number_of_days || numberOfDays || existing.number_of_days;
+      const mappedWorkingHours = working_hours || workingHours || existing.working_hours;
+      
+      // Validate required fields
+      if (!mappedMachineType) {
+        return res.status(400).json({
+          success: false,
+          message: 'machine_type is required and cannot be null'
+        });
+      }
+      
       // Update the main quotation record
       const result = await client.query(`
         UPDATE quotations 
@@ -1075,46 +1134,46 @@ router.put('/:id', async (req, res) => {
         WHERE id = $41
         RETURNING *
       `, [
-        customer_name || customerName, // Use either snake_case or camelCase
-        JSON.stringify(customer_contact),
-        machine_type,
-        order_type,
-        number_of_days,
-        working_hours,
-        site_distance,
-        usage,
-        risk_factor,
-        shift,
-        day_night,
-        food_resources,
-        accom_resources,
-        mob_demob,
-        mob_relaxation,
-        extra_charge,
-        other_factors_charge,
-        working_cost,
-        mob_demob_cost,
-        food_accom_cost,
-        risk_adjustment,
-        usage_load_factor,
-        riskUsageTotal || calculations?.riskUsageTotal,
-        gst_amount,
-        total_rent,
-        total_cost,
-        notes,
-        status || 'draft',
-        parsedIncidentalCharges || [],
-        parsedOtherFactors || [],
-        billing,
-        include_gst,
-        sunday_working,
-        primary_equipment_id,
-        JSON.stringify(equipment_snapshot),
-        extractIncidentAmount(req.body, 'incident1') || incident1,
-        extractIncidentAmount(req.body, 'incident2') || incident2,
-        extractIncidentAmount(req.body, 'incident3') || incident3,
-        extractOtherFactorsAmount(req.body, 'rigger') || rigger_amount_mapped,
-        extractOtherFactorsAmount(req.body, 'helper') || helper_amount_mapped,
+        mappedCustomerName, // Use mapped value with fallback
+        customer_contact ? JSON.stringify(customer_contact) : existing.customer_contact,
+        mappedMachineType, // Use mapped value with fallback
+        mappedOrderType || existing.order_type, // Use mapped value with fallback
+        mappedNumberOfDays, // Use mapped value with fallback
+        mappedWorkingHours, // Use mapped value with fallback
+        site_distance || siteDistance || existing.site_distance,
+        usage || existing.usage,
+        risk_factor || riskFactor || existing.risk_factor,
+        shift || existing.shift,
+        day_night || dayNight || existing.day_night,
+        food_resources !== undefined ? food_resources : (foodResources !== undefined ? foodResources : existing.food_resources),
+        accom_resources !== undefined ? accom_resources : (accomResources !== undefined ? accomResources : existing.accom_resources),
+        mob_demob !== undefined ? mob_demob : (mobDemob !== undefined ? mobDemob : existing.mob_demob),
+        mob_relaxation !== undefined ? mob_relaxation : (mobRelaxation !== undefined ? mobRelaxation : existing.mob_relaxation),
+        extra_charge !== undefined ? extra_charge : (extraCharge !== undefined ? extraCharge : existing.extra_charge),
+        other_factors_charge !== undefined ? other_factors_charge : (otherFactorsCharge !== undefined ? otherFactorsCharge : existing.other_factors_charge),
+        working_cost !== undefined ? working_cost : (workingCost !== undefined ? workingCost : existing.working_cost),
+        mob_demob_cost !== undefined ? mob_demob_cost : (mobDemobCost !== undefined ? mobDemobCost : existing.mob_demob_cost),
+        food_accom_cost !== undefined ? food_accom_cost : (foodAccomCost !== undefined ? foodAccomCost : existing.food_accom_cost),
+        risk_adjustment !== undefined ? risk_adjustment : (riskAdjustment !== undefined ? riskAdjustment : existing.risk_adjustment),
+        usage_load_factor !== undefined ? usage_load_factor : (usageLoadFactor !== undefined ? usageLoadFactor : existing.usage_load_factor),
+        riskUsageTotal !== undefined ? riskUsageTotal : (calculations?.riskUsageTotal !== undefined ? calculations.riskUsageTotal : existing.risk_usage_total),
+        gst_amount !== undefined ? gst_amount : (gstAmount !== undefined ? gstAmount : existing.gst_amount),
+        total_rent !== undefined ? total_rent : (totalRent !== undefined ? totalRent : existing.total_rent),
+        total_cost !== undefined ? total_cost : (totalCost !== undefined ? totalCost : existing.total_cost),
+        notes !== undefined ? notes : existing.notes,
+        status || existing.status,
+        parsedIncidentalCharges !== undefined ? parsedIncidentalCharges : existing.incidental_charges,
+        parsedOtherFactors !== undefined ? parsedOtherFactors : existing.other_factors,
+        billing || existing.billing,
+        include_gst !== undefined ? include_gst : (includeGst !== undefined ? includeGst : existing.include_gst),
+        sunday_working !== undefined ? sunday_working : (sundayWorking !== undefined ? sundayWorking : existing.sunday_working),
+        primary_equipment_id || primaryEquipmentId || existing.primary_equipment_id,
+        equipment_snapshot ? JSON.stringify(equipment_snapshot) : (equipmentSnapshot ? JSON.stringify(equipmentSnapshot) : existing.equipment_snapshot),
+        extractIncidentAmount(req.body, 'incident1') !== null ? extractIncidentAmount(req.body, 'incident1') : (incident1 !== undefined ? incident1 : existing.incident1),
+        extractIncidentAmount(req.body, 'incident2') !== null ? extractIncidentAmount(req.body, 'incident2') : (incident2 !== undefined ? incident2 : existing.incident2),
+        extractIncidentAmount(req.body, 'incident3') !== null ? extractIncidentAmount(req.body, 'incident3') : (incident3 !== undefined ? incident3 : existing.incident3),
+        extractOtherFactorsAmount(req.body, 'rigger') !== null ? extractOtherFactorsAmount(req.body, 'rigger') : (rigger_amount_mapped !== undefined ? rigger_amount_mapped : existing.rigger_amount),
+        extractOtherFactorsAmount(req.body, 'helper') !== null ? extractOtherFactorsAmount(req.body, 'helper') : (helper_amount_mapped !== undefined ? helper_amount_mapped : existing.helper_amount),
         id
       ]);
       
