@@ -447,15 +447,28 @@ router.get('/:id/preview/iframe', async (req, res) => {
     });
     
     const html = templateBuilder.generatePreviewHTML(previewData);
-    const debugInfo = `<!-- TEMPLATE_DEBUG: ID=${template.id} NAME="${template.name}" DESCRIPTION="${template.description || 'No description'}" ELEMENTS=${template.elements?.length || 0} THEME=${template.theme || 'MODERN'} GENERATED=${new Date().toISOString()} REQUESTED_ID=${templateId || 'default'} -->`;
-    const augmentedHtml = debugInfo + '\n' + html;
+    const meta = templateBuilder.template?.__meta || {};
+    const debugInfo = `<!-- TEMPLATE_DEBUG: ID=${template.id} NAME="${template.name}" DESCRIPTION="${template.description || 'No description'}" ELEMENTS=${template.elements?.length || 0} THEME=${template.theme || 'MODERN'} GENERATED=${new Date().toISOString()} REQUESTED_ID=${templateId || 'default'} DEGRADED=${meta.degraded ? 'true' : 'false'} -->`;
+    let augmentedHtml = debugInfo + '\n' + html;
+    if (meta.degraded) {
+      augmentedHtml = `<!-- DEGRADED_TEMPLATE columns=${(meta.degradedColumns||[]).map(c=>c.column).join(',')} -->\n` + augmentedHtml;
+    }
     console.log('✅ [Preview] HTML generated for iframe, length:', html.length);
     console.log('🔍 [Preview] Debug info added to HTML:', debugInfo);
 
+    // Generate weak ETag to allow conditional GET caching
+    const etagSeed = `${template.id || 'default'}:${template.updated_at || template.updatedAt || 'na'}:${meta.degraded ? 'D' : 'OK'}`;
+    const etag = 'W/"' + Buffer.from(etagSeed).toString('base64').substring(0,32) + '"';
+    res.setHeader('ETag', etag);
     res.setHeader('Content-Type', 'text/html');
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
+
+    if (req.headers['if-none-match'] === etag) {
+      return res.status(304).end();
+    }
+
     res.send(augmentedHtml);
 
   } catch (error) {

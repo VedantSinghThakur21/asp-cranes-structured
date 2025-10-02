@@ -147,9 +147,14 @@ const QuotationDetail: React.FC = () => {
           // Then load the template after a brief delay
           setTimeout(() => {
             if (previewFrameRef.current) {
-              const templateParam = selectedTemplate !== 'default' ? `?templateId=${selectedTemplate}` : '';
-              const cacheBuster = `?t=${Date.now()}`;
-              const iframeSrc = `/api/quotations-preview/${quotation.id}/preview/iframe${templateParam}${templateParam ? '&' : ''}${cacheBuster}`;
+              // Build iframe src with correct query delimiter logic
+              const base = `/api/quotations-preview/${quotation.id}/preview/iframe`;
+              const params = new URLSearchParams();
+              if (selectedTemplate && selectedTemplate !== 'default') {
+                params.set('templateId', selectedTemplate);
+              }
+              params.set('t', Date.now().toString()); // cache buster
+              const iframeSrc = `${base}?${params.toString()}`;
               console.log('🎨 Setting iframe src:', iframeSrc);
               previewFrameRef.current.src = iframeSrc;
             }
@@ -179,9 +184,11 @@ const QuotationDetail: React.FC = () => {
       // Small delay to ensure clearing happens, then load new template
       setTimeout(() => {
         if (previewFrameRef.current) {
-          const templateParam = templateId !== 'default' ? `?templateId=${templateId}` : '';
-          const cacheBuster = `${templateParam ? '&' : '?'}t=${Date.now()}`;
-          const newSrc = `/api/quotations-preview/${quotation.id}/preview/iframe${templateParam}${cacheBuster}`;
+          const base = `/api/quotations-preview/${quotation.id}/preview/iframe`;
+          const params = new URLSearchParams();
+          if (templateId && templateId !== 'default') params.set('templateId', templateId);
+          params.set('t', Date.now().toString());
+          const newSrc = `${base}?${params.toString()}`;
           console.log('🎨 Loading new template URL:', newSrc);
           previewFrameRef.current.src = newSrc;
           
@@ -195,8 +202,10 @@ const QuotationDetail: React.FC = () => {
   const handlePrint = () => {
     if (id) {
       // Open the iframe preview route in a new tab for printing with selected template
-      const templateParam = selectedTemplate && selectedTemplate !== 'default' ? `?templateId=${selectedTemplate}` : '';
-      window.open(`/api/quotations-preview/${id}/preview/iframe${templateParam}`, '_blank');
+      const base = `/api/quotations-preview/${id}/preview/iframe`;
+      const params = new URLSearchParams();
+      if (selectedTemplate && selectedTemplate !== 'default') params.set('templateId', selectedTemplate);
+      window.open(`${base}?${params.toString()}`, '_blank');
     }
   };
 

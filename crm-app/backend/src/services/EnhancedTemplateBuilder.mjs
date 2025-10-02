@@ -169,14 +169,60 @@ export class EnhancedTemplateBuilder {
         }
 
         const templateData = result.rows[0];
+
+        // Safe parsing helper – prevents a single bad column from breaking load
+        const degradedColumns = [];
+        const safeParse = (raw, fallback, column) => {
+          try {
+            if (raw == null) return fallback;
+            // If already an object/array just return it
+            if (typeof raw === 'object') return raw;
+            if (typeof raw === 'string') {
+              const trimmed = raw.trim();
+              if (!trimmed) return fallback;
+              // Guard against common corruption pattern "[object Object]"
+              if (trimmed === '[object Object]') throw new Error('Corrupted value: [object Object]');
+              const firstChar = trimmed[0];
+              if (firstChar === '{' || firstChar === '[') {
+                return JSON.parse(trimmed);
+              } else {
+                // Attempt lenient fix: sometimes double-stringified JSON (quoted JSON string)
+                if ((trimmed.startsWith('"{') && trimmed.endsWith('}"')) || (trimmed.startsWith('"[') && trimmed.endsWith(']"'))) {
+                  const unwrapped = trimmed.slice(1, -1).replace(/\\"/g, '"');
+                  return JSON.parse(unwrapped);
+                }
+                throw new Error('Unexpected non-JSON string');
+              }
+            }
+            return fallback;
+          } catch (e) {
+            degradedColumns.push({ column, reason: e.message, sample: (typeof raw === 'string') ? raw.substring(0, 80) : typeof raw });
+            return fallback;
+          }
+        };
+
+        const parsedElements = safeParse(templateData.elements, [], 'elements');
+        const parsedLayout = safeParse(templateData.layout, {}, 'layout');
+        const parsedSettings = safeParse(templateData.settings, {}, 'settings');
+        const parsedBranding = safeParse(templateData.branding, {}, 'branding');
+
         this.template = {
           ...this.template,
-          ...templateData,
-          elements: JSON.parse(templateData.elements || '[]'),
-          layout: JSON.parse(templateData.layout || '{}'),
-          settings: JSON.parse(templateData.settings || '{}'),
-          branding: JSON.parse(templateData.branding || '{}')
+            ...templateData,
+            elements: Array.isArray(parsedElements) ? parsedElements : [],
+            layout: (parsedLayout && typeof parsedLayout === 'object' && !Array.isArray(parsedLayout)) ? parsedLayout : {},
+            settings: (parsedSettings && typeof parsedSettings === 'object' && !Array.isArray(parsedSettings)) ? parsedSettings : {},
+            branding: (parsedBranding && typeof parsedBranding === 'object' && !Array.isArray(parsedBranding)) ? parsedBranding : {},
+            __meta: {
+              degraded: degradedColumns.length > 0,
+              degradedColumns,
+              loadedAt: new Date().toISOString()
+            }
         };
+
+        if (degradedColumns.length) {
+          console.warn(`⚠️ Template ${templateId} loaded in DEGRADED mode – problematic columns:`, degradedColumns);
+        }
 
         return this;
       } finally {
