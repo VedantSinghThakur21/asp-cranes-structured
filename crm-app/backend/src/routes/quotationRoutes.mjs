@@ -33,20 +33,22 @@ const router = express.Router();
 
 // Helper functions to extract incident and custom amounts from frontend data structure
 function extractIncidentAmount(quotationData, incidentKey) {
-  // New simplified logic: only trust explicit values sent from frontend.
-  // Frontend is now responsible for sending the APPLIED amount (custom OR config default) in incident1/2/3 fields.
-  // No hardcoded fallbacks here.
+  // Frontend now sends resolved amounts (custom OR config default) in incident1/2/3 fields.
   const explicitField = quotationData[incidentKey];
   const selected = quotationData.incidentalCharges?.includes(incidentKey);
-  console.log(`🔍 Extracting ${incidentKey} (no hardcoded defaults):`, {
+  console.log(`🔍 Extracting ${incidentKey}:`, {
     selected,
     explicitField,
     type: typeof explicitField,
     customIncidentAmounts: quotationData.customIncidentAmounts
   });
-  if (!selected) return null;
-  if (explicitField === 0) return 0;
-  if (explicitField === null || explicitField === undefined || explicitField === '') return null;
+  
+  if (!selected) return null; // not selected -> null
+  if (explicitField === 0) return 0; // explicitly 0 -> save 0
+  if (explicitField === null || explicitField === undefined || explicitField === '') {
+    console.log(`⚠️ ${incidentKey} selected but no amount provided from frontend - this shouldn't happen with new logic`);
+    return null;
+  }
   const num = Number(explicitField);
   return isNaN(num) ? null : num;
 }
@@ -56,14 +58,18 @@ function extractCustomAmount(quotationData, amountKey) {
 }
 
 function extractOtherFactorsAmount(quotationData, factorKey) {
-  // Trust supplied values; no hardcoded defaults. If selected but value missing => null (so UI/config must supply it explicitly)
+  // Trust supplied values from frontend. Frontend now sends the resolved amount (custom OR config default).
   const selected = quotationData.otherFactors?.includes(factorKey);
   const explicit = factorKey === 'rigger' ? (quotationData.riggerAmount ?? quotationData.customRiggerAmount) : (quotationData.helperAmount ?? quotationData.customHelperAmount);
-  console.log(`🔍 extractOtherFactorsAmount (no hardcoded) ${factorKey}:`, { selected, explicit, type: typeof explicit });
-  if (!selected) return 0; // not selected -> zero cost contribution
-  if (explicit === null || explicit === undefined || explicit === '') return 0; // treat missing as zero (not defaulting to magic number)
+  console.log(`🔍 extractOtherFactorsAmount ${factorKey}:`, { selected, explicit, type: typeof explicit });
+  
+  if (!selected) return null; // not selected -> null (no contribution)
+  if (explicit === null || explicit === undefined || explicit === '') {
+    console.log(`⚠️ ${factorKey} selected but no amount provided from frontend - this shouldn't happen with new logic`);
+    return null;
+  }
   const num = Number(explicit);
-  return isNaN(num) ? 0 : num;
+  return isNaN(num) ? null : num;
 }
 
 // Optional auth for selected endpoints: allows bypass header regardless of NODE_ENV

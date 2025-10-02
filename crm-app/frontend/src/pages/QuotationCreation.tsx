@@ -431,14 +431,14 @@ export function QuotationCreation() {
               address: dealData?.customer?.address || '',
               designation: dealData?.customer?.designation || ''
             },
-            // Load custom amounts from database fields with proper conversion
+            // Load custom amounts from database - preserve as custom only if different from config default
             customIncidentAmounts: {
-              incident1: quotationToLoad.incident1 ? Number(quotationToLoad.incident1) : null,
-              incident2: quotationToLoad.incident2 ? Number(quotationToLoad.incident2) : null,
-              incident3: quotationToLoad.incident3 ? Number(quotationToLoad.incident3) : null,
+              incident1: quotationToLoad.incident1 && Number(quotationToLoad.incident1) > 0 ? Number(quotationToLoad.incident1) : null,
+              incident2: quotationToLoad.incident2 && Number(quotationToLoad.incident2) > 0 ? Number(quotationToLoad.incident2) : null,
+              incident3: quotationToLoad.incident3 && Number(quotationToLoad.incident3) > 0 ? Number(quotationToLoad.incident3) : null,
             },
-            customRiggerAmount: quotationToLoad.riggerAmount ? Number(quotationToLoad.riggerAmount) : null,
-            customHelperAmount: quotationToLoad.helperAmount ? Number(quotationToLoad.helperAmount) : null,
+            customRiggerAmount: quotationToLoad.riggerAmount && Number(quotationToLoad.riggerAmount) > 0 ? Number(quotationToLoad.riggerAmount) : null,
+            customHelperAmount: quotationToLoad.helperAmount && Number(quotationToLoad.helperAmount) > 0 ? Number(quotationToLoad.helperAmount) : null,
             // Load date fields
             startDate: quotationToLoad.startDate || null,
             endDate: quotationToLoad.endDate || null,
@@ -927,9 +927,14 @@ export function QuotationCreation() {
       return total + (monthlyRate * machine.quantity);
     }, 0);
 
-    // Get individual Risk and Usage factors from configuration
-    const riskFactors = additionalParams?.riskFactors || { low: 0, medium: 10, high: 20 };
-    const usageFactors = additionalParams?.usageFactors || { normal: 0, medium: 20, heavy: 50 };
+    // Get individual Risk and Usage factors from configuration - NO hardcoded defaults
+    const riskFactors = additionalParams?.riskFactors || {};
+    const usageFactors = additionalParams?.usageFactors || {};
+    
+    // Warn if config not loaded
+    if (!additionalParams?.riskFactors || !additionalParams?.usageFactors) {
+      console.warn('⚠️ Risk/Usage factors not loaded from config! Risk & Usage calculation will be 0.');
+    }
     
     // Use the ACTUAL selected risk and usage values from the form
     const selectedRiskType = formData.riskFactor || 'low'; // Use actual form value
@@ -963,24 +968,56 @@ export function QuotationCreation() {
     // Additional charges
     const extraCharges = Number(formData.extraCharge) || 0;
     
-    // Incidental charges - use custom amounts if provided, otherwise use config
+    // Incidental charges - use custom amounts or config defaults, NO hardcoded fallbacks
+    console.log("🔧 Config Debug - additionalParams loaded:", {
+      hasAdditionalParams: !!additionalParams,
+      incidentalOptions: additionalParams?.incidentalOptions,
+      riggerAmount: additionalParams?.riggerAmount,
+      helperAmount: additionalParams?.helperAmount,
+      riskFactors: additionalParams?.riskFactors,
+      usageFactors: additionalParams?.usageFactors,
+      configSource: 'DATABASE_CONFIG_TABLE'
+    });
+    
+    // CRITICAL: Validate all config is loaded from database
+    const missingConfig = [];
+    if (!additionalParams?.riggerAmount) missingConfig.push('riggerAmount');
+    if (!additionalParams?.helperAmount) missingConfig.push('helperAmount');
+    if (!additionalParams?.incidentalOptions?.length) missingConfig.push('incidentalOptions');
+    if (!additionalParams?.riskFactors) missingConfig.push('riskFactors');
+    if (!additionalParams?.usageFactors) missingConfig.push('usageFactors');
+    
+    if (missingConfig.length > 0) {
+      console.error('❌ MISSING CONFIG VALUES from database:', missingConfig);
+      console.error('⚠️ Some calculations will use 0 instead of proper config defaults!');
+    } else {
+      console.log('✅ All config values successfully loaded from database config table');
+    }
+    
     const incidentalTotal = formData.incidentalCharges.reduce((sum, val) => {
       let amount = 0;
       
       // Use custom amount if provided, otherwise use config default
       if (val === 'incident1') {
-        amount = formData.customIncidentAmounts?.incident1 ?? 
-                additionalParams?.incidentalOptions?.find(opt => opt.value === 'incident1')?.amount ?? 5000;
+        const custom = formData.customIncidentAmounts?.incident1;
+        const config = additionalParams?.incidentalOptions?.find(opt => opt.value === 'incident1')?.amount;
+        amount = custom ?? config ?? 0;
+        console.log(`💰 Incident1 amount resolution: custom=${custom}, config=${config}, final=${amount}`);
       } else if (val === 'incident2') {
-        amount = formData.customIncidentAmounts?.incident2 ?? 
-                additionalParams?.incidentalOptions?.find(opt => opt.value === 'incident2')?.amount ?? 10000;
+        const custom = formData.customIncidentAmounts?.incident2;
+        const config = additionalParams?.incidentalOptions?.find(opt => opt.value === 'incident2')?.amount;
+        amount = custom ?? config ?? 0;
+        console.log(`💰 Incident2 amount resolution: custom=${custom}, config=${config}, final=${amount}`);
       } else if (val === 'incident3') {
-        amount = formData.customIncidentAmounts?.incident3 ?? 
-                additionalParams?.incidentalOptions?.find(opt => opt.value === 'incident3')?.amount ?? 15000;
+        const custom = formData.customIncidentAmounts?.incident3;
+        const config = additionalParams?.incidentalOptions?.find(opt => opt.value === 'incident3')?.amount;
+        amount = custom ?? config ?? 0;
+        console.log(`💰 Incident3 amount resolution: custom=${custom}, config=${config}, final=${amount}`);
       } else {
-        // Fallback for any other incident types
+        // Only use config, no hardcoded fallback
         const found = additionalParams?.incidentalOptions?.find(opt => opt.value === val);
         amount = found ? found.amount : 0;
+        console.log(`💰 Other incident ${val} amount resolution: config=${found?.amount}, final=${amount}`);
       }
       
       return sum + amount;
@@ -992,8 +1029,28 @@ export function QuotationCreation() {
       incidentalTotal
     });
 
-    const riggerAmount = formData.customRiggerAmount ?? additionalParams?.riggerAmount ?? 40000;
-    const helperAmount = formData.customHelperAmount ?? additionalParams?.helperAmount ?? 12000;
+    // Only use custom amounts or config table values - NO hardcoded defaults
+    const riggerAmount = formData.customRiggerAmount ?? additionalParams?.riggerAmount ?? 0;
+    const helperAmount = formData.customHelperAmount ?? additionalParams?.helperAmount ?? 0;
+    
+    // Warn if config not available when needed
+    if (formData.otherFactors.includes('rigger') && !formData.customRiggerAmount && !additionalParams?.riggerAmount) {
+      console.warn('⚠️ Rigger selected but no config value available! Using ₹0.');
+    }
+    if (formData.otherFactors.includes('helper') && !formData.customHelperAmount && !additionalParams?.helperAmount) {
+      console.warn('⚠️ Helper selected but no config value available! Using ₹0.');
+    }
+    
+    console.log("👷 Rigger/Helper amount resolution:", {
+      customRiggerAmount: formData.customRiggerAmount,
+      configRiggerAmount: additionalParams?.riggerAmount,
+      finalRiggerAmount: riggerAmount,
+      customHelperAmount: formData.customHelperAmount,
+      configHelperAmount: additionalParams?.helperAmount,
+      finalHelperAmount: helperAmount,
+      riggerSelected: formData.otherFactors.includes('rigger'),
+      helperSelected: formData.otherFactors.includes('helper')
+    });
     
     const otherFactorsTotal = (formData.otherFactors.includes('rigger') ? riggerAmount : 0) + 
                             (formData.otherFactors.includes('helper') ? helperAmount : 0);
@@ -1112,6 +1169,77 @@ export function QuotationCreation() {
         helperSelected: formData.otherFactors.includes('helper')
       });
 
+      // Calculate the exact amounts that will be sent to backend
+      // Only use config table values as defaults - NO hardcoded fallbacks
+      const incident1Amount = formData.incidentalCharges.includes('incident1') ? 
+        (formData.customIncidentAmounts?.incident1 ?? additionalParams?.incidentalOptions?.find(opt => opt.value === 'incident1')?.amount ?? 0) : null;
+      const incident2Amount = formData.incidentalCharges.includes('incident2') ? 
+        (formData.customIncidentAmounts?.incident2 ?? additionalParams?.incidentalOptions?.find(opt => opt.value === 'incident2')?.amount ?? 0) : null;
+      const incident3Amount = formData.incidentalCharges.includes('incident3') ? 
+        (formData.customIncidentAmounts?.incident3 ?? additionalParams?.incidentalOptions?.find(opt => opt.value === 'incident3')?.amount ?? 0) : null;
+        
+      // Log incident amount sources for validation
+      (['incident1', 'incident2', 'incident3'] as const).forEach((incident, index) => {
+        if (formData.incidentalCharges.includes(incident)) {
+          const customAmount = formData.customIncidentAmounts?.[incident];
+          const configAmount = additionalParams?.incidentalOptions?.find(opt => opt.value === incident)?.amount;
+          const finalAmount = [incident1Amount, incident2Amount, incident3Amount][index];
+          console.log(`🔍 ${incident} amount source:`, {
+            customAmount,
+            configTableAmount: configAmount,
+            finalAmount,
+            source: customAmount ? 'CUSTOM' : (configAmount ? 'CONFIG_TABLE' : 'MISSING_CONFIG')
+          });
+        }
+      });
+      // Only send config table values as defaults - NO hardcoded fallbacks
+      const riggerAmountToSend = formData.otherFactors.includes('rigger') ? 
+        (formData.customRiggerAmount ?? additionalParams?.riggerAmount ?? 0) : null;
+      const helperAmountToSend = formData.otherFactors.includes('helper') ? 
+        (formData.customHelperAmount ?? additionalParams?.helperAmount ?? 0) : null;
+        
+      // Log config source validation
+      if (formData.otherFactors.includes('rigger')) {
+        console.log('🔍 Rigger amount source:', {
+          customAmount: formData.customRiggerAmount,
+          configTableAmount: additionalParams?.riggerAmount,
+          finalAmount: riggerAmountToSend,
+          source: formData.customRiggerAmount ? 'CUSTOM' : (additionalParams?.riggerAmount ? 'CONFIG_TABLE' : 'MISSING_CONFIG')
+        });
+      }
+      if (formData.otherFactors.includes('helper')) {
+        console.log('🔍 Helper amount source:', {
+          customAmount: formData.customHelperAmount,
+          configTableAmount: additionalParams?.helperAmount,
+          finalAmount: helperAmountToSend,
+          source: formData.customHelperAmount ? 'CUSTOM' : (additionalParams?.helperAmount ? 'CONFIG_TABLE' : 'MISSING_CONFIG')
+        });
+      }
+
+      console.log('🚀 SUBMISSION DEBUG - Exact amounts being sent to backend:', {
+        incidentChargesSelected: formData.incidentalCharges,
+        otherFactorsSelected: formData.otherFactors,
+        incident1Amount,
+        incident2Amount,
+        incident3Amount,
+        riggerAmountToSend,
+        helperAmountToSend,
+        customAmounts: {
+          rigger: formData.customRiggerAmount,
+          helper: formData.customHelperAmount,
+          incident1: formData.customIncidentAmounts?.incident1,
+          incident2: formData.customIncidentAmounts?.incident2,
+          incident3: formData.customIncidentAmounts?.incident3
+        },
+        configAmounts: {
+          rigger: additionalParams?.riggerAmount,
+          helper: additionalParams?.helperAmount,
+          incident1: additionalParams?.incidentalOptions?.find(opt => opt.value === 'incident1')?.amount,
+          incident2: additionalParams?.incidentalOptions?.find(opt => opt.value === 'incident2')?.amount,
+          incident3: additionalParams?.incidentalOptions?.find(opt => opt.value === 'incident3')?.amount
+        }
+      });
+
       const quotationData = {
         ...formData,  // Use EXACT form data without overrides
         dealId: currentDealId,
@@ -1140,13 +1268,13 @@ export function QuotationCreation() {
         // Equipment information for database storage
         primaryEquipmentId: formData.selectedEquipment?.equipmentId || formData.selectedEquipment?.id || null,
         equipmentSnapshot: formData.selectedEquipment || null,
-        // Custom per-quotation amounts (will be stored in database fields)
-        incident1: formData.customIncidentAmounts?.incident1?.toString() || null,
-        incident2: formData.customIncidentAmounts?.incident2?.toString() || null,
-        incident3: formData.customIncidentAmounts?.incident3?.toString() || null,
-        riggerAmount: formData.customRiggerAmount || null,
-        helperAmount: formData.customHelperAmount || null,
-        // Also send for backwards compatibility
+        // Send the APPLIED amounts (what's actually being used in calculations)
+        incident1: incident1Amount,
+        incident2: incident2Amount,
+        incident3: incident3Amount,
+        riggerAmount: riggerAmountToSend,
+        helperAmount: helperAmountToSend,
+        // Also send custom amounts for reference
         customRiggerAmount: formData.customRiggerAmount || null,
         customHelperAmount: formData.customHelperAmount || null
       };
