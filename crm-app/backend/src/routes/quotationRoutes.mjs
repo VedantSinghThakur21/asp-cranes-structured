@@ -597,7 +597,10 @@ router.post('/', authenticateToken, async (req, res) => {
         'Day Shift': 'single',
         'Night Shift': 'single',
         'Double Shift': 'double',
-        'Round the Clock': 'double'
+        'Round the Clock': 'double',
+        // Direct mappings for frontend values
+        'single': 'single',
+        'double': 'double'
       };
       
       const riskMapping = {
@@ -679,7 +682,9 @@ router.post('/', authenticateToken, async (req, res) => {
         originalAccomResources: quotationData.accomResources,
         mappedAccomResources,
         numberOfDays: quotationData.numberOfDays,
-        orderTypeMapping: orderTypeMapping
+        originalShift: quotationData.shift,
+        mappedShift: shiftMapping[quotationData.shift] || 'single',
+        shiftMapping: shiftMapping
       });
       
       // Test specific case
@@ -725,18 +730,18 @@ router.post('/', authenticateToken, async (req, res) => {
         quotationData.customerName,
         quotationData.machineType,
         mappedOrderType,
-        quotationData.numberOfDays,
-        quotationData.workingHours,
+        quotationData.numberOfDays || 1,
+        quotationData.workingHours || 8,
         mappedFoodResources,
         mappedAccomResources,
-        Number(quotationData.siteDistance),
-        quotationData.usage,
-        mappedRiskFactor,
-        shiftMapping[quotationData.shift],
+        Number(quotationData.siteDistance) || 0,
+        quotationData.usage || 'normal',
+        mappedRiskFactor || 'low',
+        shiftMapping[quotationData.shift] || 'single',
         'day', // day_night (will be enhanced later)
-        quotationData.mobDemob || quotationData.calculations?.mobDemob, // mob_demob - use frontend value
-        quotationData.mobRelaxation || quotationData.calculations?.mobRelaxation, // mob_relaxation
-        quotationData.extraCharge,
+        quotationData.mobDemob || quotationData.calculations?.mobDemob || 0, // mob_demob - use frontend value
+        quotationData.mobRelaxation || quotationData.calculations?.mobRelaxation || 0, // mob_relaxation
+        quotationData.extraCharge || 0,
         riggerAmount + helperAmount, // other_factors_charge - sum of rigger and helper
         'gst', // billing
         true, // include_gst
@@ -744,12 +749,12 @@ router.post('/', authenticateToken, async (req, res) => {
         JSON.stringify(customerContact),
         totalCost,
         finalTotal,
-        quotationData.workingCost || quotationData.calculations?.workingCost, // working_cost
-        quotationData.mobDemobCost || quotationData.calculations?.mobDemobCost, // mob_demob_cost
-        quotationData.foodAccomCost || quotationData.calculations?.foodAccomCost, // food_accom_cost
-        quotationData.riskAdjustment || quotationData.calculations?.riskAdjustment, // risk_adjustment
-        quotationData.usageLoadFactor || quotationData.calculations?.usageLoadFactor, // usage_load_factor
-        quotationData.riskUsageTotal || quotationData.calculations?.riskUsageTotal, // risk_usage_total
+        quotationData.workingCost || quotationData.calculations?.workingCost || 0, // working_cost
+        quotationData.mobDemobCost || quotationData.calculations?.mobDemobCost || 0, // mob_demob_cost
+        quotationData.foodAccomCost || quotationData.calculations?.foodAccomCost || 0, // food_accom_cost
+        quotationData.riskAdjustment || quotationData.calculations?.riskAdjustment || 0, // risk_adjustment
+        quotationData.usageLoadFactor || quotationData.calculations?.usageLoadFactor || 0, // usage_load_factor
+        quotationData.riskUsageTotal || quotationData.calculations?.riskUsageTotal || 0, // risk_usage_total
         gstAmount,
         req.user.id, // created_by (will be replaced with actual user)
         'draft',
