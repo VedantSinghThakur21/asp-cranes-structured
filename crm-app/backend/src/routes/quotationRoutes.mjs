@@ -1064,11 +1064,27 @@ router.put('/:id', async (req, res) => {
       
       const existing = existingResult.rows[0];
       
+      // Apply shift mapping to convert frontend values to database values
+      const shiftMapping = {
+        'Day Shift': 'single',
+        'Night Shift': 'single',
+        'Double Shift': 'double',
+        'Round the Clock': 'double',
+        'single': 'single',
+        'double': 'double'
+      };
+      
       console.log('🔧 UPDATE DEBUG: Request body keys:', Object.keys(req.body));
       console.log('🔧 UPDATE DEBUG: machine_type fields:', { 
         machine_type, 
         machineType, 
         existing_machine_type: existing.machine_type 
+      });
+      console.log('🔧 UPDATE DEBUG: shift mapping:', {
+        original_shift: shift,
+        existing_shift: existing.shift,
+        mapped_shift: shift ? shiftMapping[shift] || shift : existing.shift,
+        shiftMapping
       });
       
       // Map camelCase to snake_case with fallbacks to existing values for required fields
@@ -1077,6 +1093,8 @@ router.put('/:id', async (req, res) => {
       const mappedOrderType = order_type || orderType || existing.order_type;
       const mappedNumberOfDays = number_of_days || numberOfDays || existing.number_of_days;
       const mappedWorkingHours = working_hours || workingHours || existing.working_hours;
+      
+      const mappedShift = shift ? shiftMapping[shift] || shift : existing.shift;
       
       // Validate required fields
       if (!mappedMachineType) {
@@ -1143,7 +1161,7 @@ router.put('/:id', async (req, res) => {
         site_distance || siteDistance || existing.site_distance,
         usage || existing.usage,
         risk_factor || riskFactor || existing.risk_factor,
-        shift || existing.shift,
+        mappedShift, // Use mapped shift value
         day_night || dayNight || existing.day_night,
         food_resources !== undefined ? food_resources : (foodResources !== undefined ? foodResources : existing.food_resources),
         accom_resources !== undefined ? accom_resources : (accomResources !== undefined ? accomResources : existing.accom_resources),
