@@ -1090,7 +1090,10 @@ export function QuotationCreation() {
         accomResources: formData.accomResources,
         configurationLoaded: !!quotationConfig?.orderTypeLimits,
         quotationConfigLimits: quotationConfig?.orderTypeLimits,
-        determineOrderTypeResult: determineOrderType(formData.numberOfDays)
+        determineOrderTypeResult: determineOrderType(formData.numberOfDays),
+        customRiggerAmount: formData.customRiggerAmount,
+        customHelperAmount: formData.customHelperAmount,
+        otherFactors: formData.otherFactors
       });
 
       // Double-check that the order type is correctly determined
@@ -1100,6 +1103,14 @@ export function QuotationCreation() {
         // Update form data to use the correctly determined order type
         setFormData(prev => ({ ...prev, orderType: finalOrderType }));
       }
+
+      console.log('🎯 CRITICAL DEBUG: Custom amounts before creating quotationData:', {
+        customRiggerAmount: formData.customRiggerAmount,
+        customHelperAmount: formData.customHelperAmount,
+        otherFactors: formData.otherFactors,
+        riggerSelected: formData.otherFactors.includes('rigger'),
+        helperSelected: formData.otherFactors.includes('helper')
+      });
 
       const quotationData = {
         ...formData,  // Use EXACT form data without overrides
@@ -1134,7 +1145,10 @@ export function QuotationCreation() {
         incident2: formData.customIncidentAmounts?.incident2?.toString() || null,
         incident3: formData.customIncidentAmounts?.incident3?.toString() || null,
         riggerAmount: formData.customRiggerAmount || null,
-        helperAmount: formData.customHelperAmount || null
+        helperAmount: formData.customHelperAmount || null,
+        // Also send for backwards compatibility
+        customRiggerAmount: formData.customRiggerAmount || null,
+        customHelperAmount: formData.customHelperAmount || null
       };
 
       if (quotationId) {

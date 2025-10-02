@@ -67,24 +67,47 @@ function extractCustomAmount(quotationData, amountKey) {
 }
 
 function extractOtherFactorsAmount(quotationData, factorKey) {
+  console.log(`🔍 extractOtherFactorsAmount called for ${factorKey}:`, {
+    otherFactors: quotationData.otherFactors,
+    isSelected: quotationData.otherFactors?.includes(factorKey),
+    customRiggerAmount: quotationData.customRiggerAmount,
+    customHelperAmount: quotationData.customHelperAmount,
+    riggerAmount: quotationData.riggerAmount,
+    helperAmount: quotationData.helperAmount,
+    frontendRiggerAmount: quotationData.riggerAmount,
+    frontendHelperAmount: quotationData.helperAmount
+  });
+  
   // Check if this factor is selected in the otherFactors array
   if (quotationData.otherFactors && quotationData.otherFactors.includes(factorKey)) {
-    // Check for custom amount first
-    if (quotationData.customRiggerAmount && factorKey === 'rigger') {
-      return quotationData.customRiggerAmount;
+    // Check for custom amount first - handle both customRiggerAmount and riggerAmount fields
+    if (factorKey === 'rigger') {
+      // Frontend sends riggerAmount, but also check customRiggerAmount for backwards compatibility
+      const customAmount = quotationData.riggerAmount ?? quotationData.customRiggerAmount;
+      if (customAmount !== null && customAmount !== undefined) {
+        console.log(`✅ Using custom rigger amount: ${customAmount} (from ${quotationData.riggerAmount !== null ? 'riggerAmount' : 'customRiggerAmount'})`);
+        return Number(customAmount);
+      }
     }
-    if (quotationData.customHelperAmount && factorKey === 'helper') {
-      return quotationData.customHelperAmount;
+    if (factorKey === 'helper') {
+      // Frontend sends helperAmount, but also check customHelperAmount for backwards compatibility
+      const customAmount = quotationData.helperAmount ?? quotationData.customHelperAmount;
+      if (customAmount !== null && customAmount !== undefined) {
+        console.log(`✅ Using custom helper amount: ${customAmount} (from ${quotationData.helperAmount !== null ? 'helperAmount' : 'customHelperAmount'})`);
+        return Number(customAmount);
+      }
     }
     
-    // Return default amounts
+    // Return default amounts only if no custom amount provided
     const defaultAmounts = {
       'rigger': 40000,
       'helper': 12000
     };
+    console.log(`⚠️ Using default ${factorKey} amount: ${defaultAmounts[factorKey]} - NO CUSTOM AMOUNT PROVIDED`);
     return defaultAmounts[factorKey] || 0;
   }
   
+  console.log(`❌ ${factorKey} not selected, returning 0`);
   return 0;
 }
 
@@ -723,6 +746,8 @@ router.post('/', authenticateToken, async (req, res) => {
         otherFactors: quotationData.otherFactors,
         customIncidentAmounts: quotationData.customIncidentAmounts,
         customRiggerAmount: quotationData.customRiggerAmount,
+        frontendRiggerAmount: quotationData.riggerAmount,
+        frontendHelperAmount: quotationData.helperAmount,
         // Cost breakdown being saved
         workingCost: quotationData.workingCost || quotationData.calculations?.workingCost,
         mobDemobCost: quotationData.mobDemobCost || quotationData.calculations?.mobDemobCost,
@@ -732,6 +757,15 @@ router.post('/', authenticateToken, async (req, res) => {
         totalCost: totalCost,
         gstAmount: gstAmount,
         finalTotal: finalTotal
+      });
+      
+      console.log('🔍 CRITICAL DEBUG: Values about to be inserted into database:', {
+        riggerAmount: riggerAmount,
+        helperAmount: helperAmount,
+        originalQuotationDataRiggerAmount: quotationData.riggerAmount,
+        originalQuotationDataHelperAmount: quotationData.helperAmount,
+        originalQuotationDataCustomRiggerAmount: quotationData.customRiggerAmount,
+        originalQuotationDataCustomHelperAmount: quotationData.customHelperAmount
       });
 
       const values = [
