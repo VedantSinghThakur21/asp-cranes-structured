@@ -33,33 +33,22 @@ const router = express.Router();
 
 // Helper functions to extract incident and custom amounts from frontend data structure
 function extractIncidentAmount(quotationData, incidentKey) {
-  console.log(`🔍 Extracting ${incidentKey}:`, {
-    customIncidentAmounts: quotationData.customIncidentAmounts,
-    incidentalCharges: quotationData.incidentalCharges,
-    customAmount: quotationData.customIncidentAmounts?.[incidentKey],
-    isSelected: quotationData.incidentalCharges?.includes(incidentKey)
+  // New simplified logic: only trust explicit values sent from frontend.
+  // Frontend is now responsible for sending the APPLIED amount (custom OR config default) in incident1/2/3 fields.
+  // No hardcoded fallbacks here.
+  const explicitField = quotationData[incidentKey];
+  const selected = quotationData.incidentalCharges?.includes(incidentKey);
+  console.log(`🔍 Extracting ${incidentKey} (no hardcoded defaults):`, {
+    selected,
+    explicitField,
+    type: typeof explicitField,
+    customIncidentAmounts: quotationData.customIncidentAmounts
   });
-  
-  // First check if there's a custom amount specified
-  if (quotationData.customIncidentAmounts && quotationData.customIncidentAmounts[incidentKey]) {
-    console.log(`✅ Using custom amount for ${incidentKey}:`, quotationData.customIncidentAmounts[incidentKey]);
-    return quotationData.customIncidentAmounts[incidentKey];
-  }
-  
-  // Check if this incident is selected in the incidentalCharges array
-  if (quotationData.incidentalCharges && quotationData.incidentalCharges.includes(incidentKey)) {
-    // Return default amounts based on incident type
-    const defaultAmounts = {
-      'incident1': 5000,
-      'incident2': 10000,  
-      'incident3': 15000
-    };
-    console.log(`✅ Using default amount for ${incidentKey}:`, defaultAmounts[incidentKey]);
-    return defaultAmounts[incidentKey] || 0;
-  }
-  
-  console.log(`❌ ${incidentKey} not selected, returning null`);
-  return null; // Not selected
+  if (!selected) return null;
+  if (explicitField === 0) return 0;
+  if (explicitField === null || explicitField === undefined || explicitField === '') return null;
+  const num = Number(explicitField);
+  return isNaN(num) ? null : num;
 }
 
 function extractCustomAmount(quotationData, amountKey) {
@@ -67,48 +56,14 @@ function extractCustomAmount(quotationData, amountKey) {
 }
 
 function extractOtherFactorsAmount(quotationData, factorKey) {
-  console.log(`🔍 extractOtherFactorsAmount called for ${factorKey}:`, {
-    otherFactors: quotationData.otherFactors,
-    isSelected: quotationData.otherFactors?.includes(factorKey),
-    customRiggerAmount: quotationData.customRiggerAmount,
-    customHelperAmount: quotationData.customHelperAmount,
-    riggerAmount: quotationData.riggerAmount,
-    helperAmount: quotationData.helperAmount,
-    frontendRiggerAmount: quotationData.riggerAmount,
-    frontendHelperAmount: quotationData.helperAmount
-  });
-  
-  // Check if this factor is selected in the otherFactors array
-  if (quotationData.otherFactors && quotationData.otherFactors.includes(factorKey)) {
-    // Check for custom amount first - handle both customRiggerAmount and riggerAmount fields
-    if (factorKey === 'rigger') {
-      // Frontend sends riggerAmount, but also check customRiggerAmount for backwards compatibility
-      const customAmount = quotationData.riggerAmount ?? quotationData.customRiggerAmount;
-      if (customAmount !== null && customAmount !== undefined) {
-        console.log(`✅ Using custom rigger amount: ${customAmount} (from ${quotationData.riggerAmount !== null ? 'riggerAmount' : 'customRiggerAmount'})`);
-        return Number(customAmount);
-      }
-    }
-    if (factorKey === 'helper') {
-      // Frontend sends helperAmount, but also check customHelperAmount for backwards compatibility
-      const customAmount = quotationData.helperAmount ?? quotationData.customHelperAmount;
-      if (customAmount !== null && customAmount !== undefined) {
-        console.log(`✅ Using custom helper amount: ${customAmount} (from ${quotationData.helperAmount !== null ? 'helperAmount' : 'customHelperAmount'})`);
-        return Number(customAmount);
-      }
-    }
-    
-    // Return default amounts only if no custom amount provided
-    const defaultAmounts = {
-      'rigger': 40000,
-      'helper': 12000
-    };
-    console.log(`⚠️ Using default ${factorKey} amount: ${defaultAmounts[factorKey]} - NO CUSTOM AMOUNT PROVIDED`);
-    return defaultAmounts[factorKey] || 0;
-  }
-  
-  console.log(`❌ ${factorKey} not selected, returning 0`);
-  return 0;
+  // Trust supplied values; no hardcoded defaults. If selected but value missing => null (so UI/config must supply it explicitly)
+  const selected = quotationData.otherFactors?.includes(factorKey);
+  const explicit = factorKey === 'rigger' ? (quotationData.riggerAmount ?? quotationData.customRiggerAmount) : (quotationData.helperAmount ?? quotationData.customHelperAmount);
+  console.log(`🔍 extractOtherFactorsAmount (no hardcoded) ${factorKey}:`, { selected, explicit, type: typeof explicit });
+  if (!selected) return 0; // not selected -> zero cost contribution
+  if (explicit === null || explicit === undefined || explicit === '') return 0; // treat missing as zero (not defaulting to magic number)
+  const num = Number(explicit);
+  return isNaN(num) ? 0 : num;
 }
 
 // Optional auth for selected endpoints: allows bypass header regardless of NODE_ENV
@@ -146,39 +101,96 @@ const pool = new pg.Pool({
 router.post('/generate', optionalAuth, async (req, res) => {
   try {
     console.log('📋 [Generate] Received request:', req.method, req.originalUrl);
-    console.log('📋 [Generate] Headers:', req.headers);
-    console.log('📋 [Generate] Body:', req.body);
-    
-    const quotation = req.body;
+    const incoming = req.body || {};
+    console.log('📋 [Generate] Raw body keys:', Object.keys(incoming));
 
-    if (!quotation || !quotation.items || quotation.items.length === 0) {
-      return res.status(400).json({ 
-        success: false,
-        message: 'Quotation must include at least one item' 
-      });
+    let quotation = { ...incoming };
+
+    // If only an ID provided or items missing – fetch from DB
+    if ((!quotation.items || quotation.items.length === 0) && (quotation.id || quotation.quotationId)) {
+      const qid = quotation.id || quotation.quotationId;
+      console.log('�️ Fetching quotation for PDF by ID:', qid);
+      const client = await pool.connect();
+      try {
+        const qRes = await client.query('SELECT * FROM quotations WHERE id = $1', [qid]);
+        if (qRes.rows.length === 0) {
+          return res.status(404).json({ success: false, message: 'Quotation not found for PDF generation' });
+        }
+        const row = qRes.rows[0];
+        // Load machines (if any)
+        const mRes = await client.query('SELECT * FROM quotation_machines WHERE quotation_id = $1', [qid]);
+
+        quotation = {
+          quotationId: row.quotation_number || row.id,
+          customerName: row.customer_name,
+            customerEmail: (row.customer_contact && typeof row.customer_contact === 'object' ? row.customer_contact.email : null) || '',
+          gstRate: row.include_gst ? 18 : 0,
+          // Build items from machines snapshot or fallback to equipment_snapshot
+          items: mRes.rows.length > 0 ? mRes.rows.map((m, idx) => ({
+            description: `Equipment ${idx + 1}`,
+            qty: Number(m.quantity) || 1,
+            price: Number(m.base_rate) || 0
+          })) : [
+            {
+              description: (row.equipment_snapshot && typeof row.equipment_snapshot === 'object' && row.equipment_snapshot.name) ? row.equipment_snapshot.name : 'Primary Equipment',
+              qty: 1,
+              price: Number(row.working_cost) > 0 && Number(row.total_rent) > 0 ? Number(row.total_rent) : (Number(row.working_cost) || 0)
+            }
+          ],
+          // Terms placeholder until configurable
+          terms: [],
+        };
+
+        // If costs exist, append synthesized charge lines (non-zero only)
+        const chargeLines = [];
+        const addCharge = (label, amount) => { if (amount && amount > 0) chargeLines.push({ description: label, qty: 1, price: amount }); };
+        addCharge('Working Cost', Number(row.working_cost));
+        addCharge('Mob/Demob Cost', Number(row.mob_demob_cost));
+        addCharge('Food & Accommodation', Number(row.food_accom_cost));
+        addCharge('Incidental Charges', Number(row.incident1) + Number(row.incident2) + Number(row.incident3));
+        addCharge('Other Factors', Number(row.other_factors_charge));
+        addCharge('Extra Commercial Charges', Number(row.extra_charge));
+        addCharge('Risk & Usage', Number(row.risk_usage_total));
+        if (chargeLines.length) {
+          quotation.items = [...quotation.items, ...chargeLines];
+        }
+      } finally {
+        client.release();
+      }
     }
 
-    // Company info - ideally fetched from DB or config
+    // Validate items now
+    if (!quotation.items || quotation.items.length === 0) {
+      return res.status(400).json({ success: false, message: 'No items available to generate PDF' });
+    }
+
+    // Normalize required fields
+    quotation.gstRate = quotation.gstRate !== undefined ? quotation.gstRate : (quotation.includeGst ? 18 : 0);
+    quotation.customerName = quotation.customerName || quotation.customer?.name || 'Customer';
+    quotation.quotationId = quotation.quotationId || quotation.id || 'N/A';
+
+    // Company info (could later come from config service)
     const companyInfo = {
       name: 'ASP Cranes Pvt. Ltd.',
       email: 'sales@aspcranes.com',
       phone: '+91 99999 88888',
-      address: 'Pune, Maharashtra',
+      address: 'Pune, Maharashtra'
     };
 
-    // Generate PDF
-    const pdfBuffer = await generateQuotationTemplate(quotation, companyInfo);
+    console.log('🧾 [Generate] Final quotation payload for PDF:', {
+      quotationId: quotation.quotationId,
+      itemCount: quotation.items.length,
+      gstRate: quotation.gstRate,
+      firstItem: quotation.items[0]
+    });
 
-    // Send PDF as download
+    const pdfBuffer = await generateQuotationTemplate(quotation, companyInfo);
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename=quotation_${quotation.quotationId}.pdf`);
     res.send(pdfBuffer);
   } catch (err) {
     console.error('Error generating quotation:', err);
-    res.status(500).json({ 
-      success: false,
-      message: 'Failed to generate quotation PDF' 
-    });
+    res.status(500).json({ success: false, message: 'Failed to generate quotation PDF' });
   }
 });
 
@@ -548,6 +560,11 @@ router.post('/', authenticateToken, async (req, res) => {
       accomResources: quotationData.accomResources,
       numberOfDays: quotationData.numberOfDays,
       leadId: quotationData.leadId,
+      customRiggerAmount: quotationData.customRiggerAmount,
+      riggerAmount: quotationData.riggerAmount,
+      customHelperAmount: quotationData.customHelperAmount,
+      helperAmount: quotationData.helperAmount,
+      otherFactors: quotationData.otherFactors,
       selectedEquipment: quotationData.selectedEquipment,
       primaryEquipmentId: quotationData.primaryEquipmentId,
       incidentalCharges: quotationData.incidentalCharges,

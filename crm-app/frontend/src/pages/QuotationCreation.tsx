@@ -1151,6 +1151,19 @@ export function QuotationCreation() {
         customHelperAmount: formData.customHelperAmount || null
       };
 
+      console.log('🚀 FINAL DEBUG: About to send quotation data to backend:', {
+        customRiggerAmount: quotationData.customRiggerAmount,
+        riggerAmount: quotationData.riggerAmount,
+        customHelperAmount: quotationData.customHelperAmount,
+        helperAmount: quotationData.helperAmount,
+        otherFactors: quotationData.otherFactors,
+        formDataCustomRiggerAmount: formData.customRiggerAmount,
+        fullQuotationDataForRigger: {
+          customRiggerAmount: quotationData.customRiggerAmount,
+          riggerAmount: quotationData.riggerAmount
+        }
+      });
+
       if (quotationId) {
         await updateQuotation(quotationId, quotationData);
         showToast('Quotation updated successfully', 'success');
