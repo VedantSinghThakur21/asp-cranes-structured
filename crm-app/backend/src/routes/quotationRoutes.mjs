@@ -953,6 +953,7 @@ router.put('/:id', async (req, res) => {
     const { id } = req.params;
     const {
       customer_name,
+      customerName, // Handle camelCase from frontend
       customer_contact,
       machine_type,
       order_type,
@@ -1074,7 +1075,7 @@ router.put('/:id', async (req, res) => {
         WHERE id = $41
         RETURNING *
       `, [
-        customer_name,
+        customer_name || customerName, // Use either snake_case or camelCase
         JSON.stringify(customer_contact),
         machine_type,
         order_type,
