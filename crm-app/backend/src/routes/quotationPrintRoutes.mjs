@@ -2,16 +2,13 @@
  * Quotation Print Routes - Professional architecture inspired by Twenty CRM
  */
 import express from 'express';
-import { authenticateToken } from '../middleware/authMiddleware.mjs';
+import { authenticateToken, optionalAuth } from '../middleware/authMiddleware.mjs';
 import pool from '../lib/dbConnection.js';
 import { templateService } from '../services/TemplateService.mjs';
 import { htmlGeneratorService } from '../services/HtmlGeneratorService.mjs';
 import { pdfService } from '../services/PdfService.mjs';
 
 const router = express.Router();
-
-// Import optionalAuth from centralized middleware
-import { optionalAuth } from '../middleware/authMiddleware.mjs';
 
 /**
  * Helper function to get default template configuration

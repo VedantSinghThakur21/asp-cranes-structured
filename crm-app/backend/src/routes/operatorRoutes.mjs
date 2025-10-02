@@ -3,6 +3,7 @@
  */
 import express from 'express';
 import { getOperators } from '../services/postgres/operatorRepository.js';
+import { authenticateToken } from '../middleware/authMiddleware.mjs';
 
 const router = express.Router();
 
@@ -10,8 +11,6 @@ const getErrorMessage = (error) => {
   if (error instanceof Error) return error.message;
   return String(error);
 };
-
-import { authenticateToken } from '../middleware/authMiddleware.mjs';
 
 // Get all operators
 router.get('/', authenticateToken, async (req, res) => {

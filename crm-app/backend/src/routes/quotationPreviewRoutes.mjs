@@ -4,7 +4,7 @@
  */
 
 import express from 'express';
-import { authenticateToken } from '../middleware/authMiddleware.mjs';
+import { authenticateToken, optionalAuth } from '../middleware/authMiddleware.mjs';
 import pool from '../lib/dbConnection.js';
 import { EnhancedTemplateBuilder } from '../services/EnhancedTemplateBuilder.mjs';
 
@@ -191,9 +191,6 @@ router.get('/:id/preview/test', (req, res) => {
     </html>
   `);
 });
-
-// Import optionalAuth from centralized middleware
-import { optionalAuth } from '../middleware/authMiddleware.mjs';
 
 /**
  * GET /api/quotations/:id/preview - Generate quotation preview

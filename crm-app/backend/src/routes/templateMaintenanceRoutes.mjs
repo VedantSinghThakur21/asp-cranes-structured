@@ -1,8 +1,5 @@
 import express from 'express';
 import pool from '../lib/dbConnection.js';
-import { authenticateToken } from '../middleware/authMiddleware.mjs';
-
-// Import proper auth from centralized middleware
 import { authenticateToken, authorizeRoles } from '../middleware/authMiddleware.mjs';
 
 // Define admin roles for maintenance operations
