@@ -33,8 +33,16 @@ const router = express.Router();
 
 // Helper functions to extract incident and custom amounts from frontend data structure
 function extractIncidentAmount(quotationData, incidentKey) {
+  console.log(`🔍 Extracting ${incidentKey}:`, {
+    customIncidentAmounts: quotationData.customIncidentAmounts,
+    incidentalCharges: quotationData.incidentalCharges,
+    customAmount: quotationData.customIncidentAmounts?.[incidentKey],
+    isSelected: quotationData.incidentalCharges?.includes(incidentKey)
+  });
+  
   // First check if there's a custom amount specified
   if (quotationData.customIncidentAmounts && quotationData.customIncidentAmounts[incidentKey]) {
+    console.log(`✅ Using custom amount for ${incidentKey}:`, quotationData.customIncidentAmounts[incidentKey]);
     return quotationData.customIncidentAmounts[incidentKey];
   }
   
@@ -46,9 +54,11 @@ function extractIncidentAmount(quotationData, incidentKey) {
       'incident2': 10000,  
       'incident3': 15000
     };
+    console.log(`✅ Using default amount for ${incidentKey}:`, defaultAmounts[incidentKey]);
     return defaultAmounts[incidentKey] || 0;
   }
   
+  console.log(`❌ ${incidentKey} not selected, returning null`);
   return null; // Not selected
 }
 
