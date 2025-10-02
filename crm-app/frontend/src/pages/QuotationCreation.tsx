@@ -218,6 +218,17 @@ export function QuotationCreation() {
     calculateQuotation();
   }, [formData, selectedEquipmentBaseRate]);
 
+  // Force recalculation after component mounts and configuration is loaded
+  useEffect(() => {
+    if (resourceRates && additionalParams && quotationConfig) {
+      console.log("🔄 Configuration loaded, forcing recalculation...");
+      setTimeout(() => {
+        setIsLoadingExistingData(false); // Ensure loading flag is cleared
+        calculateQuotation();
+      }, 100);
+    }
+  }, [resourceRates, additionalParams, quotationConfig]);
+
   useEffect(() => {
     if (formData.workingHours !== undefined) {
       calculateQuotation();
@@ -695,8 +706,9 @@ export function QuotationCreation() {
     console.log("IsLoadingExistingData:", isLoadingExistingData);
     
     // Skip recalculation if we're loading existing data to preserve database values
-    if (isLoadingExistingData) {
-      console.log("⏸️ Skipping calculation - loading existing data");
+    // BUT allow calculation for new quotations (when quotationId is null/undefined)
+    if (isLoadingExistingData && quotationId) {
+      console.log("⏸️ Skipping calculation - loading existing data for quotation:", quotationId);
       return;
     }
     
