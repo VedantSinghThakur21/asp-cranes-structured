@@ -809,9 +809,10 @@ export class EnhancedTemplateBuilder {
       { label: 'Total', value: '{{totals.total}}', showIf: 'always', emphasized: true }
     ];
     
-    // Process placeholders in field values immediately
+    // Process placeholders in field labels and values so dynamic labels like Tax ({{tax.rate}}%) render properly
     const processedFields = fields.map(field => ({
       ...field,
+      label: this.replacePlaceholders(field.label || '', data),
       value: this.replacePlaceholders(field.value, data)
     }));
     
@@ -933,7 +934,8 @@ export class EnhancedTemplateBuilder {
       .replace(/\{\{totals\.subtotal\}\}/g, data?.totals?.subtotal || '₹0')
       .replace(/\{\{totals\.tax\}\}/g, data?.totals?.tax || '₹0')
       .replace(/\{\{totals\.total\}\}/g, data?.totals?.total || '₹0')
-      .replace(/\{\{totals\.discount\}\}/g, data?.totals?.discount || '₹0');
+      .replace(/\{\{totals\.discount\}\}/g, data?.totals?.discount || '₹0')
+      .replace(/\{\{tax\.rate\}\}/g, (data?.tax?.rate !== undefined ? data.tax.rate : (data?.quotation?.taxRate || 18)) + '');
       
     console.log('🔍 [DEBUG] Result after replacement:', result);
     return result;

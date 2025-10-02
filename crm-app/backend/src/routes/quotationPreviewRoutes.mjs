@@ -198,6 +198,7 @@ router.get('/:id/preview', async (req, res) => {
       itemsCount: previewData.items?.length || 0
     });
     const html = templateBuilder.generatePreviewHTML(previewData);
+    const augmentedHtml = `<!-- TEMPLATE_ID:${template.id} ELEMENTS:${template.elements?.length || 0} GENERATED:${new Date().toISOString()} -->\n` + html;
 
     if (format === 'json') {
       return res.json({
@@ -207,16 +208,21 @@ router.get('/:id/preview', async (req, res) => {
           template: {
             id: template.id,
             name: template.name,
-            description: template.description
+            description: template.description,
+            elementCount: template.elements?.length || 0,
+            generatedAt: new Date().toISOString()
           },
-          quotation: quotationData
+          activeTemplateId: template.id,
+            quotation: quotationData,
+            totals: previewData.totals || {},
+            tax: previewData.tax || { rate: previewData?.quotation?.taxRate || 18 }
         }
       });
     }
 
     // Return HTML for iframe preview
     res.setHeader('Content-Type', 'text/html');
-    res.send(html);
+    res.send(augmentedHtml);
 
   } catch (error) {
     console.error('❌ [Preview] Preview generation failed:', error);
@@ -293,11 +299,14 @@ router.get('/:id/preview/iframe', async (req, res) => {
     });
     
     const html = templateBuilder.generatePreviewHTML(previewData);
+    const augmentedHtml = `<!-- TEMPLATE_ID:${template.id} ELEMENTS:${template.elements?.length || 0} GENERATED:${new Date().toISOString()} -->\n` + html;
     console.log('✅ [Preview] HTML generated for iframe, length:', html.length);
 
     res.setHeader('Content-Type', 'text/html');
-    res.setHeader('Cache-Control', 'no-cache');
-    res.send(html);
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    res.send(augmentedHtml);
 
   } catch (error) {
     console.error('❌ [Preview] Iframe preview failed:', error);
@@ -624,67 +633,44 @@ function createDefaultQuotationTemplate(templateBuilder) {
  * Map quotation data to template format
  */
 function mapQuotationToTemplateData(quotationData) {
-  // Calculate Risk & Usage Factors - Use API values directly if available
-  let riskAdjustmentCalculated, usageLoadFactorCalculated, riskUsageTotalCalculated;
-  let monthlyBaseRate = 30000; // Default fallback
-  let riskType = 'medium';
-  let usageType = 'normal';
-  let riskPercentage = 10;
-  let usagePercentage = 0;
-  
-  if (quotationData.risk_adjustment !== undefined && quotationData.usage_load_factor !== undefined) {
-    // Use values directly from the API (already calculated correctly)
-    riskAdjustmentCalculated = quotationData.risk_adjustment || 0;
-    usageLoadFactorCalculated = quotationData.usage_load_factor || 0;
-    riskUsageTotalCalculated = quotationData.risk_usage_total || (riskAdjustmentCalculated + usageLoadFactorCalculated);
-    
-    // Get the equipment monthly base rate for display purposes
-    if (quotationData.selectedEquipment && quotationData.selectedEquipment.baseRates) {
-      monthlyBaseRate = parseFloat(quotationData.selectedEquipment.baseRates.monthly) || 30000;
-    }
-    
-    // Extract risk and usage types for display
-    riskType = quotationData.risk_factor || 'low';
-    usageType = quotationData.usage || 'heavy';
-    
-    // Reverse calculate percentages for display (approximation)
-    if (monthlyBaseRate > 0) {
-      riskPercentage = Math.round((riskAdjustmentCalculated / monthlyBaseRate) * 100);
-      usagePercentage = Math.round((usageLoadFactorCalculated / monthlyBaseRate) * 100);
-    }
-    
-    console.log('✅ [Preview] Using calculated risk & usage values:', {
-      riskAdjustment: riskAdjustmentCalculated,
-      usageLoadFactor: usageLoadFactorCalculated,
-      riskUsageTotal: riskUsageTotalCalculated,
-      monthlyBaseRate,
-      riskType,
-      usageType
+  const gstRate = 18; // could be dynamic later
+  // Ensure numbers
+  const numberOrZero = v => (typeof v === 'number' && !isNaN(v)) ? v : (parseFloat(v) || 0);
+  // Existing risk logic retained (shortened)
+  let riskAdjustmentCalculated = numberOrZero(quotationData.risk_adjustment);
+  let usageLoadFactorCalculated = numberOrZero(quotationData.usage_load_factor);
+  let riskUsageTotalCalculated = riskAdjustmentCalculated + usageLoadFactorCalculated;
+
+  const durationDays = numberOrZero(quotationData.number_of_days) || 1;
+
+  const items = (quotationData.items || []).map((item, idx) => {
+    const qty = numberOrZero(item.quantity || item.qty || 1);
+    const baseRate = numberOrZero(item.rate || item.base_rate || item.unit_price || 0);
+    const rental = qty * baseRate * durationDays;
+    return {
+      no: idx + 1,
+      description: item.description || item.equipment_name || 'Item',
+      jobType: quotationData.order_type || '-',
+      quantity: qty,
+      duration: `${durationDays} ${durationDays === 1 ? 'day' : 'days'}`,
+      rate: baseRate.toFixed(2),
+      rental: rental.toFixed(2),
+      mobDemob: numberOrZero(quotationData.mob_demob_cost).toFixed(2),
+      riskUsage: (riskUsageTotalCalculated).toFixed(2)
+    };
+  });
+  if (items.length === 0) {
+    items.push({
+      no: 1,
+      description: quotationData.machine_type || 'Equipment',
+      jobType: quotationData.order_type || '-',
+      quantity: 1,
+      duration: `${durationDays} day`,
+      rate: '0.00',
+      rental: numberOrZero(quotationData.total_rent).toFixed(2),
+      mobDemob: numberOrZero(quotationData.mob_demob_cost).toFixed(2),
+      riskUsage: riskUsageTotalCalculated.toFixed(2)
     });
-  } else {
-    // Fallback: Calculate if not available in API
-    const riskFactors = { low: 0, medium: 10, high: 20 };
-    const usageFactors = { normal: 0, medium: 20, heavy: 50 };
-    
-    // Get equipment monthly base rate
-    if (quotationData.selectedMachines && quotationData.selectedMachines.length > 0) {
-      const totalMonthlyRate = quotationData.selectedMachines.reduce((total, machine) => {
-        const machineMonthlyRate = machine.baseRates?.monthly || machine.baseRateMonthly || 30000;
-        return total + (parseFloat(machineMonthlyRate) * (machine.quantity || 1));
-      }, 0);
-      monthlyBaseRate = totalMonthlyRate;
-    }
-    
-    riskType = quotationData.risk_factor || 'medium';
-    usageType = quotationData.usage || 'normal';
-    riskPercentage = riskFactors[riskType] || 10;
-    usagePercentage = usageFactors[usageType] || 0;
-    
-    riskAdjustmentCalculated = Math.round(monthlyBaseRate * (riskPercentage / 100));
-    usageLoadFactorCalculated = Math.round(monthlyBaseRate * (usagePercentage / 100));
-    riskUsageTotalCalculated = riskAdjustmentCalculated + usageLoadFactorCalculated;
-    
-    console.log('⚠️ [Preview] Calculating risk & usage values (API values not available)');
   }
 
   return {
@@ -694,16 +680,13 @@ function mapQuotationToTemplateData(quotationData) {
       number: quotationData.quotation_number,
       date: quotationData.created_at ? new Date(quotationData.created_at).toLocaleDateString('en-IN') : new Date().toLocaleDateString('en-IN'),
       machineType: quotationData.machine_type,
-      duration: `${quotationData.number_of_days} days`,
-      validUntil: quotationData.valid_until || new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN'),
-      paymentTerms: '50% advance, balance on completion'
+      duration: `${durationDays} days`,
+      validUntil: quotationData.valid_until || new Date(Date.now() + 15*24*60*60*1000).toLocaleDateString('en-IN'),
+      paymentTerms: '50% advance, balance on completion',
+      taxRate: gstRate
     },
-    items: (quotationData.items || []).map((item, index) => ({
-      ...item,
-      riskUsage: formatCurrency(riskUsageTotalCalculated),
-      riskFactor: `${riskType} (${riskPercentage}%)`,
-      usageFactor: `${usageType} (${usagePercentage}%)`
-    })),
+    tax: { rate: gstRate },
+    items,
     totals: {
       subtotal: formatCurrency(quotationData.total_rent || 0),
       tax: formatCurrency(quotationData.gst_amount || 0),

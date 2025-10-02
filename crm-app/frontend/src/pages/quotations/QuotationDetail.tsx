@@ -14,6 +14,14 @@ interface Quotation {
   working_hours: number;
   status: string;
   total_cost: number;
+  total_rent?: number;
+  working_cost?: number;
+  mob_demob_cost?: number;
+  food_accom_cost?: number;
+  usage_load_factor?: number;
+  risk_adjustment?: number;
+  risk_usage_total?: number;
+  gst_amount?: number;
   created_at: string;
 }
 
@@ -26,6 +34,7 @@ const QuotationDetail: React.FC = () => {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [availableTemplates, setAvailableTemplates] = useState<any[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<string>('default');
+  const [isTemplateLoading, setIsTemplateLoading] = useState(false);
   
   // Ref for the preview iframe
   const previewFrameRef = useRef<HTMLIFrameElement>(null);
@@ -132,10 +141,19 @@ const QuotationDetail: React.FC = () => {
       // Wait for iframe to be rendered before setting src
       setTimeout(() => {
         if (previewFrameRef.current) {
-          const templateParam = selectedTemplate !== 'default' ? `?templateId=${selectedTemplate}` : '';
-          const iframeSrc = `/api/quotations-preview/${quotation.id}/preview/iframe${templateParam}`;
-          console.log('🎨 Setting iframe src:', iframeSrc);
-          previewFrameRef.current.src = iframeSrc;
+          // Clear any existing content first
+          previewFrameRef.current.src = 'about:blank';
+          
+          // Then load the template after a brief delay
+          setTimeout(() => {
+            if (previewFrameRef.current) {
+              const templateParam = selectedTemplate !== 'default' ? `?templateId=${selectedTemplate}` : '';
+              const cacheBuster = `?t=${Date.now()}`;
+              const iframeSrc = `/api/quotations-preview/${quotation.id}/preview/iframe${templateParam}${templateParam ? '&' : ''}${cacheBuster}`;
+              console.log('🎨 Setting iframe src:', iframeSrc);
+              previewFrameRef.current.src = iframeSrc;
+            }
+          }, 50);
         } else {
           console.warn('⚠️ Iframe ref still not available after timeout');
         }
@@ -147,14 +165,30 @@ const QuotationDetail: React.FC = () => {
   };
 
   const handleTemplateChange = (templateId: string) => {
+    console.log('🔄 Template changed to:', templateId);
     setSelectedTemplate(templateId);
     
     // If preview is open, refresh it with new template
     if (isPreviewOpen && quotation && previewFrameRef.current) {
       console.log('🔄 Refreshing preview with template:', templateId);
-      const templateParam = templateId !== 'default' ? `?templateId=${templateId}` : '';
-      const cacheBuster = `${templateParam ? '&' : '?'}t=${Date.now()}`;
-      previewFrameRef.current.src = `/api/quotations-preview/${quotation.id}/preview/iframe${templateParam}${cacheBuster}`;
+      setIsTemplateLoading(true);
+      
+      // Clear iframe content first to prevent overlapping
+      previewFrameRef.current.src = 'about:blank';
+      
+      // Small delay to ensure clearing happens, then load new template
+      setTimeout(() => {
+        if (previewFrameRef.current) {
+          const templateParam = templateId !== 'default' ? `?templateId=${templateId}` : '';
+          const cacheBuster = `${templateParam ? '&' : '?'}t=${Date.now()}`;
+          const newSrc = `/api/quotations-preview/${quotation.id}/preview/iframe${templateParam}${cacheBuster}`;
+          console.log('🎨 Loading new template URL:', newSrc);
+          previewFrameRef.current.src = newSrc;
+          
+          // Reset loading state after iframe loads (approximate)
+          setTimeout(() => setIsTemplateLoading(false), 2000);
+        }
+      }, 100);
     }
   };
 
@@ -220,13 +254,15 @@ const QuotationDetail: React.FC = () => {
     }
   };
 
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amount?: number) => {
+    const safe = typeof amount === 'number' && !isNaN(amount) ? amount : 0;
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: 'INR',
       minimumFractionDigits: 0
-    }).format(amount || 0);
+    }).format(safe);
   };
+
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-IN', {
@@ -410,11 +446,43 @@ const QuotationDetail: React.FC = () => {
                 </div>
 
                 <div className="pt-4 border-t border-gray-200">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-700">Total Cost</span>
-                    <span className="text-lg font-bold text-gray-900">
-                      {formatCurrency(quotation.total_cost)}
-                    </span>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-700">Subtotal (Rent)</span>
+                      <span className="font-medium">{formatCurrency(quotation.total_rent)}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-700">Working Cost</span>
+                      <span className="font-medium">{formatCurrency(quotation.working_cost)}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-700">Mob/Demob Cost</span>
+                      <span className="font-medium">{formatCurrency(quotation.mob_demob_cost)}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-700">Food & Accom Cost</span>
+                      <span className="font-medium">{formatCurrency(quotation.food_accom_cost)}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-700">Risk Adj.</span>
+                      <span className="font-medium">{formatCurrency(quotation.risk_adjustment)}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-700">Usage Load Factor</span>
+                      <span className="font-medium">{formatCurrency(quotation.usage_load_factor)}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-700">Risk & Usage Total</span>
+                      <span className="font-medium">{formatCurrency(quotation.risk_usage_total)}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-700">GST</span>
+                      <span className="font-medium">{formatCurrency(quotation.gst_amount)}</span>
+                    </div>
+                    <div className="flex items-center justify-between col-span-2 pt-2 mt-2 border-t">
+                      <span className="text-gray-900 font-semibold">Total Cost</span>
+                      <span className="text-lg font-bold text-gray-900">{formatCurrency(quotation.total_cost)}</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -548,11 +616,23 @@ const QuotationDetail: React.FC = () => {
               </div>
               
               {isPreviewOpen ? (
-                <div className="border rounded-lg overflow-hidden">
+                <div className="border rounded-lg overflow-hidden relative">
+                  {isTemplateLoading && (
+                    <div className="absolute inset-0 bg-white bg-opacity-90 flex items-center justify-center z-10">
+                      <div className="text-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                        <p className="mt-2 text-sm text-gray-600">Loading template...</p>
+                      </div>
+                    </div>
+                  )}
                   <iframe
                     ref={previewFrameRef}
                     className="w-full h-96 border-0"
                     title="Quotation Preview"
+                    onLoad={() => {
+                      console.log('📱 Iframe finished loading');
+                      setIsTemplateLoading(false);
+                    }}
                   />
                 </div>
               ) : (
