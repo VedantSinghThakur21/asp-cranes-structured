@@ -743,8 +743,7 @@ router.post('/', authenticateToken, async (req, res) => {
         mappedAccomResources,
         numberOfDays: quotationData.numberOfDays,
         originalShift: quotationData.shift,
-        mappedShift: shiftMapping[quotationData.shift] || 'single',
-        shiftMapping: shiftMapping
+        finalShift: quotationData.shift || 'single'
       });
       
       // Test specific case
@@ -1096,15 +1095,7 @@ router.put('/:id', async (req, res) => {
       
       const existing = existingResult.rows[0];
       
-      // Apply shift mapping to convert frontend values to database values
-      const shiftMapping = {
-        'Day Shift': 'single',
-        'Night Shift': 'single',
-        'Double Shift': 'double',
-        'Round the Clock': 'double',
-        'single': 'single',
-        'double': 'double'
-      };
+      // Frontend now sends 'single'/'double' directly - no mapping needed
       
       console.log('🔧 UPDATE DEBUG: Request body keys:', Object.keys(req.body));
       console.log('🔧 UPDATE DEBUG: machine_type fields:', { 
@@ -1115,8 +1106,7 @@ router.put('/:id', async (req, res) => {
       console.log('🔧 UPDATE DEBUG: shift mapping:', {
         original_shift: shift,
         existing_shift: existing.shift,
-        mapped_shift: shift ? shiftMapping[shift] || shift : existing.shift,
-        shiftMapping
+        final_shift: shift || existing.shift
       });
       
       // Map camelCase to snake_case with fallbacks to existing values for required fields
@@ -1126,7 +1116,7 @@ router.put('/:id', async (req, res) => {
       const mappedNumberOfDays = number_of_days || numberOfDays || existing.number_of_days;
       const mappedWorkingHours = working_hours || workingHours || existing.working_hours;
       
-      const mappedShift = shift ? shiftMapping[shift] || shift : existing.shift;
+      const finalShift = shift || existing.shift; // Frontend sends 'single'/'double' directly
       
       // Calculate correct subtotal and total for database fields
       // total_rent should be the SUBTOTAL (before GST) - which is the working_cost (actual rental amount)
@@ -1226,7 +1216,7 @@ router.put('/:id', async (req, res) => {
         site_distance || siteDistance || existing.site_distance,
         usage || existing.usage,
         risk_factor || riskFactor || existing.risk_factor,
-        mappedShift, // Use mapped shift value
+        finalShift, // Frontend sends correct value directly
         day_night || dayNight || existing.day_night,
         food_resources !== undefined ? food_resources : (foodResources !== undefined ? foodResources : existing.food_resources),
         accom_resources !== undefined ? accom_resources : (accomResources !== undefined ? accomResources : existing.accom_resources),
