@@ -29,168 +29,6 @@ function generateQuotationNumber(quotationId) {
   return `ASP-Q-${quotationId.substring(5, 8).toUpperCase()}`;
 }
 
-// Simple test route to verify the routes are working
-router.get('/test', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Preview routes are working!',
-    timestamp: new Date().toISOString()
-  });
-});
-
-// Debug route to check template differences
-router.get('/debug/templates', async (req, res) => {
-  try {
-    const client = await pool.connect();
-    try {
-      const result = await client.query(`
-        SELECT 
-          id, 
-          name, 
-          description, 
-          theme,
-          elements,
-          created_at, 
-          updated_at
-        FROM enhanced_templates 
-        ORDER BY created_at DESC
-      `);
-      
-      const templates = result.rows.map(row => {
-        let elementsPreview = [];
-        let elementCount = 0;
-        try {
-          const elements = row.elements ? JSON.parse(row.elements) : [];
-          elementCount = elements.length;
-          elementsPreview = elements.slice(0, 3).map(e => ({
-            type: e.type,
-            id: e.id,
-            content: typeof e.content === 'object' ? JSON.stringify(e.content).substring(0, 100) + '...' : e.content
-          }));
-        } catch (e) {
-          console.error('Error parsing elements for template:', row.id, e.message);
-        }
-        
-        return {
-          id: row.id,
-          name: row.name,
-          description: row.description,
-          theme: row.theme,
-          elementCount,
-          elementsPreview,
-          createdAt: row.created_at,
-          updatedAt: row.updated_at
-        };
-      });
-      
-      res.json({
-        success: true,
-        count: templates.length,
-        templates,
-        message: `Found ${templates.length} templates in database`
-      });
-    } finally {
-      client.release();
-    }
-  } catch (error) {
-    console.error('Debug templates error:', error);
-    res.status(500).json({
-      success: false,
-      error: error.message
-    });
-  }
-});
-
-// Test route to verify template generation without database
-router.get('/test-template', async (req, res) => {
-  try {
-    console.log('🧪 [Test] Testing template generation...');
-    
-    const templateBuilder = new EnhancedTemplateBuilder();
-    const template = createDefaultQuotationTemplate(templateBuilder);
-    
-    console.log('🧪 [Test] Template created:', template.name);
-    
-    // Generate sample preview
-    const sampleData = {
-      company: {
-        name: 'ASP Cranes Pvt. Ltd.',
-        address: 'Industrial Area, Pune, Maharashtra',
-        phone: '+91 99999 88888',
-        email: 'sales@aspcranes.com'
-      },
-      client: {
-        name: 'Test Customer',
-        company: 'Test Company Ltd.',
-        address: 'Mumbai, Maharashtra',
-        phone: '+91 98765 43210',
-        email: 'test@company.com'
-      },
-      quotation: {
-        number: 'TEST-001',
-        date: new Date().toLocaleDateString('en-IN'),
-        machineType: 'Tower Crane',
-        duration: '30 days'
-      },
-      items: [
-        {
-          description: 'Tower Crane Rental',
-          quantity: '30',
-          unit: 'Days',
-          rate: 25000,
-          amount: 750000
-        }
-      ],
-      totals: {
-        subtotal: formatCurrency(750000),
-        tax: formatCurrency(135000),
-        total: formatCurrency(885000)
-      }
-    };
-    
-    const html = templateBuilder.generatePreviewHTML(sampleData);
-    
-    console.log('🧪 [Test] Preview HTML generated, length:', html.length);
-    
-    res.setHeader('Content-Type', 'text/html');
-    res.send(html);
-    
-  } catch (error) {
-    console.error('❌ [Test] Template generation failed:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Template generation failed',
-      message: error.message,
-      stack: error.stack
-    });
-  }
-});
-
-// Simple iframe test route
-router.get('/:id/preview/test', (req, res) => {
-  const { id } = req.params;
-  res.send(`
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>Preview Test</title>
-      <style>
-        body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
-        .test-box { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-      </style>
-    </head>
-    <body>
-      <div class="test-box">
-        <h2>🧪 Preview Route Test</h2>
-        <p><strong>Quotation ID:</strong> ${id}</p>
-        <p><strong>Time:</strong> ${new Date().toISOString()}</p>
-        <p>✅ If you can see this, the iframe routing is working!</p>
-        <p>🔄 Now we need to debug the actual preview generation.</p>
-      </div>
-    </body>
-    </html>
-  `);
-});
 
 /**
  * GET /api/quotations/:id/preview - Generate quotation preview
@@ -798,7 +636,6 @@ function mapQuotationToTemplateData(quotationData) {
   const items = (quotationData.items || []).map((item, idx) => {
     const qty = numberOrZero(item.quantity || item.qty || 1);
     const baseRate = numberOrZero(item.rate || item.base_rate || item.unit_price || 0);
-    const rental = qty * baseRate * durationDays;
     return {
       no: idx + 1,
       description: item.description || item.equipment_name || 'Item',
@@ -806,7 +643,7 @@ function mapQuotationToTemplateData(quotationData) {
       quantity: qty,
       duration: `${durationDays} ${durationDays === 1 ? 'day' : 'days'}`,
       rate: baseRate.toFixed(2),
-      rental: rental.toFixed(2),
+      rental: quotation.total_rent || quotation.totalRent,
       mobDemob: numberOrZero(quotationData.mob_demob_cost).toFixed(2),
       riskUsage: (riskUsageTotalCalculated).toFixed(2)
     };
@@ -823,7 +660,7 @@ function mapQuotationToTemplateData(quotationData) {
       quantity: fallbackQty,
       duration: `${durationDays} day`,
       rate: fallbackRate.toFixed(2),
-      rental: numberOrZero(quotationData.total_rent).toFixed(2), // Use total_rent from database directly
+      rental: numberOrZero(quotation.total_rent || quotation.totalRent).toFixed(2), // Use total_rent from database directly
       mobDemob: numberOrZero(quotationData.mob_demob_cost).toFixed(2),
       riskUsage: riskUsageTotalCalculated.toFixed(2)
     });
