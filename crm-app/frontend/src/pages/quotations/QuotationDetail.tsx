@@ -214,7 +214,10 @@ const QuotationDetail: React.FC = () => {
       if (!id) return;
       
       console.log('📥 Starting PDF download for quotation:', id);
-      console.log('🎨 Using template:', selectedTemplate);
+      console.log('🎨 Selected template:', selectedTemplate);
+      
+      const actualTemplateId = (selectedTemplate && selectedTemplate !== 'default') ? selectedTemplate : undefined;
+      console.log('🎯 Sending templateId to backend:', actualTemplateId);
       
       // Use the correct endpoint for PDF generation with selected template
       const response = await fetch(`/api/quotations/print/pdf`, {
@@ -225,7 +228,7 @@ const QuotationDetail: React.FC = () => {
         },
         body: JSON.stringify({ 
           quotationId: id,
-          templateId: selectedTemplate || undefined // Use selected template if available
+          templateId: actualTemplateId
         })
       });
 

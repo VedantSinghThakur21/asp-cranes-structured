@@ -147,37 +147,102 @@ router.post('/pdf', optionalAuth, async (req, res) => {
       return res.status(400).json({ success: false, error: 'Quotation ID is required' });
     }
 
-    // Load data
-    const quotationData = await getQuotationWithDetails(quotationId);
-    if (!quotationData) {
-      return res.status(404).json({ success: false, error: 'Quotation not found' });
-    }
-
-    // Generate simple HTML directly from data (same as preview)
-    const html = generateSimpleQuotationHTML(quotationData);
-    console.log('🎨 [PDF Route] Generated simple HTML, length:', html.length);
+    // Use the same preview system to generate HTML
+    console.log('🎯 [PDF Route] Using preview system for consistent output');
+    console.log('🎯 [PDF Route] Selected template:', templateId);
     
-    // Generate PDF with proper error handling
-    const pdfResult = await pdfService.generateFromHTML(html, { 
-      format: 'A4',
-      quality: 'HIGH',
-      margins: { top: '15mm', right: '15mm', bottom: '15mm', left: '15mm' }
-    });
-
-    // Handle PDF result based on whether Puppeteer is available
-    if (pdfResult.fallback) {
-      console.log('⚠️ Using HTML fallback due to PDF generation issues');
-      
-      // Return HTML that can be printed or converted to PDF on frontend
-      res.setHeader('Content-Type', 'text/html');
-      res.setHeader('Content-Disposition', `inline; filename=quotation_${quotationId}.html`);
-      return res.send(pdfResult.data);
+    // Build preview URL with correct endpoint and template handling
+    const base = `http://localhost:3001/api/quotations-preview/${quotationId}/preview/iframe`;
+    const params = new URLSearchParams();
+    
+    // Only add templateId if it's not 'default' (same logic as frontend)
+    if (templateId && templateId !== 'default') {
+      params.set('templateId', templateId);
+      console.log('🎨 [PDF Route] Using specific template:', templateId);
     } else {
-      // Return proper PDF
-      const buffer = Buffer.isBuffer(pdfResult.data) ? pdfResult.data : Buffer.from(pdfResult.data, 'base64');
-      res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `attachment; filename=quotation_${quotationId}.pdf`);
-      return res.send(buffer);
+      console.log('🎨 [PDF Route] Using default template (no templateId parameter)');
+    }
+    
+    const previewUrl = params.toString() ? `${base}?${params.toString()}` : base;
+    console.log('🔗 [PDF Route] Preview URL:', previewUrl);
+    
+    try {
+      const fetch = (await import('node-fetch')).default;
+      const previewResponse = await fetch(previewUrl);
+      
+      if (!previewResponse.ok) {
+        throw new Error(`Preview fetch failed: ${previewResponse.status}`);
+      }
+      
+      const html = await previewResponse.text();
+      console.log('✅ [PDF Route] Got HTML from preview system, length:', html.length);
+      
+      // Generate PDF with proper error handling
+      const pdfResult = await pdfService.generateFromHTML(html, { 
+        format: 'A4',
+        quality: 'HIGH',
+        margins: { top: '15mm', right: '15mm', bottom: '15mm', left: '15mm' }
+      });
+
+      // Handle PDF result based on whether Puppeteer is available
+      if (pdfResult.fallback) {
+        console.log('⚠️ Using HTML fallback due to PDF generation issues');
+        
+        // Return HTML that can be printed or converted to PDF on frontend
+        res.setHeader('Content-Type', 'text/html');
+        res.setHeader('Content-Disposition', `inline; filename=quotation_${quotationId}.html`);
+        return res.send(html);
+      } else {
+        // Return proper PDF
+        const buffer = Buffer.isBuffer(pdfResult.data) ? pdfResult.data : Buffer.from(pdfResult.data, 'base64');
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename=quotation_${quotationId}.pdf`);
+        return res.send(buffer);
+      }
+      
+    } catch (fetchError) {
+      console.error('❌ [PDF Route] Preview fetch failed:', fetchError);
+      
+      // Fallback: Load data and generate directly using same system as preview
+      const quotationData = await getQuotationWithDetailsPreviewFormat(quotationId);
+      if (!quotationData) {
+        return res.status(404).json({ success: false, error: 'Quotation not found' });
+      }
+
+      // Use EnhancedTemplateBuilder (same as preview)
+      const { EnhancedTemplateBuilder } = await import('../services/EnhancedTemplateBuilder.mjs');
+      const templateBuilder = new EnhancedTemplateBuilder();
+      
+      let template;
+      if (templateId && templateId !== 'default') {
+        console.log('🎨 [PDF Route Fallback] Loading specific template:', templateId);
+        await templateBuilder.loadTemplate(templateId);
+        template = templateBuilder.template;
+      } else {
+        console.log('🎨 [PDF Route Fallback] Using default template');
+        template = await getDefaultTemplate(templateBuilder);
+      }
+
+      const previewData = mapQuotationToTemplateData(quotationData);
+      const html = templateBuilder.generatePreviewHTML(previewData);
+      
+      // Generate PDF
+      const pdfResult = await pdfService.generateFromHTML(html, { 
+        format: 'A4',
+        quality: 'HIGH',
+        margins: { top: '15mm', right: '15mm', bottom: '15mm', left: '15mm' }
+      });
+
+      if (pdfResult.fallback) {
+        res.setHeader('Content-Type', 'text/html');
+        res.setHeader('Content-Disposition', `inline; filename=quotation_${quotationId}.html`);
+        return res.send(html);
+      } else {
+        const buffer = Buffer.isBuffer(pdfResult.data) ? pdfResult.data : Buffer.from(pdfResult.data, 'base64');
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename=quotation_${quotationId}.pdf`);
+        return res.send(buffer);
+      }
     }
   } catch (error) {
     console.error('❌ [PDF Route] PDF generation failed:', error);
@@ -540,7 +605,377 @@ function generateSimpleQuotationHTML(quotationData) {
 }
 
 /**
- * Helper function to get quotation with details
+ * Helper functions copied from preview routes for consistency
+ */
+
+// Generate quotation number from ID (same as preview)
+function generateQuotationNumber(quotationId) {
+  const idParts = quotationId.split('_');
+  if (idParts.length >= 2) {
+    const hashCode = idParts[1].split('').reduce((a, b) => {
+      a = ((a << 5) - a) + b.charCodeAt(0);
+      return a & a;
+    }, 0);
+    const num = Math.abs(hashCode) % 9999 + 1;
+    return `ASP-Q-${num.toString().padStart(3, '0')}`;
+  }
+  return `ASP-Q-${quotationId.substring(5, 8).toUpperCase()}`;
+}
+
+// Get or create default template (same as preview)
+async function getDefaultTemplate(templateBuilder) {
+  try {
+    const client = await pool.connect();
+    
+    try {
+      const result = await client.query(`
+        SELECT id FROM enhanced_templates 
+        WHERE is_default = true AND is_active = true
+        ORDER BY updated_at DESC
+        LIMIT 1
+      `);
+      
+      if (result.rows.length > 0) {
+        await templateBuilder.loadTemplate(result.rows[0].id);
+        console.log('📋 [Helper] Loaded existing default template:', result.rows[0].id);
+        return templateBuilder.template;
+      }
+    } catch (dbError) {
+      console.warn('⚠️ [Helper] Database query failed, creating fallback template:', dbError.message);
+    } finally {
+      client.release();
+    }
+    
+    console.log('📋 [Helper] No default template found, creating fallback template');
+    return createDefaultQuotationTemplate(templateBuilder);
+    
+  } catch (error) {
+    console.error('❌ [Helper] Error getting default template:', error);
+    console.log('📋 [Helper] Creating emergency fallback template');
+    return createDefaultQuotationTemplate(templateBuilder);
+  }
+}
+
+// Create default template (same as preview)
+function createDefaultQuotationTemplate(templateBuilder) {
+  try {
+    const templateData = {
+      name: 'ASP Cranes Default Template',
+      description: 'Professional quotation template for ASP Cranes',
+      theme: 'PROFESSIONAL',
+      isDefault: true,
+      isActive: true
+    };
+    
+    templateBuilder.createTemplate(templateData)
+      .addElement('header', {
+        content: {
+          title: 'ASP CRANES',
+          subtitle: 'QUOTATION',
+          showDate: true,
+          showQuotationNumber: true,
+          alignment: 'center'
+        }
+      })
+      .addElement('company_info', {
+        content: {
+          fields: [
+            '{{company.name}}',
+            '{{company.address}}',
+            '{{company.phone}}',
+            '{{company.email}}'
+          ],
+          layout: 'vertical',
+          alignment: 'left'
+        }
+      })
+      .addElement('client_info', {
+        content: {
+          title: 'Bill To:',
+          fields: [
+            '{{client.name}}',
+            '{{client.company}}',
+            '{{client.address}}',
+            '{{client.phone}}',
+            '{{client.email}}'
+          ],
+          layout: 'vertical',
+          alignment: 'left'
+        }
+      })
+      .addElement('quotation_info', {
+        content: {
+          fields: [
+            { label: 'Quotation #', value: '{{quotation.number}}' },
+            { label: 'Date', value: '{{quotation.date}}' },
+            { label: 'Machine Type', value: '{{quotation.machineType}}' },
+            { label: 'Duration', value: '{{quotation.duration}}' }
+          ],
+          layout: 'table',
+          alignment: 'right'
+        }
+      })
+      .addElement('items_table')
+      .addElement('totals')
+      .addElement('terms', {
+        content: {
+          title: 'Terms & Conditions',
+          text: 'Payment Terms: 50% advance, balance on completion. Equipment delivery within 2-3 working days from advance payment. Fuel charges extra as per actual consumption. All rates are subject to site conditions and accessibility. This quotation is valid for 15 days from date of issue.',
+          showTitle: true
+        }
+      });
+    
+    return templateBuilder.template;
+    
+  } catch (error) {
+    console.error('❌ [Helper] Error creating template:', error);
+    
+    const emergencyTemplate = {
+      id: 'emergency-default',
+      name: 'Emergency Default Template',
+      description: 'Emergency fallback template',
+      theme: 'MODERN',
+      elements: [
+        { type: 'header', content: { title: 'ASP CRANES', subtitle: 'QUOTATION' } },
+        { type: 'company_info', content: { fields: ['{{company.name}}', '{{company.address}}'] } },
+        { type: 'client_info', content: { title: 'Bill To:', fields: ['{{client.name}}'] } },
+        { type: 'items_table', content: {} },
+        { type: 'totals', content: {} }
+      ],
+      isDefault: true,
+      isActive: true
+    };
+    
+    templateBuilder.template = emergencyTemplate;
+    return emergencyTemplate;
+  }
+}
+
+// Map quotation data to template format (same as preview)
+function mapQuotationToTemplateData(quotationData) {
+  const gstRate = 18;
+  const numberOrZero = v => (typeof v === 'number' && !isNaN(v)) ? v : (parseFloat(v) || 0);
+  
+  let riskAdjustmentCalculated = numberOrZero(quotationData.risk_adjustment);
+  let usageLoadFactorCalculated = numberOrZero(quotationData.usage_load_factor);
+  let riskUsageTotalCalculated = riskAdjustmentCalculated + usageLoadFactorCalculated;
+
+  const durationDays = numberOrZero(quotationData.number_of_days) || 1;
+
+  const items = (quotationData.items || []).map((item, idx) => {
+    const qty = numberOrZero(item.quantity || item.qty || 1);
+    const baseRate = numberOrZero(item.rate || item.base_rate || item.unit_price || 0);
+    const rental = qty * baseRate * durationDays;
+    return {
+      no: idx + 1,
+      description: item.description || item.equipment_name || 'Item',
+      jobType: quotationData.order_type || '-',
+      quantity: qty,
+      duration: `${durationDays} ${durationDays === 1 ? 'day' : 'days'}`,
+      rate: baseRate.toFixed(2),
+      rental: rental.toFixed(2),
+      mobDemob: numberOrZero(quotationData.mob_demob_cost).toFixed(2),
+      riskUsage: (riskUsageTotalCalculated).toFixed(2)
+    };
+  });
+  
+  if (items.length === 0) {
+    items.push({
+      no: 1,
+      description: quotationData.machine_type || 'Equipment',
+      jobType: quotationData.order_type || '-',
+      quantity: 1,
+      duration: `${durationDays} day`,
+      rate: '0.00',
+      rental: numberOrZero(quotationData.total_rent).toFixed(2), // Use total_rent for rental column
+      mobDemob: numberOrZero(quotationData.mob_demob_cost).toFixed(2),
+      riskUsage: riskUsageTotalCalculated.toFixed(2)
+    });
+  }
+
+  return {
+    company: quotationData.company,
+    client: quotationData.customer,
+    quotation: {
+      number: quotationData.quotation_number,
+      date: quotationData.created_at ? new Date(quotationData.created_at).toLocaleDateString('en-IN') : new Date().toLocaleDateString('en-IN'),
+      machineType: quotationData.machine_type,
+      duration: `${durationDays} days`,
+      validUntil: quotationData.valid_until || new Date(Date.now() + 15*24*60*60*1000).toLocaleDateString('en-IN'),
+      paymentTerms: '50% advance, balance on completion',
+      taxRate: gstRate
+    },
+    tax: { rate: gstRate },
+    items,
+    totals: {
+      subtotal: formatCurrency(quotationData.total_rent || 0), // Use total_rent for subtotal
+      tax: formatCurrency(quotationData.gst_amount || 0),
+      total: formatCurrency(quotationData.total_cost || 0),
+      workingCost: formatCurrency(quotationData.working_cost || 0),
+      mobDemobCost: formatCurrency(quotationData.mob_demob_cost || 0),
+      foodAccomCost: formatCurrency(quotationData.food_accom_cost || 0),
+      riskAdjustment: formatCurrency(riskAdjustmentCalculated),
+      usageLoadFactor: formatCurrency(usageLoadFactorCalculated),
+      riskUsageTotal: formatCurrency(riskUsageTotalCalculated)
+    }
+  };
+}
+
+// Format currency for display (same as preview)
+function formatCurrency(amount) {
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(amount || 0);
+}
+
+// Get quotation with details in preview format
+async function getQuotationWithDetailsPreviewFormat(quotationId) {
+  try {
+    console.log('🔍 [Helper] Fetching quotation:', quotationId);
+    
+    const query = `
+      SELECT 
+        q.id,
+        q.customer_name,
+        q.customer_contact,
+        q.machine_type,
+        q.order_type,
+        q.number_of_days,
+        q.working_hours,
+        q.total_rent,
+        q.total_cost,
+        q.working_cost,
+        q.mob_demob_cost,
+        q.food_accom_cost,
+        q.usage_load_factor,
+        q.risk_adjustment,
+        q.gst_amount,
+        q.status,
+        q.notes,
+        q.site_distance,
+        q.usage,
+        q.risk_factor,
+        q.shift,
+        q.food_resources,
+        q.accom_resources,
+        q.rigger_amount,
+        q.helper_amount,
+        q.created_at,
+        q.updated_at,
+        c.name as customer_db_name,
+        c.email as customer_email,
+        c.phone as customer_phone,
+        c.address as customer_address,
+        c.company_name as customer_company
+      FROM quotations q
+      LEFT JOIN customers c ON q.customer_id = c.id
+      WHERE q.id = $1
+    `;
+    
+    const result = await pool.query(query, [quotationId]);
+    
+    if (!result.rows || result.rows.length === 0) {
+      return null;
+    }
+
+    const row = result.rows[0];
+    
+    // Get quotation machines/items
+    const itemsQuery = `
+      SELECT 
+        qm.quantity,
+        qm.base_rate,
+        qm.running_cost_per_km,
+        e.name as equipment_name,
+        e.category as equipment_category,
+        e.max_lifting_capacity,
+        e.equipment_id
+      FROM quotation_machines qm
+      LEFT JOIN equipment e ON qm.equipment_id = e.id
+      WHERE qm.quotation_id = $1
+      ORDER BY qm.created_at ASC
+    `;
+    
+    const itemsResult = await pool.query(itemsQuery, [quotationId]);
+    
+    // Parse customer contact JSON
+    let customerContact = {};
+    try {
+      if (row.customer_contact) {
+        customerContact = JSON.parse(row.customer_contact);
+      }
+    } catch (e) {
+      console.warn('Could not parse customer_contact JSON:', e);
+    }
+    
+    // Structure the quotation data (same as preview)
+    const quotation = {
+      id: row.id,
+      quotation_number: generateQuotationNumber(row.id),
+      description: row.notes || 'Crane Rental Service',
+      status: row.status,
+      machine_type: row.machine_type,
+      order_type: row.order_type,
+      number_of_days: row.number_of_days,
+      working_hours: row.working_hours,
+      total_rent: row.total_rent,
+      total_cost: row.total_cost,
+      working_cost: row.working_cost,
+      mob_demob_cost: row.mob_demob_cost,
+      food_accom_cost: row.food_accom_cost,
+      usage_load_factor: row.usage_load_factor,
+      risk_adjustment: row.risk_adjustment,
+      rigger_amount: row.rigger_amount,
+      helper_amount: row.helper_amount,
+      gst_amount: row.gst_amount,
+      site_distance: row.site_distance,
+      usage: row.usage,
+      risk_factor: row.risk_factor,
+      shift: row.shift,
+      food_resources: row.food_resources,
+      accom_resources: row.accom_resources,
+      created_at: row.created_at,
+      updated_at: row.updated_at,
+      
+      customer: {
+        name: customerContact.name || row.customer_name || row.customer_db_name || 'Unknown Customer',
+        email: customerContact.email || row.customer_email || '',
+        phone: customerContact.phone || row.customer_phone || '',
+        address: customerContact.address || row.customer_address || '',
+        company: customerContact.company || row.customer_company || ''
+      },
+      
+      items: itemsResult.rows.map(item => ({
+        description: item.equipment_name || 'Equipment',
+        quantity: item.quantity || 1,
+        unit: 'Days',
+        rate: item.base_rate || 0,
+        amount: (item.quantity || 1) * (item.base_rate || 0)
+      })),
+      
+      company: {
+        name: 'ASP Cranes Pvt. Ltd.',
+        address: 'Industrial Area, Pune, Maharashtra 411019',
+        phone: '+91 99999 88888',
+        email: 'sales@aspcranes.com',
+        website: 'www.aspcranes.com'
+      }
+    };
+
+    console.log('✅ [Helper] Quotation fetched successfully');
+    return quotation;
+    
+  } catch (error) {
+    console.error('❌ [Helper] Error fetching quotation:', error);
+    throw new Error(`Failed to fetch quotation: ${error.message}`);
+  }
+}
+
+/**
+ * Helper function to get quotation with details (legacy format for compatibility)
  */
 async function getQuotationWithDetails(quotationId) {
   try {
