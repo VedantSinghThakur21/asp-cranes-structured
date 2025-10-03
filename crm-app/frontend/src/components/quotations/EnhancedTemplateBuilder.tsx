@@ -537,7 +537,7 @@ const TemplateElement: React.FC<TemplateElementProps> = ({ element, index, onUpd
 const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUpdate, themes, currentTheme, onThemeChange, template, setTemplate, companySettings, uploadLetterhead, removeLetterhead, setMessage }) => {
   if (!selectedElement) {
     return (
-      <div className="w-80 bg-white border-l border-gray-200 p-4">
+      <div className="w-96 bg-white border-l border-gray-200 p-4">
         <div className="text-center text-gray-500 mt-8">
           <Settings className="w-12 h-12 mx-auto mb-4 text-gray-300" />
           <p>Select an element to edit its properties</p>
@@ -547,7 +547,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
   }
 
   return (
-    <div className="w-80 bg-white border-l border-gray-200 p-4 overflow-y-auto">
+    <div className="w-96 bg-white border-l border-gray-200 p-4 overflow-y-auto max-h-screen">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">Properties</h3>
       
       <div className="space-y-6">
@@ -580,10 +580,14 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <input
                 type="text"
                 value={selectedElement.content?.title || ''}
-                onChange={(e) => onUpdate(selectedElement.id, {
-                  content: { ...selectedElement.content, title: e.target.value }
-                })}
-                className="w-full p-2 border border-gray-300 rounded-md"
+                onChange={(e) => {
+                  e.stopPropagation();
+                  onUpdate(selectedElement.id, {
+                    content: { ...selectedElement.content, title: e.target.value }
+                  });
+                }}
+                onKeyDown={(e) => e.stopPropagation()}
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
             <div>
@@ -605,11 +609,15 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
             <label className="block text-sm font-medium text-gray-700 mb-2">Text Content</label>
             <textarea
               value={selectedElement.content?.text || ''}
-              onChange={(e) => onUpdate(selectedElement.id, {
-                content: { ...selectedElement.content, text: e.target.value }
-              })}
+              onChange={(e) => {
+                e.stopPropagation();
+                onUpdate(selectedElement.id, {
+                  content: { ...selectedElement.content, text: e.target.value }
+                });
+              }}
+              onKeyDown={(e) => e.stopPropagation()}
               rows={4}
-              className="w-full p-2 border border-gray-300 rounded-md"
+              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
         )}
@@ -631,11 +639,15 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <label className="block text-sm font-medium text-gray-700 mb-2">Terms Content</label>
               <textarea
                 value={selectedElement.content?.text || ''}
-                onChange={(e) => onUpdate(selectedElement.id, {
-                  content: { ...selectedElement.content, text: e.target.value }
-                })}
+                onChange={(e) => {
+                  e.stopPropagation();
+                  onUpdate(selectedElement.id, {
+                    content: { ...selectedElement.content, text: e.target.value }
+                  });
+                }}
+                onKeyDown={(e) => e.stopPropagation()}
                 rows={8}
-                className="w-full p-2 border border-gray-300 rounded-md"
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Enter terms and conditions..."
               />
             </div>
@@ -1006,10 +1018,14 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <input
                 type="text"
                 value={selectedElement.position?.x || '0'}
-                onChange={(e) => onUpdate(selectedElement.id, {
-                  position: { ...selectedElement.position, x: e.target.value }
-                })}
-                className="w-full p-1 text-sm border border-gray-300 rounded"
+                onChange={(e) => {
+                  e.stopPropagation();
+                  onUpdate(selectedElement.id, {
+                    position: { ...selectedElement.position, x: e.target.value }
+                  });
+                }}
+                onKeyDown={(e) => e.stopPropagation()}
+                className="w-full p-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="0px"
               />
             </div>
@@ -1018,10 +1034,14 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <input
                 type="text"
                 value={selectedElement.position?.y || '0'}
-                onChange={(e) => onUpdate(selectedElement.id, {
-                  position: { ...selectedElement.position, y: e.target.value }
-                })}
-                className="w-full p-1 text-sm border border-gray-300 rounded"
+                onChange={(e) => {
+                  e.stopPropagation();
+                  onUpdate(selectedElement.id, {
+                    position: { ...selectedElement.position, y: e.target.value }
+                  });
+                }}
+                onKeyDown={(e) => e.stopPropagation()}
+                className="w-full p-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="0px"
               />
             </div>
@@ -1061,10 +1081,14 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <input
                 type="text"
                 value={selectedElement.style?.fontSize || '14px'}
-                onChange={(e) => onUpdate(selectedElement.id, {
-                  style: { ...selectedElement.style, fontSize: e.target.value }
-                })}
-                className="w-full p-2 border border-gray-300 rounded-md"
+                onChange={(e) => {
+                  e.stopPropagation();
+                  onUpdate(selectedElement.id, {
+                    style: { ...selectedElement.style, fontSize: e.target.value }
+                  });
+                }}
+                onKeyDown={(e) => e.stopPropagation()}
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
             <div>
@@ -1126,10 +1150,14 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <input
                 type="text"
                 value={selectedElement.style?.padding || '8px'}
-                onChange={(e) => onUpdate(selectedElement.id, {
-                  style: { ...selectedElement.style, padding: e.target.value }
-                })}
-                className="w-full p-2 border border-gray-300 rounded-md"
+                onChange={(e) => {
+                  e.stopPropagation();
+                  onUpdate(selectedElement.id, {
+                    style: { ...selectedElement.style, padding: e.target.value }
+                  });
+                }}
+                onKeyDown={(e) => e.stopPropagation()}
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="e.g., 8px, 10px 15px"
               />
             </div>
@@ -1138,10 +1166,14 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <input
                 type="text"
                 value={selectedElement.style?.margin || '4px 0'}
-                onChange={(e) => onUpdate(selectedElement.id, {
-                  style: { ...selectedElement.style, margin: e.target.value }
-                })}
-                className="w-full p-2 border border-gray-300 rounded-md"
+                onChange={(e) => {
+                  e.stopPropagation();
+                  onUpdate(selectedElement.id, {
+                    style: { ...selectedElement.style, margin: e.target.value }
+                  });
+                }}
+                onKeyDown={(e) => e.stopPropagation()}
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="e.g., 4px 0, 10px"
               />
             </div>
@@ -1349,10 +1381,14 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
                   <input
                     type="text"
                     value={selectedElement.style?.minHeight || 'auto'}
-                    onChange={(e) => onUpdate(selectedElement.id, {
-                      style: { ...selectedElement.style, minHeight: e.target.value }
-                    })}
-                    className="w-full p-1.5 text-xs border border-gray-300 rounded-md"
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      onUpdate(selectedElement.id, {
+                        style: { ...selectedElement.style, minHeight: e.target.value }
+                      });
+                    }}
+                    onKeyDown={(e) => e.stopPropagation()}
+                    className="w-full p-1.5 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="e.g., 40px, auto"
                   />
                 </div>

@@ -801,8 +801,8 @@ router.post('/', authenticateToken, async (req, res) => {
         dayNight: quotationData.dayNight,
         day_night: quotationData.day_night,
         time: quotationData.time,
-        mappedShift: quotationData.shiftType || quotationData.shift || shiftMapping[quotationData.shift] || 'single',
-        mappedDayNight: quotationData.dayNight || quotationData.day_night || quotationData.time || 'day'
+        finalShiftValue: quotationData.shift || 'single',
+        finalDayNightValue: quotationData.dayNight || 'day'
       });
 
       const values = [
@@ -818,8 +818,8 @@ router.post('/', authenticateToken, async (req, res) => {
         Number(quotationData.siteDistance) || 0,
         quotationData.usage || 'normal',
         mappedRiskFactor || 'low',
-        quotationData.shiftType || quotationData.shift || shiftMapping[quotationData.shift] || 'single',
-        quotationData.dayNight || quotationData.day_night || quotationData.time || 'day',
+        quotationData.shift || 'single', // Frontend sends 'single' or 'double' directly
+        quotationData.dayNight || 'day', // Frontend sends 'day' or 'night' directly
         quotationData.mobDemob || quotationData.calculations?.mobDemob || 0, // mob_demob - use frontend value
         quotationData.mobRelaxation || quotationData.calculations?.mobRelaxation || 0, // mob_relaxation
         quotationData.extraCharge || 0,
