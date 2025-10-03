@@ -813,7 +813,7 @@ function mapQuotationToTemplateData(quotationData) {
   });
   if (items.length === 0) {
     // Use total_rent from database directly for Total Rental column
-    const fallbackRate = numberOrZero(quotationData.base_rate || quotationData.rate || 0);
+    const fallbackRate = numberOrZero(quotation.total_rent || quotation.totalRent || 0);
     const fallbackQty = 1;
     
     items.push({
