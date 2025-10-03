@@ -585,7 +585,8 @@ router.post('/', authenticateToken, async (req, res) => {
       mobDemobCost: quotationData.mobDemobCost,
       foodAccomCost: quotationData.foodAccomCost,
       mobDemob: quotationData.mobDemob,
-      calculations: quotationData.calculations
+      shiftType : quotationData.shiftType || quotationData.shift,
+      time : quotationData.dayNight || quotationData.day_night,
     });
     // Validate required fields
     const requiredFields = ['customerName', 'machineType', 'orderType', 'numberOfDays'];

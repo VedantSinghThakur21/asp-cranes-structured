@@ -5,6 +5,20 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useCompanySettings } from '../../hooks/useCompanySettings';
+
+// Utility function for debouncing
+const debounce = (func: Function, wait: number) => {
+  let timeout: NodeJS.Timeout;
+  return function executedFunction(...args: any[]) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+};
 import {
   DragDropContext,
   Droppable,
@@ -38,6 +52,19 @@ import {
 } from 'lucide-react';
 
 // TypeScript interfaces
+interface LetterheadSettings {
+  url: string;
+  position: {
+    x: number;
+    y: number;
+    width: string;
+    height: string;
+  };
+  opacity: number;
+  zIndex: number;
+  enabled: boolean;
+}
+
 interface TemplateElement {
   id: string;
   type: string;
@@ -58,6 +85,7 @@ interface Template {
   description: string;
   theme: string;
   elements: TemplateElement[];
+  letterhead?: LetterheadSettings;
   settings: any;
   branding: any;
 }
@@ -89,6 +117,12 @@ interface PropertiesPanelProps {
   themes: Record<string, Theme>;
   currentTheme: string;
   onThemeChange: (theme: string) => void;
+  template: Template;
+  setTemplate: (template: Template | ((prev: Template) => Template)) => void;
+  companySettings: any;
+  uploadLetterhead: (file: File, position?: any) => Promise<boolean>;
+  removeLetterhead: () => Promise<boolean>;
+  setMessage: (message: string) => void;
 }
 
 interface EnhancedTemplateBuilderProps {
@@ -500,7 +534,7 @@ const TemplateElement: React.FC<TemplateElementProps> = ({ element, index, onUpd
 };
 
 // Properties Panel Component
-const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUpdate, themes, currentTheme, onThemeChange }) => {
+const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUpdate, themes, currentTheme, onThemeChange, template, setTemplate, companySettings, uploadLetterhead, removeLetterhead, setMessage }) => {
   if (!selectedElement) {
     return (
       <div className="w-80 bg-white border-l border-gray-200 p-4">
@@ -1111,6 +1145,287 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
                 placeholder="e.g., 4px 0, 10px"
               />
             </div>
+            
+            {/* Advanced Typography */}
+            <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+              <h5 className="text-xs font-semibold text-blue-800 mb-2 uppercase tracking-wide">Advanced Typography</h5>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Font Family</label>
+                  <select
+                    value={selectedElement.style?.fontFamily || 'Arial, sans-serif'}
+                    onChange={(e) => onUpdate(selectedElement.id, {
+                      style: { ...selectedElement.style, fontFamily: e.target.value }
+                    })}
+                    className="w-full p-1.5 text-xs border border-gray-300 rounded-md"
+                  >
+                    <option value="Arial, sans-serif">Arial</option>
+                    <option value="'Times New Roman', serif">Times New Roman</option>
+                    <option value="'Helvetica Neue', sans-serif">Helvetica</option>
+                    <option value="Georgia, serif">Georgia</option>
+                    <option value="'Courier New', monospace">Courier New</option>
+                    <option value="Verdana, sans-serif">Verdana</option>
+                    <option value="'Segoe UI', sans-serif">Segoe UI</option>
+                    <option value="'Roboto', sans-serif">Roboto</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Line Height</label>
+                  <select
+                    value={selectedElement.style?.lineHeight || '1.4'}
+                    onChange={(e) => onUpdate(selectedElement.id, {
+                      style: { ...selectedElement.style, lineHeight: e.target.value }
+                    })}
+                    className="w-full p-1.5 text-xs border border-gray-300 rounded-md"
+                  >
+                    <option value="1">1x</option>
+                    <option value="1.2">1.2x</option>
+                    <option value="1.4">1.4x</option>
+                    <option value="1.6">1.6x</option>
+                    <option value="2">2x</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Letter Spacing</label>
+                  <select
+                    value={selectedElement.style?.letterSpacing || 'normal'}
+                    onChange={(e) => onUpdate(selectedElement.id, {
+                      style: { ...selectedElement.style, letterSpacing: e.target.value }
+                    })}
+                    className="w-full p-1.5 text-xs border border-gray-300 rounded-md"
+                  >
+                    <option value="normal">Normal</option>
+                    <option value="0.5px">Tight</option>
+                    <option value="1px">Wide</option>
+                    <option value="2px">Wider</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Text Transform</label>
+                  <select
+                    value={selectedElement.style?.textTransform || 'none'}
+                    onChange={(e) => onUpdate(selectedElement.id, {
+                      style: { ...selectedElement.style, textTransform: e.target.value }
+                    })}
+                    className="w-full p-1.5 text-xs border border-gray-300 rounded-md"
+                  >
+                    <option value="none">None</option>
+                    <option value="uppercase">UPPERCASE</option>
+                    <option value="lowercase">lowercase</option>
+                    <option value="capitalize">Capitalize</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Border & Shadow */}
+            <div className="bg-green-50 p-3 rounded-lg border border-green-200">
+              <h5 className="text-xs font-semibold text-green-800 mb-2 uppercase tracking-wide">Border & Effects</h5>
+              <div className="space-y-2">
+                <div className="grid grid-cols-3 gap-2">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Border Width</label>
+                    <select
+                      value={selectedElement.style?.borderWidth || '0'}
+                      onChange={(e) => onUpdate(selectedElement.id, {
+                        style: { 
+                          ...selectedElement.style, 
+                          borderWidth: e.target.value,
+                          borderStyle: e.target.value !== '0' ? (selectedElement.style?.borderStyle || 'solid') : 'none'
+                        }
+                      })}
+                      className="w-full p-1.5 text-xs border border-gray-300 rounded-md"
+                    >
+                      <option value="0">None</option>
+                      <option value="1px">1px</option>
+                      <option value="2px">2px</option>
+                      <option value="3px">3px</option>
+                      <option value="4px">4px</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Border Style</label>
+                    <select
+                      value={selectedElement.style?.borderStyle || 'solid'}
+                      onChange={(e) => onUpdate(selectedElement.id, {
+                        style: { ...selectedElement.style, borderStyle: e.target.value }
+                      })}
+                      className="w-full p-1.5 text-xs border border-gray-300 rounded-md"
+                      disabled={selectedElement.style?.borderWidth === '0'}
+                    >
+                      <option value="solid">Solid</option>
+                      <option value="dashed">Dashed</option>
+                      <option value="dotted">Dotted</option>
+                      <option value="double">Double</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Border Color</label>
+                    <input
+                      type="color"
+                      value={selectedElement.style?.borderColor || '#cccccc'}
+                      onChange={(e) => onUpdate(selectedElement.id, {
+                        style: { ...selectedElement.style, borderColor: e.target.value }
+                      })}
+                      className="w-full h-8 border border-gray-300 rounded-md"
+                      disabled={selectedElement.style?.borderWidth === '0'}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Border Radius</label>
+                    <select
+                      value={selectedElement.style?.borderRadius || '0'}
+                      onChange={(e) => onUpdate(selectedElement.id, {
+                        style: { ...selectedElement.style, borderRadius: e.target.value }
+                      })}
+                      className="w-full p-1.5 text-xs border border-gray-300 rounded-md"
+                    >
+                      <option value="0">None</option>
+                      <option value="4px">Small</option>
+                      <option value="8px">Medium</option>
+                      <option value="12px">Large</option>
+                      <option value="50%">Circle</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Box Shadow</label>
+                    <select
+                      value={selectedElement.style?.boxShadow || 'none'}
+                      onChange={(e) => onUpdate(selectedElement.id, {
+                        style: { ...selectedElement.style, boxShadow: e.target.value }
+                      })}
+                      className="w-full p-1.5 text-xs border border-gray-300 rounded-md"
+                    >
+                      <option value="none">None</option>
+                      <option value="0 1px 3px rgba(0,0,0,0.1)">Light</option>
+                      <option value="0 4px 6px rgba(0,0,0,0.1)">Medium</option>
+                      <option value="0 10px 15px rgba(0,0,0,0.1)">Heavy</option>
+                      <option value="inset 0 2px 4px rgba(0,0,0,0.1)">Inset</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Layout & Positioning */}
+            <div className="bg-purple-50 p-3 rounded-lg border border-purple-200">
+              <h5 className="text-xs font-semibold text-purple-800 mb-2 uppercase tracking-wide">Layout & Positioning</h5>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Display</label>
+                  <select
+                    value={selectedElement.style?.display || 'block'}
+                    onChange={(e) => onUpdate(selectedElement.id, {
+                      style: { ...selectedElement.style, display: e.target.value }
+                    })}
+                    className="w-full p-1.5 text-xs border border-gray-300 rounded-md"
+                  >
+                    <option value="block">Block</option>
+                    <option value="inline-block">Inline Block</option>
+                    <option value="flex">Flex</option>
+                    <option value="inline">Inline</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Width</label>
+                  <select
+                    value={selectedElement.style?.width || 'auto'}
+                    onChange={(e) => onUpdate(selectedElement.id, {
+                      style: { ...selectedElement.style, width: e.target.value }
+                    })}
+                    className="w-full p-1.5 text-xs border border-gray-300 rounded-md"
+                  >
+                    <option value="auto">Auto</option>
+                    <option value="25%">25%</option>
+                    <option value="50%">50%</option>
+                    <option value="75%">75%</option>
+                    <option value="100%">100%</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Min Height</label>
+                  <input
+                    type="text"
+                    value={selectedElement.style?.minHeight || 'auto'}
+                    onChange={(e) => onUpdate(selectedElement.id, {
+                      style: { ...selectedElement.style, minHeight: e.target.value }
+                    })}
+                    className="w-full p-1.5 text-xs border border-gray-300 rounded-md"
+                    placeholder="e.g., 40px, auto"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Overflow</label>
+                  <select
+                    value={selectedElement.style?.overflow || 'visible'}
+                    onChange={(e) => onUpdate(selectedElement.id, {
+                      style: { ...selectedElement.style, overflow: e.target.value }
+                    })}
+                    className="w-full p-1.5 text-xs border border-gray-300 rounded-md"
+                  >
+                    <option value="visible">Visible</option>
+                    <option value="hidden">Hidden</option>
+                    <option value="scroll">Scroll</option>
+                    <option value="auto">Auto</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Print Optimization */}
+            <div className="bg-orange-50 p-3 rounded-lg border border-orange-200">
+              <h5 className="text-xs font-semibold text-orange-800 mb-2 uppercase tracking-wide">Print Optimization</h5>
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="pageBreakBefore"
+                    checked={selectedElement.style?.pageBreakBefore === 'always'}
+                    onChange={(e) => onUpdate(selectedElement.id, {
+                      style: { 
+                        ...selectedElement.style, 
+                        pageBreakBefore: e.target.checked ? 'always' : 'auto' 
+                      }
+                    })}
+                    className="rounded border-gray-300"
+                  />
+                  <label htmlFor="pageBreakBefore" className="text-xs text-gray-700">Page break before element</label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="pageBreakAfter"
+                    checked={selectedElement.style?.pageBreakAfter === 'always'}
+                    onChange={(e) => onUpdate(selectedElement.id, {
+                      style: { 
+                        ...selectedElement.style, 
+                        pageBreakAfter: e.target.checked ? 'always' : 'auto' 
+                      }
+                    })}
+                    className="rounded border-gray-300"
+                  />
+                  <label htmlFor="pageBreakAfter" className="text-xs text-gray-700">Page break after element</label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="printColorAdjust"
+                    checked={selectedElement.style?.printColorAdjust === 'exact'}
+                    onChange={(e) => onUpdate(selectedElement.id, {
+                      style: { 
+                        ...selectedElement.style, 
+                        printColorAdjust: e.target.checked ? 'exact' : 'economy',
+                        WebkitPrintColorAdjust: e.target.checked ? 'exact' : 'economy'
+                      }
+                    })}
+                    className="rounded border-gray-300"
+                  />
+                  <label htmlFor="printColorAdjust" className="text-xs text-gray-700">Force background colors in print</label>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -1138,7 +1453,176 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
           </div>
         </div>
 
+        {/* Letterhead Settings */}
+        <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-6 rounded-lg border-2 border-purple-200">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+            <Image className="mr-2 text-purple-600" size={20} />
+            Letterhead Settings
+          </h3>
+          
+          <div className="space-y-4">
+            {/* Letterhead Upload */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Upload Letterhead</label>
+              <div className="flex items-center space-x-3">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      try {
+                        const success = await uploadLetterhead(file, template.letterhead?.position);
+                        if (success) {
+                          setMessage('Letterhead uploaded successfully!');
+                          // Update template with company letterhead
+                          if (companySettings?.letterheadUrl) {
+                            setTemplate(prev => ({
+                              ...prev,
+                              letterhead: {
+                                url: companySettings.letterheadUrl!,
+                                position: companySettings.letterheadPosition,
+                                opacity: companySettings.letterheadPosition.opacity,
+                                zIndex: companySettings.letterheadPosition.zIndex,
+                                enabled: true
+                              }
+                            }));
+                          }
+                        } else {
+                          setMessage('Failed to upload letterhead. Please try again.');
+                        }
+                      } catch (error) {
+                        console.error('Error uploading letterhead:', error);
+                        setMessage('Error uploading letterhead.');
+                      }
+                    }
+                  }}
+                  className="text-sm text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+                />
+              </div>
+              {template.letterhead?.url && (
+                <div className="mt-2 p-3 bg-white rounded-lg border">
+                  <div className="flex items-center justify-between">
+                    <img 
+                      src={template.letterhead.url} 
+                      alt="Letterhead preview" 
+                      className="max-w-full h-20 object-contain"
+                    />
+                    <button
+                      onClick={async () => {
+                        try {
+                          const success = await removeLetterhead();
+                          if (success) {
+                            setTemplate(prev => ({
+                              ...prev,
+                              letterhead: {
+                                ...prev.letterhead!,
+                                url: '',
+                                enabled: false
+                              }
+                            }));
+                            setMessage('Letterhead removed successfully!');
+                          }
+                        } catch (error) {
+                          console.error('Error removing letterhead:', error);
+                          setMessage('Error removing letterhead.');
+                        }
+                      }}
+                      className="ml-2 p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Remove letterhead"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
 
+            {/* Letterhead Controls */}
+            {template.letterhead?.url && (
+              <>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Position X</label>
+                    <input
+                      type="number"
+                      value={template.letterhead?.position?.x || 0}
+                      onChange={(e) => setTemplate(prev => ({
+                        ...prev,
+                        letterhead: {
+                          ...prev.letterhead!,
+                          position: {
+                            ...prev.letterhead!.position,
+                            x: parseInt(e.target.value)
+                          }
+                        }
+                      }))}
+                      className="w-full p-2 text-sm border border-gray-300 rounded-md"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Position Y</label>
+                    <input
+                      type="number"
+                      value={template.letterhead?.position?.y || 0}
+                      onChange={(e) => setTemplate(prev => ({
+                        ...prev,
+                        letterhead: {
+                          ...prev.letterhead!,
+                          position: {
+                            ...prev.letterhead!.position,
+                            y: parseInt(e.target.value)
+                          }
+                        }
+                      }))}
+                      className="w-full p-2 text-sm border border-gray-300 rounded-md"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Opacity</label>
+                  <input
+                    type="range"
+                    min="0.1"
+                    max="1"
+                    step="0.1"
+                    value={template.letterhead?.opacity || 0.3}
+                    onChange={(e) => setTemplate(prev => ({
+                      ...prev,
+                      letterhead: {
+                        ...prev.letterhead!,
+                        opacity: parseFloat(e.target.value)
+                      }
+                    }))}
+                    className="w-full"
+                  />
+                  <div className="text-xs text-gray-500 mt-1">
+                    Opacity: {((template.letterhead?.opacity || 0.3) * 100).toFixed(0)}%
+                  </div>
+                </div>
+
+                <div>
+                  <label className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={template.letterhead?.enabled !== false}
+                      onChange={(e) => setTemplate(prev => ({
+                        ...prev,
+                        letterhead: {
+                          ...prev.letterhead!,
+                          enabled: e.target.checked
+                        }
+                      }))}
+                      className="rounded border-gray-300"
+                    />
+                    <span className="text-sm font-medium text-gray-700">Show Letterhead</span>
+                  </label>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
 
       </div>
     </div>
@@ -1147,12 +1631,21 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
 
 // Main Enhanced Template Builder Component
 const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quotationId, templateId, onClose, onSave, autoPreview = false, readOnly = false }) => {
+  const { settings: companySettings, uploadLetterhead, removeLetterhead } = useCompanySettings();
+  
   const [template, setTemplate] = useState<Template>({
     id: templateId || null,
     name: 'New Template',
     description: '',
     theme: 'MODERN',
     elements: [],
+    letterhead: {
+      url: '',
+      position: { x: 0, y: 0, width: '100%', height: 'auto' },
+      opacity: 0.3,
+      zIndex: -1,
+      enabled: false
+    },
     settings: {},
     branding: {}
   });
@@ -1327,7 +1820,8 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
     saveToHistory();
   };
 
-  const updateElement = (elementId: string, updates: any) => {
+  // Debounced update function to prevent input interruption
+  const updateElement = useCallback((elementId: string, updates: any) => {
     console.log('🔄 Updating element:', elementId, 'with updates:', updates);
     setTemplate(prev => ({
       ...prev,
@@ -1340,8 +1834,19 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
         return el;
       })
     }));
-    saveToHistory();
-  };
+  }, []);
+
+  // Separate function for saving to history to avoid frequent saves
+  const debouncedSaveToHistory = useCallback(
+    debounce(() => saveToHistory(), 500),
+    []
+  );
+
+  // Enhanced update with debounced history save
+  const updateElementWithHistory = useCallback((elementId: string, updates: any) => {
+    updateElement(elementId, updates);
+    debouncedSaveToHistory();
+  }, [updateElement, debouncedSaveToHistory]);
 
   const deleteElement = (elementId: string) => {
     setTemplate(prev => ({
@@ -2126,10 +2631,16 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
         {/* Properties Panel */}
         <PropertiesPanel
           selectedElement={selectedElement}
-          onUpdate={updateElement}
+          onUpdate={updateElementWithHistory}
           themes={THEMES}
           currentTheme={template.theme}
           onThemeChange={applyTheme}
+          template={template}
+          setTemplate={setTemplate}
+          companySettings={companySettings}
+          uploadLetterhead={uploadLetterhead}
+          removeLetterhead={removeLetterhead}
+          setMessage={setMessage}
         />
       </div>
 

@@ -316,6 +316,61 @@ router.get('/:id/preview/iframe', async (req, res) => {
 });
 
 /**
+ * Helper function to get company information from database
+ */
+async function getCompanyInformation() {
+  try {
+    const client = await pool.connect();
+    try {
+      const result = await client.query(`
+        SELECT 
+          company_name as name,
+          address,
+          phone,
+          email,
+          website,
+          gst_number,
+          letterhead_url
+        FROM company_settings 
+        WHERE is_active = true 
+        ORDER BY updated_at DESC 
+        LIMIT 1
+      `);
+      
+      if (result.rows.length > 0) {
+        const company = result.rows[0];
+        console.log('✅ [Helper] Company info fetched from database');
+        return {
+          name: company.name || 'ASP Cranes Pvt. Ltd.',
+          address: company.address || 'Industrial Area, Pune, Maharashtra 411019',
+          phone: company.phone || '+91 99999 88888',
+          email: company.email || 'sales@aspcranes.com',
+          website: company.website || 'www.aspcranes.com',
+          gstNumber: company.gst_number || '',
+          letterheadUrl: company.letterhead_url || null
+        };
+      }
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    console.warn('⚠️ [Helper] Could not fetch company info from database:', error.message);
+  }
+  
+  // Fallback to default values
+  console.log('📋 [Helper] Using fallback company information');
+  return {
+    name: 'ASP Cranes Pvt. Ltd.',
+    address: 'Industrial Area, Pune, Maharashtra 411019',
+    phone: '+91 99999 88888',
+    email: 'sales@aspcranes.com',
+    website: 'www.aspcranes.com',
+    gstNumber: '',
+    letterheadUrl: null
+  };
+}
+
+/**
  * Helper function to get quotation with details from database
  */
 async function getQuotationWithDetails(quotationId) {
@@ -444,14 +499,8 @@ async function getQuotationWithDetails(quotationId) {
         amount: (item.quantity || 1) * (item.base_rate || 0)
       })),
       
-      // Company information
-      company: {
-        name: 'ASP Cranes Pvt. Ltd.',
-        address: 'Industrial Area, Pune, Maharashtra 411019',
-        phone: '+91 99999 88888',
-        email: 'sales@aspcranes.com',
-        website: 'www.aspcranes.com'
-      }
+      // Company information from database
+      company: await getCompanyInformation()
     };
 
     console.log('✅ [Helper] Quotation fetched successfully');
@@ -620,6 +669,42 @@ function createDefaultQuotationTemplate(templateBuilder) {
 }
 
 /**
+ * Generate letterhead CSS for template rendering
+ */
+function generateLetterheadCSS(letterhead) {
+  if (!letterhead || !letterhead.enabled || !letterhead.url) {
+    return '';
+  }
+  
+  return `
+    <style>
+      .letterhead-background {
+        position: absolute;
+        top: ${letterhead.position.y}px;
+        left: ${letterhead.position.x}px;
+        width: ${letterhead.position.width};
+        height: ${letterhead.position.height};
+        opacity: ${letterhead.opacity};
+        z-index: ${letterhead.zIndex};
+        background-image: url('${letterhead.url}');
+        background-repeat: no-repeat;
+        background-size: contain;
+        background-position: center;
+        pointer-events: none;
+      }
+      
+      @media print {
+        .letterhead-background {
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+      }
+    </style>
+    <div class="letterhead-background"></div>
+  `;
+}
+
+/**
  * Map quotation data to template format
  */
 function mapQuotationToTemplateData(quotationData) {
@@ -637,7 +722,7 @@ function mapQuotationToTemplateData(quotationData) {
     const qty = numberOrZero(item.quantity || item.qty || 1);
     const baseRate = numberOrZero(item.rate || item.base_rate || item.unit_price || 0);
     return {
-      no: idx + 1,
+      no: quotationData.quotation_number,
       description: item.description || item.equipment_name || 'Item',
       jobType: quotationData.order_type || '-',
       quantity: qty,
@@ -654,7 +739,7 @@ function mapQuotationToTemplateData(quotationData) {
     const fallbackQty = 1;
     
     items.push({
-      no: 1,
+      no: quotationData.quotation_number,
       description: quotationData.machine_type || 'Equipment',
       jobType: quotationData.order_type || '-',
       quantity: fallbackQty,
