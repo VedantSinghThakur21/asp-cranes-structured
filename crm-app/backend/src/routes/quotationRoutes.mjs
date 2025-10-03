@@ -795,6 +795,16 @@ router.post('/', authenticateToken, async (req, res) => {
         originalQuotationDataCustomHelperAmount: quotationData.customHelperAmount
       });
 
+      console.log('🕐 SHIFT & TIME DEBUG: Values from frontend:', {
+        shiftType: quotationData.shiftType,
+        shift: quotationData.shift,
+        dayNight: quotationData.dayNight,
+        day_night: quotationData.day_night,
+        time: quotationData.time,
+        mappedShift: quotationData.shiftType || quotationData.shift || shiftMapping[quotationData.shift] || 'single',
+        mappedDayNight: quotationData.dayNight || quotationData.day_night || quotationData.time || 'day'
+      });
+
       const values = [
         id,
         customerId,
@@ -808,8 +818,8 @@ router.post('/', authenticateToken, async (req, res) => {
         Number(quotationData.siteDistance) || 0,
         quotationData.usage || 'normal',
         mappedRiskFactor || 'low',
-        shiftMapping[quotationData.shift] || 'single',
-        'day', // day_night (will be enhanced later)
+        quotationData.shiftType || quotationData.shift || shiftMapping[quotationData.shift] || 'single',
+        quotationData.dayNight || quotationData.day_night || quotationData.time || 'day',
         quotationData.mobDemob || quotationData.calculations?.mobDemob || 0, // mob_demob - use frontend value
         quotationData.mobRelaxation || quotationData.calculations?.mobRelaxation || 0, // mob_relaxation
         quotationData.extraCharge || 0,
