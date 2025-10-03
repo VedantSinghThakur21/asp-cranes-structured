@@ -152,48 +152,10 @@ router.post('/pdf', optionalAuth, async (req, res) => {
     if (!quotationData) {
       return res.status(404).json({ success: false, error: 'Quotation not found' });
     }
-    
-    // Use Enhanced Template System for proper template rendering
-    const { EnhancedTemplateBuilder } = await import('../services/EnhancedTemplateBuilder.mjs');
-    const templateBuilder = new EnhancedTemplateBuilder();
-    
-    let template;
-    if (templateId) {
-      console.log('🎨 [PDF Route] Loading specific template:', templateId);
-      await templateBuilder.loadTemplate(templateId);
-      template = templateBuilder.template;
-    } else {
-      // Try to get configured default template first
-      try {
-        const defaultConfig = await getDefaultTemplateConfig();
-        if (defaultConfig?.template_id || defaultConfig?.defaultTemplateId) {
-          const configTemplateId = defaultConfig.template_id || defaultConfig.defaultTemplateId;
-          await templateBuilder.loadTemplate(configTemplateId);
-          template = templateBuilder.template;
-          console.log('📋 [PDF Route] Using configured default template:', configTemplateId);
-        } else {
-          throw new Error('No configured default template');
-        }
-      } catch (configError) {
-        console.log('⚠️ [PDF Route] No configured default, using database default');
-        const defaultTemplate = await templateService.getDefaultTemplate();
-        await templateBuilder.loadTemplate(defaultTemplate.id);
-        template = templateBuilder.template;
-      }
-    }
 
-    // Generate enhanced HTML using EnhancedTemplateBuilder
-    const mappedData = templateService.mapQuotationData(quotationData);
-    console.log('🗺️ [PDF Route] Mapped data for template:', {
-      hasCompany: !!mappedData.company,
-      hasClient: !!mappedData.client,
-      hasQuotation: !!mappedData.quotation,
-      itemsCount: mappedData.items?.length || 0
-    });
-    
-    // Use EnhancedTemplateBuilder for template rendering
-    const html = templateBuilder.generateQuotationHTML(mappedData);
-    console.log('🎨 [PDF Route] Generated HTML with template:', template.name, 'length:', html.length);
+    // Generate simple HTML directly from data (same as preview)
+    const html = generateSimpleQuotationHTML(quotationData);
+    console.log('🎨 [PDF Route] Generated simple HTML, length:', html.length);
     
     // Generate PDF with proper error handling
     const pdfResult = await pdfService.generateFromHTML(html, { 
@@ -316,6 +278,266 @@ router.post('/print', optionalAuth, async (req, res) => {
     });
   }
 });
+
+/**
+ * Generate simple HTML for PDF that matches the preview output
+ */
+function generateSimpleQuotationHTML(quotationData) {
+  // Transform quotation data to match the preview format
+  const data = {
+    company: quotationData.company || {
+      name: 'ASP Cranes Pvt. Ltd.',
+      address: 'Industrial Area, Pune, Maharashtra 411019',
+      phone: '+91 99999 88888',
+      email: 'sales@aspcranes.com'
+    },
+    client: quotationData.customer || {
+      name: quotationData.customer_name || 'Client Name',
+      company: quotationData.customer?.company || 'Client Company',
+      address: quotationData.customer?.address || 'Client Address',
+      phone: quotationData.customer?.phone || 'Client Phone',
+      email: quotationData.customer?.email || 'client@email.com'
+    },
+    quotation: {
+      number: quotationData.quotation_number || quotationData.id,
+      date: new Date(quotationData.created_at).toLocaleDateString('en-IN'),
+      validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN')
+    },
+    items: quotationData.items?.length > 0 ? quotationData.items.map((item, index) => ({
+      no: index + 1,
+      description: `${item.equipment_name || quotationData.machine_type} ${item.equipment_id || ''}`,
+      jobType: quotationData.order_type || 'Standard',
+      quantity: item.quantity || 1,
+      duration: `${quotationData.number_of_days || 1} days`,
+      rate: `₹${(item.base_rate || 1000).toLocaleString('en-IN')}/day`,
+      rental: `₹${Math.round(quotationData.total_rent || 0).toLocaleString('en-IN')}`,
+      mobDemob: `₹15,000`,
+      riskUsage: `₹10,000`
+    })) : [{
+      no: 1,
+      description: `${quotationData.machine_type || 'Telescopic Mobile Crane'} XCMG QY 130K`,
+      jobType: quotationData.order_type || 'micro',
+      quantity: 1,
+      duration: `${quotationData.number_of_days || 1} day`,
+      rate: `₹1,000/day`,
+      rental: `₹${Math.round(quotationData.total_rent || 1000).toLocaleString('en-IN')}`,
+      mobDemob: `₹${Math.round(quotationData.mob_demob_cost || 600).toLocaleString('en-IN')}`,
+      riskUsage: `₹0`
+    }],
+    totals: {
+      subtotal: `₹${Math.round((quotationData.total_cost || 0) - (quotationData.gst_amount || 0)).toLocaleString('en-IN')}`,
+      tax: `₹${Math.round(quotationData.gst_amount || 0).toLocaleString('en-IN')}`,
+      total: `₹${Math.round(quotationData.total_cost || 0).toLocaleString('en-IN')}`
+    }
+  };
+
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quotation ${data.quotation.number}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            color: #000;
+            line-height: 1.6;
+            background: white;
+        }
+        .quotation-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #2563eb;
+        }
+        .header h1 {
+            font-size: 2.5em;
+            color: #2563eb;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .header h2 {
+            font-size: 1.2em;
+            color: #64748b;
+        }
+        .info-section {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+        .company-info, .client-info {
+            flex: 1;
+        }
+        .client-info {
+            margin-left: 40px;
+        }
+        .info-section h3 {
+            color: #2563eb;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+        }
+        .items-table th {
+            background: #2563eb;
+            color: white;
+            padding: 12px 8px;
+            text-align: center;
+            border: 1px solid #ddd;
+            font-weight: bold;
+        }
+        .items-table td {
+            padding: 10px 8px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        .items-table tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+        .totals-section {
+            margin-top: 30px;
+            display: flex;
+            justify-content: flex-end;
+        }
+        .totals-table {
+            width: 300px;
+        }
+        .totals-table td {
+            padding: 8px 15px;
+            border: none;
+        }
+        .totals-table .label {
+            text-align: right;
+            font-weight: bold;
+        }
+        .totals-table .value {
+            text-align: right;
+        }
+        .totals-table .total-row {
+            border-top: 2px solid #000;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        .terms {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+        }
+        .terms h3 {
+            color: #2563eb;
+            margin-bottom: 10px;
+        }
+        @media print {
+            .quotation-container { margin: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="quotation-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>ASP CRANES</h1>
+            <h2>Professional Equipment Solutions</h2>
+        </div>
+
+        <!-- Company and Client Info -->
+        <div class="info-section">
+            <div class="company-info">
+                <h3>From:</h3>
+                <div>${data.company.name}</div>
+                <div>${data.company.address}</div>
+                <div>${data.company.phone}</div>
+                <div>${data.company.email}</div>
+            </div>
+            <div class="client-info">
+                <h3>Bill To:</h3>
+                <div>${data.client.name}</div>
+                <div>${data.client.company}</div>
+                <div>${data.client.address}</div>
+                <div>${data.client.phone}</div>
+                <div>${data.client.email}</div>
+            </div>
+        </div>
+
+        <!-- Quotation Info -->
+        <div class="info-section">
+            <div>
+                <strong>Quotation #:</strong> ${data.quotation.number}<br>
+                <strong>Date:</strong> ${data.quotation.date}<br>
+                <strong>Valid Until:</strong> ${data.quotation.validUntil}
+            </div>
+        </div>
+
+        <!-- Items Table -->
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width: 6%;">S.No.</th>
+                    <th style="width: 25%;">Description/Equipment Name</th>
+                    <th style="width: 10%;">Job Type</th>
+                    <th style="width: 8%;">Quantity</th>
+                    <th style="width: 10%;">Duration/Days</th>
+                    <th style="width: 10%;">Rate</th>
+                    <th style="width: 10%;">Mob/Demob</th>
+                    <th style="width: 10%;">Risk & Usage</th>
+                    <th style="width: 12%;">Total Rental</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${data.items.map(item => `
+                    <tr>
+                        <td>${item.no}</td>
+                        <td>${item.description}</td>
+                        <td>${item.jobType}</td>
+                        <td>${item.quantity}</td>
+                        <td>${item.duration}</td>
+                        <td>${item.rate}</td>
+                        <td>${item.mobDemob}</td>
+                        <td>${item.riskUsage}</td>
+                        <td>${item.rental}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+
+        <!-- Totals -->
+        <div class="totals-section">
+            <table class="totals-table">
+                <tr>
+                    <td class="label">Subtotal:</td>
+                    <td class="value">${data.totals.subtotal}</td>
+                </tr>
+                <tr>
+                    <td class="label">Tax (GST):</td>
+                    <td class="value">${data.totals.tax}</td>
+                </tr>
+                <tr class="total-row">
+                    <td class="label">Total:</td>
+                    <td class="value">${data.totals.total}</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Terms -->
+        <div class="terms">
+            <h3>Terms & Conditions</h3>
+            <p>This quotation is valid for 30 days. All rates are inclusive of GST. Payment terms: 50% advance, balance on completion.</p>
+        </div>
+    </div>
+</body>
+</html>`;
+}
 
 /**
  * Helper function to get quotation with details

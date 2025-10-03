@@ -673,9 +673,11 @@ router.post('/', authenticateToken, async (req, res) => {
       };
       
       // Use calculated costs from frontend (no fallbacks to avoid incorrect data)
-      const totalCost = quotationData.totalCost || quotationData.calculations?.totalAmount || 0;
+      // NOTE: total_rent should be the SUBTOTAL (before GST)
+      // NOTE: total_cost should be the FINAL TOTAL (after GST)
+      const subtotalAmount = quotationData.calculations?.subtotal || (quotationData.totalCost - quotationData.gstAmount) || 0;
       const gstAmount = quotationData.gstAmount || quotationData.calculations?.gstAmount || 0;
-      const finalTotal = quotationData.totalAmount || quotationData.calculations?.finalTotal || 0;
+      const finalTotal = quotationData.totalAmount || quotationData.calculations?.totalAmount || (subtotalAmount + gstAmount);
       
       const customerContact = {
         name: quotationData.customerName,
@@ -777,9 +779,10 @@ router.post('/', authenticateToken, async (req, res) => {
         foodAccomCost: quotationData.foodAccomCost || quotationData.calculations?.foodAccomCost,
         mobDemob: quotationData.mobDemob || quotationData.calculations?.mobDemob,
         extraCharge: quotationData.extraCharge,
-        totalCost: totalCost,
-        gstAmount: gstAmount,
-        finalTotal: finalTotal
+        // Database field mapping:
+        totalRent_DB: subtotalAmount, // Goes to total_rent (subtotal)
+        totalCost_DB: finalTotal,     // Goes to total_cost (final amount)
+        gstAmount: gstAmount
       });
       
       console.log('🔍 CRITICAL DEBUG: Values about to be inserted into database:', {
@@ -814,8 +817,8 @@ router.post('/', authenticateToken, async (req, res) => {
         true, // include_gst
         'no', // sunday_working
         JSON.stringify(customerContact),
-        totalCost,
-        finalTotal,
+        subtotalAmount, // total_rent should be the subtotal (before GST)
+        finalTotal,     // total_cost should be the final total (after GST)
         quotationData.workingCost || quotationData.calculations?.workingCost || 0, // working_cost
         quotationData.mobDemobCost || quotationData.calculations?.mobDemobCost || 0, // mob_demob_cost
         quotationData.foodAccomCost || quotationData.calculations?.foodAccomCost || 0, // food_accom_cost
@@ -1096,6 +1099,39 @@ router.put('/:id', async (req, res) => {
       
       const mappedShift = shift ? shiftMapping[shift] || shift : existing.shift;
       
+      // Calculate correct subtotal and total for database fields
+      // total_rent should be the SUBTOTAL (before GST)
+      // total_cost should be the FINAL TOTAL (after GST) 
+      let updatedSubtotal = existing.total_rent;
+      let updatedFinalTotal = existing.total_cost;
+      let updatedGstAmount = existing.gst_amount;
+      
+      // If calculations object is provided, use it to determine correct values
+      if (calculations) {
+        updatedSubtotal = calculations.subtotal || existing.total_rent;
+        updatedFinalTotal = calculations.totalAmount || existing.total_cost;
+        updatedGstAmount = calculations.gstAmount || existing.gst_amount;
+      } else if (totalRent !== undefined || totalCost !== undefined || gstAmount !== undefined) {
+        // If individual total fields are provided, calculate correctly
+        const providedGst = gst_amount !== undefined ? gst_amount : (gstAmount !== undefined ? gstAmount : existing.gst_amount);
+        const providedTotal = total_cost !== undefined ? total_cost : (totalCost !== undefined ? totalCost : existing.total_cost);
+        const providedSubtotal = total_rent !== undefined ? total_rent : (totalRent !== undefined ? totalRent : (providedTotal - providedGst));
+        
+        updatedSubtotal = providedSubtotal;
+        updatedFinalTotal = providedTotal;
+        updatedGstAmount = providedGst;
+      }
+      
+      console.log('🔧 UPDATE DEBUG: Total calculations:', {
+        originalTotalRent: existing.total_rent,
+        originalTotalCost: existing.total_cost,
+        originalGstAmount: existing.gst_amount,
+        updatedSubtotal,
+        updatedFinalTotal,
+        updatedGstAmount,
+        providedCalculations: calculations
+      });
+      
       // Validate required fields
       if (!mappedMachineType) {
         return res.status(400).json({
@@ -1175,9 +1211,9 @@ router.put('/:id', async (req, res) => {
         risk_adjustment !== undefined ? risk_adjustment : (riskAdjustment !== undefined ? riskAdjustment : existing.risk_adjustment),
         usage_load_factor !== undefined ? usage_load_factor : (usageLoadFactor !== undefined ? usageLoadFactor : existing.usage_load_factor),
         riskUsageTotal !== undefined ? riskUsageTotal : (calculations?.riskUsageTotal !== undefined ? calculations.riskUsageTotal : existing.risk_usage_total),
-        gst_amount !== undefined ? gst_amount : (gstAmount !== undefined ? gstAmount : existing.gst_amount),
-        total_rent !== undefined ? total_rent : (totalRent !== undefined ? totalRent : existing.total_rent),
-        total_cost !== undefined ? total_cost : (totalCost !== undefined ? totalCost : existing.total_cost),
+        updatedGstAmount,   // GST amount
+        updatedSubtotal,    // total_rent should be subtotal (before GST)
+        updatedFinalTotal,  // total_cost should be final total (after GST)
         notes !== undefined ? notes : existing.notes,
         status || existing.status,
         parsedIncidentalCharges !== undefined ? parsedIncidentalCharges : existing.incidental_charges,

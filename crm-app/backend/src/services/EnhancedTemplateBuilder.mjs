@@ -822,9 +822,9 @@ export class EnhancedTemplateBuilder {
       { key: 'quantity', label: 'Quantity', width: '8%', alignment: 'center' },
       { key: 'duration', label: 'Duration/Days', width: '10%', alignment: 'center' },
       { key: 'rate', label: 'Rate', width: '10%', alignment: 'right' },
-      { key: 'rental', label: 'Total Rental', width: '12%', alignment: 'right' },
       { key: 'mobDemob', label: 'Mob/Demob', width: '10%', alignment: 'right' },
-      { key: 'riskUsage', label: 'Risk & Usage', width: '12%', alignment: 'right' }
+      { key: 'riskUsage', label: 'Risk & Usage', width: '10%', alignment: 'right' },
+      { key: 'rental', label: 'Total Rental', width: '12%', alignment: 'right' }
     ];
     
     // Filter columns based on element configuration

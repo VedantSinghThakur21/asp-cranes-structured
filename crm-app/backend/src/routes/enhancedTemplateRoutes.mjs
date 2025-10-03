@@ -265,7 +265,8 @@ router.get('/sample-data', async (req, res) => {
     const jobType = quotation.order_type || quotation.orderType || quotation.jobType || quotation.workType || 'Standard';
     const numberOfDays = quotation.number_of_days || quotation.numberOfDays || quotation.duration || 1;
     const dailyRate = quotation.daily_rate || quotation.dailyRate || quotation.baseRate || 1200;
-    const workingCostTotal = quotation.working_cost || quotation.workingCost || quotation.totalRent || (dailyRate * numberOfDays);
+    const workingCostTotal = quotation.working_cost || quotation.workingCost || (dailyRate * numberOfDays);
+    const totalRentalAmount = quotation.total_rent || quotation.totalRent || workingCostTotal;
     const mobDemobTotal = quotation.mob_demob_cost || quotation.mobDemobCost || quotation.mobDemob || 15000;
     const totalCostAmount = quotation.total_cost || quotation.totalCost || 0;
     const gstAmountTotal = quotation.gst_amount || quotation.gstAmount || 0;
@@ -384,7 +385,7 @@ router.get('/sample-data', async (req, res) => {
             quantity: 1,
             duration: `${numberOfDays} days`,
             rate: `₹${dailyRate.toLocaleString('en-IN')}/day`,
-            rental: `₹${workingCostTotal.toLocaleString('en-IN')}`,
+            rental: `₹${totalRentalAmount.toLocaleString('en-IN')}`,
             mobDemob: `₹${mobDemobTotal.toLocaleString('en-IN')}`,
             riskUsage: `₹${riskUsageTotalCalculated.toLocaleString('en-IN')}`,
             riskFactor: `${riskType} (${riskPercentage}%)`,
@@ -1695,7 +1696,7 @@ async function getQuotationData(quotationId) {
           rate: quotationRow.working_cost 
             ? `â‚¹${Math.round(quotationRow.working_cost / quotationRow.number_of_days).toLocaleString('en-IN')}/day`
             : 'â‚¹0/day',
-          rental: `â‚¹${Math.round(quotationRow.working_cost || 0).toLocaleString('en-IN')}`,
+          rental: `â‚¹${Math.round(quotationRow.total_rent || 0).toLocaleString('en-IN')}`,
           mobDemob: `â‚¹${Math.round(quotationRow.mob_demob_cost || 0).toLocaleString('en-IN')}`
         }],
         totals: {
