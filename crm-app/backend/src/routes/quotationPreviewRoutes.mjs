@@ -643,14 +643,14 @@ function mapQuotationToTemplateData(quotationData) {
       quantity: qty,
       duration: `${durationDays} ${durationDays === 1 ? 'day' : 'days'}`,
       rate: baseRate.toFixed(2),
-      rental: quotation.total_rent || quotation.totalRent,
+      rental: numberOrZero(quotationData.total_rent).toFixed(2),
       mobDemob: numberOrZero(quotationData.mob_demob_cost).toFixed(2),
       riskUsage: (riskUsageTotalCalculated).toFixed(2)
     };
   });
   if (items.length === 0) {
     // Use total_rent from database directly for Total Rental column
-    const fallbackRate = numberOrZero(quotation.total_rent || quotation.totalRent || 0);
+    const fallbackRate = numberOrZero(quotationData.total_rent || 0);
     const fallbackQty = 1;
     
     items.push({
