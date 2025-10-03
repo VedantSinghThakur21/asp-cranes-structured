@@ -743,10 +743,28 @@ export class EnhancedTemplateBuilder {
       case 'terms':
         const termsTitle = element.content?.title || 'Terms & Conditions';
         const termsText = element.content?.text || element.content?.defaultText || 'Terms and conditions apply.';
+        
+        // Format terms text with proper line breaks and paragraph structure
+        const formatTermsText = (text) => {
+          return text
+            .replace(/\*\*/g, '') // Remove ** markers
+            .split(/\s*\.\s+(?=[A-Z]|\d+\.|[a-z]\))/g) // Split on periods followed by capital letters or numbers
+            .map(sentence => sentence.trim())
+            .filter(sentence => sentence.length > 0)
+            .map(sentence => {
+              // Add period if missing
+              if (!sentence.endsWith('.') && !sentence.endsWith(':')) {
+                sentence += '.';
+              }
+              return `<p style="margin-bottom: 8px; line-height: 1.4;">${sentence}</p>`;
+            })
+            .join('');
+        };
+        
         return `
           <div class="${elementClass}" style="${elementStyle}">
             ${element.content?.showTitle ? `<h3>${this.replacePlaceholders(termsTitle, data)}</h3>` : '<h3>Terms & Conditions</h3>'}
-            <div class="terms-content">${this.replacePlaceholders(termsText, data)}</div>
+            <div class="terms-content" style="margin-top: 15px;">${formatTermsText(this.replacePlaceholders(termsText, data))}</div>
           </div>`;
 
       case TEMPLATE_ELEMENT_TYPES.CUSTOM_TEXT:
@@ -848,9 +866,19 @@ export class EnhancedTemplateBuilder {
           <tbody>
             ${items.length > 0 ? items.map((item, index) => `
               <tr class="${element.content?.alternateRows && index % 2 === 1 ? 'alternate-row' : ''}" style="${index % 2 === 1 ? 'background: #f9f9f9;' : ''}">
-                ${columns.map(col => `
-                  <td style="text-align: ${col.alignment}; padding: 8px; border: 1px solid #ddd;">${item[col.key] || '-'}</td>
-                `).join('')}
+                ${columns.map(col => {
+                  let cellValue = item[col.key] || '-';
+                  // Format rental values properly as currency
+                  if (col.key === 'rental' && cellValue !== '-' && !isNaN(parseFloat(cellValue))) {
+                    cellValue = new Intl.NumberFormat('en-IN', {
+                      style: 'currency',
+                      currency: 'INR',
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 0
+                    }).format(parseFloat(cellValue));
+                  }
+                  return `<td style="text-align: ${col.alignment}; padding: 6px 4px; border: 1px solid #ddd; font-size: 0.85em;">${cellValue}</td>`;
+                }).join('')}
               </tr>
             `).join('') : `
               <tr>
@@ -1061,23 +1089,39 @@ export class EnhancedTemplateBuilder {
         width: 100%;
         border-collapse: collapse;
         margin: 20px 0;
+        table-layout: fixed; /* Prevent table overflow */
+        font-size: 0.85em; /* Slightly smaller font for better fit */
       }
       
       .items-table th,
       .items-table td {
-        padding: 12px 8px;
+        padding: 6px 4px; /* Reduced padding for better fit */
         border: 1px solid #ddd;
+        word-wrap: break-word; /* Wrap long content */
+        vertical-align: top;
       }
       
       .items-table th {
         background-color: ${theme.primaryColor};
         color: white;
         font-weight: bold;
+        font-size: 0.8em; /* Smaller header font */
       }
       
       .items-table .alternate-row {
         background-color: #f9f9f9;
       }
+      
+      /* Specific column width adjustments for better fit */
+      .items-table th:nth-child(1) { width: 5%; } /* S.No. */
+      .items-table th:nth-child(2) { width: 22%; } /* Description */
+      .items-table th:nth-child(3) { width: 8%; } /* Job Type */
+      .items-table th:nth-child(4) { width: 7%; } /* Quantity */
+      .items-table th:nth-child(5) { width: 10%; } /* Duration */
+      .items-table th:nth-child(6) { width: 12%; } /* Rate */
+      .items-table th:nth-child(7) { width: 11%; } /* Mob/Demob */
+      .items-table th:nth-child(8) { width: 11%; } /* Risk & Usage */
+      .items-table th:nth-child(9) { width: 14%; } /* Total Rental */
       
       .totals-table {
         width: 300px;
@@ -1133,9 +1177,20 @@ export class EnhancedTemplateBuilder {
       }
       
       .terms-content {
-        font-size: 0.9em;
+        font-size: 0.85em;
         color: ${theme.secondaryColor};
-        line-height: 1.5;
+        line-height: 1.4;
+        text-align: justify;
+        margin-top: 15px;
+      }
+      
+      .terms-content p {
+        margin-bottom: 8px;
+        text-indent: 0;
+      }
+      
+      .terms-content p:last-child {
+        margin-bottom: 0;
       }
       
       @media print {

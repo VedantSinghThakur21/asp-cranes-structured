@@ -787,7 +787,7 @@ function mapQuotationToTemplateData(quotationData) {
       quantity: 1,
       duration: `${durationDays} day`,
       rate: '0.00',
-      rental: numberOrZero(quotationData.total_rent).toFixed(2), // Use total_rent for rental column
+      rental: numberOrZero(quotationData.total_rent), // Use total_rent for rental column (keep as number for proper formatting)
       mobDemob: numberOrZero(quotationData.mob_demob_cost).toFixed(2),
       riskUsage: riskUsageTotalCalculated.toFixed(2)
     });

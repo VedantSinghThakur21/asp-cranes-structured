@@ -819,7 +819,7 @@ function mapQuotationToTemplateData(quotationData) {
       quantity: 1,
       duration: `${durationDays} day`,
       rate: '0.00',
-      rental: numberOrZero(quotationData.total_rent).toFixed(2),
+      rental: numberOrZero(quotationData.total_rent), // Keep as number for proper currency formatting
       mobDemob: numberOrZero(quotationData.mob_demob_cost).toFixed(2),
       riskUsage: riskUsageTotalCalculated.toFixed(2)
     });
