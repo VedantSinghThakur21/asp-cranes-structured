@@ -48,6 +48,7 @@ interface QuotationFormData {
   siteDistance: number;
   usage: string;
   shift: string;
+  dayNight: string;
   foodResources: string;
   accomResources: string;
   riskFactor: string;
@@ -67,7 +68,8 @@ const initialFormData: QuotationFormData = {
   workingHours: 8,
   siteDistance: 0,
   usage: 'Construction',
-  shift: 'Day Shift',
+  shift: 'single',
+  dayNight: 'day',
   foodResources: 'Client Provided',
   accomResources: 'Client Provided',
   riskFactor: 'Medium',
@@ -232,7 +234,8 @@ const NewQuotationBuilder: React.FC<NewQuotationBuilderProps> = ({
             workingHours: quotationData.working_hours || 8,
             siteDistance: quotationData.site_distance || 0,
             usage: quotationData.usage || 'Construction',
-            shift: quotationData.shift || 'Day Shift',
+            shift: quotationData.shift || 'single',
+            dayNight: quotationData.day_night || 'day',
             foodResources: quotationData.food_resources || 'Client Provided',
             accomResources: quotationData.accom_resources || 'Client Provided',
             riskFactor: quotationData.risk_factor || 'Medium',
@@ -521,6 +524,7 @@ const NewQuotationBuilder: React.FC<NewQuotationBuilderProps> = ({
         siteDistance: formData.siteDistance,
         usage: formData.usage,
         shift: formData.shift,
+        dayNight: formData.dayNight,
         foodResources: formData.foodResources,
         accomResources: formData.accomResources,
         riskFactor: formData.riskFactor,
@@ -1202,17 +1206,29 @@ const NewQuotationBuilder: React.FC<NewQuotationBuilderProps> = ({
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Work Shift
+                  Shift Type
                 </label>
                 <select
                   value={formData.shift}
                   onChange={(e) => handleInputChange('shift', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
-                  <option value="Day Shift">Day Shift</option>
-                  <option value="Night Shift">Night Shift</option>
-                  <option value="Double Shift">Double Shift</option>
-                  <option value="Round the Clock">Round the Clock</option>
+                  <option value="single">Single Shift</option>
+                  <option value="double">Double Shift</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Time
+                </label>
+                <select
+                  value={formData.dayNight}
+                  onChange={(e) => handleInputChange('dayNight', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="day">Day</option>
+                  <option value="night">Night</option>
                 </select>
               </div>
             </div>
