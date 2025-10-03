@@ -812,10 +812,9 @@ function mapQuotationToTemplateData(quotationData) {
     };
   });
   if (items.length === 0) {
-    // Calculate rental properly for fallback item using same logic as regular items
+    // Use total_rent from database directly for Total Rental column
     const fallbackRate = numberOrZero(quotationData.base_rate || quotationData.rate || 0);
     const fallbackQty = 1;
-    const calculatedRental = fallbackRate * fallbackQty * durationDays;
     
     items.push({
       no: 1,
@@ -824,7 +823,7 @@ function mapQuotationToTemplateData(quotationData) {
       quantity: fallbackQty,
       duration: `${durationDays} day`,
       rate: fallbackRate.toFixed(2),
-      rental: calculatedRental.toFixed(2), // Use calculated value with consistent formatting
+      rental: numberOrZero(quotationData.total_rent).toFixed(2), // Use total_rent from database directly
       mobDemob: numberOrZero(quotationData.mob_demob_cost).toFixed(2),
       riskUsage: riskUsageTotalCalculated.toFixed(2)
     });

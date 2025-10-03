@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { Input } from '../components/common/Input';
-import { VisualTemplateEditor } from '../components/quotations/VisualTemplateEditor';
+import EnhancedTemplateBuilder from '../components/quotations/EnhancedTemplateBuilder';
 import { Template } from '../types/template';
 import { getTemplate, updateTemplate, createTemplate } from '../services/templateService';
 import { useToast } from '../hooks/useToast';
@@ -143,9 +143,10 @@ export function QuotationTemplateEditor() {
               <CardTitle>Template Editor</CardTitle>
             </CardHeader>
             <CardContent>
-              <VisualTemplateEditor
-                template={template}
-                onChange={(updatedTemplate) => setTemplate(updatedTemplate)}
+              <EnhancedTemplateBuilder
+                templateId={template.id}
+                onClose={() => navigate('/templates')}
+                onSave={(updatedTemplate: any) => setTemplate(updatedTemplate)}
               />
             </CardContent>
           </Card>

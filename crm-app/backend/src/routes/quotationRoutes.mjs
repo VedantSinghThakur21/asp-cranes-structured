@@ -673,9 +673,9 @@ router.post('/', authenticateToken, async (req, res) => {
       };
       
       // Use calculated costs from frontend (no fallbacks to avoid incorrect data)
-      // NOTE: total_rent should be the SUBTOTAL (before GST)
+      // NOTE: total_rent should be the SUBTOTAL (before GST) - which is the working_cost (actual rental amount)
       // NOTE: total_cost should be the FINAL TOTAL (after GST)
-      const subtotalAmount = quotationData.calculations?.subtotal || (quotationData.totalCost - quotationData.gstAmount) || 0;
+      const subtotalAmount = quotationData.calculations?.subtotal || quotationData.workingCost || 0;
       const gstAmount = quotationData.gstAmount || quotationData.calculations?.gstAmount || 0;
       const finalTotal = quotationData.totalAmount || quotationData.calculations?.totalAmount || (subtotalAmount + gstAmount);
       
@@ -1100,7 +1100,7 @@ router.put('/:id', async (req, res) => {
       const mappedShift = shift ? shiftMapping[shift] || shift : existing.shift;
       
       // Calculate correct subtotal and total for database fields
-      // total_rent should be the SUBTOTAL (before GST)
+      // total_rent should be the SUBTOTAL (before GST) - which is the working_cost (actual rental amount)
       // total_cost should be the FINAL TOTAL (after GST) 
       let updatedSubtotal = existing.total_rent;
       let updatedFinalTotal = existing.total_cost;
@@ -1108,14 +1108,14 @@ router.put('/:id', async (req, res) => {
       
       // If calculations object is provided, use it to determine correct values
       if (calculations) {
-        updatedSubtotal = calculations.subtotal || existing.total_rent;
+        updatedSubtotal = calculations.subtotal || (working_cost || workingCost) || existing.total_rent;
         updatedFinalTotal = calculations.totalAmount || existing.total_cost;
         updatedGstAmount = calculations.gstAmount || existing.gst_amount;
       } else if (totalRent !== undefined || totalCost !== undefined || gstAmount !== undefined) {
-        // If individual total fields are provided, calculate correctly
+        // If individual total fields are provided, use working_cost as subtotal
         const providedGst = gst_amount !== undefined ? gst_amount : (gstAmount !== undefined ? gstAmount : existing.gst_amount);
         const providedTotal = total_cost !== undefined ? total_cost : (totalCost !== undefined ? totalCost : existing.total_cost);
-        const providedSubtotal = total_rent !== undefined ? total_rent : (totalRent !== undefined ? totalRent : (providedTotal - providedGst));
+        const providedSubtotal = total_rent !== undefined ? total_rent : (totalRent !== undefined ? totalRent : (working_cost || workingCost || existing.working_cost));
         
         updatedSubtotal = providedSubtotal;
         updatedFinalTotal = providedTotal;

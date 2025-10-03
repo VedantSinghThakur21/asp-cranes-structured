@@ -1057,6 +1057,60 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
                 className="w-full h-10 border border-gray-300 rounded-md"
               />
             </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Font Weight</label>
+              <select
+                value={selectedElement.style?.fontWeight || 'normal'}
+                onChange={(e) => onUpdate(selectedElement.id, {
+                  style: { ...selectedElement.style, fontWeight: e.target.value }
+                })}
+                className="w-full p-2 border border-gray-300 rounded-md"
+              >
+                <option value="normal">Normal</option>
+                <option value="bold">Bold</option>
+                <option value="light">Light</option>
+                <option value="600">Semi-Bold</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Text Alignment</label>
+              <select
+                value={selectedElement.style?.textAlign || 'left'}
+                onChange={(e) => onUpdate(selectedElement.id, {
+                  style: { ...selectedElement.style, textAlign: e.target.value }
+                })}
+                className="w-full p-2 border border-gray-300 rounded-md"
+              >
+                <option value="left">Left</option>
+                <option value="center">Center</option>
+                <option value="right">Right</option>
+                <option value="justify">Justify</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Padding</label>
+              <input
+                type="text"
+                value={selectedElement.style?.padding || '8px'}
+                onChange={(e) => onUpdate(selectedElement.id, {
+                  style: { ...selectedElement.style, padding: e.target.value }
+                })}
+                className="w-full p-2 border border-gray-300 rounded-md"
+                placeholder="e.g., 8px, 10px 15px"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Margin</label>
+              <input
+                type="text"
+                value={selectedElement.style?.margin || '4px 0'}
+                onChange={(e) => onUpdate(selectedElement.id, {
+                  style: { ...selectedElement.style, margin: e.target.value }
+                })}
+                className="w-full p-2 border border-gray-300 rounded-md"
+                placeholder="e.g., 4px 0, 10px"
+              />
+            </div>
           </div>
         </div>
 
@@ -1274,11 +1328,17 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
   };
 
   const updateElement = (elementId: string, updates: any) => {
+    console.log('🔄 Updating element:', elementId, 'with updates:', updates);
     setTemplate(prev => ({
       ...prev,
-      elements: prev.elements.map(el =>
-        el.id === elementId ? { ...el, ...updates } : el
-      )
+      elements: prev.elements.map(el => {
+        if (el.id === elementId) {
+          const updated = { ...el, ...updates };
+          console.log('✅ Element updated from:', el, 'to:', updated);
+          return updated;
+        }
+        return el;
+      })
     }));
     saveToHistory();
   };
@@ -1769,12 +1829,40 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
   };
 
   const getDefaultStyle = (elementType: string) => {
-    return {
-      fontSize: elementType === ELEMENT_TYPES.HEADER ? '24px' : '14px',
+    const baseStyle = {
+      fontSize: '14px',
       color: '#000000',
       backgroundColor: 'transparent',
-      fontWeight: elementType === ELEMENT_TYPES.HEADER ? 'bold' : 'normal'
+      fontWeight: 'normal',
+      textAlign: 'left',
+      padding: '8px',
+      margin: '4px 0'
     };
+
+    switch (elementType) {
+      case ELEMENT_TYPES.HEADER:
+        return {
+          ...baseStyle,
+          fontSize: '24px',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          padding: '16px',
+          margin: '8px 0'
+        };
+      case ELEMENT_TYPES.CUSTOM_TEXT:
+        return {
+          ...baseStyle,
+          fontSize: '16px'
+        };
+      case ELEMENT_TYPES.TERMS:
+        return {
+          ...baseStyle,
+          fontSize: '12px',
+          padding: '12px'
+        };
+      default:
+        return baseStyle;
+    }
   };
 
   // Auto preview effect
@@ -2013,7 +2101,10 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
                           onUpdate={updateElement}
                           onDelete={deleteElement}
                           isSelected={selectedElement?.id === element.id}
-                          onClick={(element: TemplateElement) => setSelectedElement(element)}
+                          onClick={(element: TemplateElement) => {
+                            console.log('🎯 Element selected:', element);
+                            setSelectedElement(element);
+                          }}
                         />
                       ))}
                       {provided.placeholder}
