@@ -411,7 +411,7 @@ export function QuotationCreation() {
             otherFactorsCharge: Number(quotationToLoad.otherFactorsCharge) || 0,
             billing: quotationToLoad.billing || 'gst',
             includeGst: quotationToLoad.includeGst !== undefined ? quotationToLoad.includeGst : true,
-            shift: quotationToLoad.shift === 'single' ? 'Day Shift' : quotationToLoad.shift === 'double' ? 'Night Shift' : (quotationToLoad.shift || 'Day Shift'),
+            shift: quotationToLoad.shift || 'single', // Use database value directly ('single' or 'double')
             dayNight: quotationToLoad.dayNight || 'day',
             mobDemob: Number(quotationToLoad.mobDemob) || 0,
             mobRelaxation: Number(quotationToLoad.mobRelaxation) || 0,
