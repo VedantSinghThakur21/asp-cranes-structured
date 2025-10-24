@@ -380,6 +380,7 @@ async function getQuotationWithDetails(quotationId) {
     const query = `
       SELECT 
         q.id,
+        q.quotation_number,
         q.customer_name,
         q.customer_contact,
         q.machine_type,
@@ -455,7 +456,7 @@ async function getQuotationWithDetails(quotationId) {
     // Structure the quotation data
     const quotation = {
       id: row.id,
-      quotation_number: generateQuotationNumber(row.id), // Generate from ID
+      quotation_number: row.quotation_number || generateQuotationNumber(row.id), // Use database value, fallback to generated
       description: row.notes || 'Crane Rental Service',
       status: row.status,
       machine_type: row.machine_type,
