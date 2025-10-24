@@ -774,9 +774,12 @@ export class EnhancedTemplateBuilder {
 
       case TEMPLATE_ELEMENT_TYPES.CUSTOM_TEXT:
       case 'custom_text':
+        console.log('🔍 [CUSTOM_TEXT] Element content.text:', element.content?.text);
+        const replacedText = this.replacePlaceholders(element.content?.text || 'Custom text content', data);
+        console.log('🔍 [CUSTOM_TEXT] After replacement:', replacedText);
         return `
           <div class="${elementClass}" style="${elementStyle}">
-            ${this.replacePlaceholders(element.content?.text || 'Custom text content', data)}
+            ${replacedText}
           </div>`;
 
       case TEMPLATE_ELEMENT_TYPES.SIGNATURE:
