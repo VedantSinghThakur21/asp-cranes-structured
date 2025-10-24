@@ -251,6 +251,7 @@ router.get('/', async (req, res) => {
       const result = await client.query(`
         SELECT 
           q.id,
+          q.quotation_number,
           q.customer_name,
           q.customer_contact->>'email' as customer_email,
           q.customer_contact->>'phone' as customer_phone,
@@ -282,7 +283,7 @@ router.get('/', async (req, res) => {
       const quotations = result.rows.map(q => ({
         id: q.id,
         quotationId: q.id,
-        quotation_number: generateQuotationNumber(q.id), // Generate quotation number from ID
+        quotation_number: q.quotation_number || generateQuotationNumber(q.id), // Use database value, fallback to generated
         customer_name: q.customer_name,
         customer_email: q.customer_email,
         customer_phone: q.customer_phone,
