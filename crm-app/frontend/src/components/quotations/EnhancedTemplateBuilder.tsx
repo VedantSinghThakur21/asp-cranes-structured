@@ -637,7 +637,10 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Terms Content</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Terms Content
+                <span className="text-xs font-normal text-gray-500 ml-2">(Scroll inside the box to see all content)</span>
+              </label>
               <textarea
                 value={selectedElement.content?.text ?? ''}
                 onChange={(e) => {
@@ -648,13 +651,19 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
                 }}
                 onKeyDown={(e) => e.stopPropagation()}
                 onPaste={(e) => e.stopPropagation()}
-                rows={20}
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
+                rows={30}
+                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm overflow-y-auto"
                 placeholder="Enter terms and conditions..."
-                style={{ minHeight: '400px', resize: 'vertical' }}
+                style={{ 
+                  minHeight: '600px', 
+                  maxHeight: '80vh',
+                  resize: 'vertical',
+                  whiteSpace: 'pre-wrap',
+                  overflowWrap: 'break-word'
+                }}
               />
               <p className="mt-1 text-xs text-gray-500">
-                Tip: Use bullet points (•) or numbered lists for better formatting. The textarea expands automatically.
+                Tip: The text box scrolls internally. You can drag the bottom-right corner to resize. Character count: {(selectedElement.content?.text ?? '').length}
               </p>
             </div>
           </>
