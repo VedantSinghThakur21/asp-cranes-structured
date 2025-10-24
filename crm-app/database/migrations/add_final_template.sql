@@ -24,35 +24,31 @@ INSERT INTO enhanced_templates (
     {
       "id": "header-1",
       "type": "header",
-      "content": "{{company.name}}",
+      "content": {
+        "title": "{{company.name}}",
+        "subtitle": "Project"
+      },
       "visible": true,
       "style": {
-        "fontSize": "32px",
+        "fontSize": "36px",
         "color": "#1a1a1a",
         "fontWeight": "bold",
         "textAlign": "left",
         "marginBottom": "5px",
-        "fontFamily": "Arial, sans-serif"
-      }
-    },
-    {
-      "id": "project-label",
-      "type": "section",
-      "content": "Project",
-      "visible": true,
-      "style": {
-        "fontSize": "20px",
-        "color": "#1a1a1a",
-        "fontWeight": "normal",
-        "textAlign": "left",
-        "marginBottom": "15px",
-        "fontFamily": "Arial, sans-serif"
+        "fontFamily": "Arial, sans-serif",
+        "background": "#fff",
+        "padding": "20px 0"
       }
     },
     {
       "id": "company-info-1",
-      "type": "company",
-      "content": "{{company.address}}\\n{{company.email}} | {{company.phone}}",
+      "type": "company_info",
+      "content": {
+        "fields": [
+          "{{company.address}}",
+          "{{company.email}} | {{company.phone}}"
+        ]
+      },
       "visible": true,
       "style": {
         "fontSize": "10px",
@@ -63,50 +59,33 @@ INSERT INTO enhanced_templates (
       }
     },
     {
-      "id": "client-info-section",
-      "type": "section",
-      "content": "Client Name: {{customer.name}}\\nClient Email: {{customer.email}}\\nQuote Number: {{quotation.quotation_number}}",
+      "id": "client-info-prepared-section",
+      "type": "custom_text",
+      "content": {
+        "text": "<div style=\"display: flex; justify-content: space-between; margin-bottom: 30px;\"><div style=\"flex: 1;\"><div style=\"margin-bottom: 4px;\"><strong>Client Name:</strong> {{customer.name}}</div><div style=\"margin-bottom: 4px;\"><strong>Client Email:</strong> {{customer.email}}</div><div><strong>Quote Number:</strong> {{quotation.quotation_number}}</div></div><div style=\"flex: 1; text-align: right;\"><div style=\"margin-bottom: 4px;\"><strong>Prepared By:</strong> Admin User</div><div><strong>Date Prepared:</strong> {{quotation.created_at}}</div></div></div>"
+      },
       "visible": true,
       "style": {
         "fontSize": "11px",
-        "textAlign": "left",
         "color": "#1a1a1a",
-        "marginBottom": "10px",
-        "lineHeight": "1.6",
-        "fontFamily": "Arial, sans-serif"
-      }
-    },
-    {
-      "id": "prepared-info-section",
-      "type": "section",
-      "content": "Prepared By: {{prepared_by}}\\nDate Prepared: {{quotation.created_at}}",
-      "visible": true,
-      "style": {
-        "fontSize": "11px",
-        "textAlign": "right",
-        "color": "#1a1a1a",
-        "marginBottom": "30px",
-        "lineHeight": "1.6",
-        "fontFamily": "Arial, sans-serif"
+        "fontFamily": "Arial, sans-serif",
+        "marginBottom": "20px"
       }
     },
     {
       "id": "pricing-header",
-      "type": "section",
-      "content": "Pricing",
+      "type": "custom_text",
+      "content": {
+        "text": "<h2 style=\"font-size: 18px; font-weight: bold; margin: 20px 0 15px 0; color: #1a1a1a;\">Pricing</h2>"
+      },
       "visible": true,
       "style": {
-        "fontSize": "18px",
-        "fontWeight": "bold",
-        "color": "#1a1a1a",
-        "marginBottom": "15px",
-        "marginTop": "20px",
         "fontFamily": "Arial, sans-serif"
       }
     },
     {
       "id": "equipment-table-1",
-      "type": "equipment_table",
+      "type": "items_table",
       "content": "Equipment Details",
       "visible": true,
       "style": {
@@ -119,13 +98,13 @@ INSERT INTO enhanced_templates (
       }
     },
     {
-      "id": "totals-section",
-      "type": "totals_table",
-      "content": "Totals",
+      "id": "totals-1",
+      "type": "totals",
+      "content": "Cost Summary",
       "visible": true,
       "style": {
-        "fontSize": "11px",
-        "marginBottom": "30px",
+        "fontSize": "12px",
+        "marginTop": "20px",
         "textAlign": "right",
         "fontFamily": "Arial, sans-serif"
       }
@@ -148,8 +127,8 @@ INSERT INTO enhanced_templates (
       }
     }
   ]',
-  '{"pageSize": "A4", "margins": {"top": 20, "right": 20, "bottom": 20, "left": 20}, "headerHeight": 100, "footerHeight": 50}',
-  '{"primaryColor": "#FFC107", "secondaryColor": "#1a1a1a", "accentColor": "#FFC107", "logoUrl": null, "showLogo": true}'
+  '{"pageSize": "A4", "margins": {"top": 20, "right": 20, "bottom": 20, "left": 20}}',
+  '{"primaryColor": "#FFC107", "secondaryColor": "#1a1a1a", "accentColor": "#FFC107", "logoUrl": null}'
 )
 ON CONFLICT (id) DO UPDATE SET
   name = EXCLUDED.name,

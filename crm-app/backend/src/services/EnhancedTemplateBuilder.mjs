@@ -837,6 +837,11 @@ export class EnhancedTemplateBuilder {
   renderItemsTable(element, data) {
     const items = data?.items || data?.selectedMachines || [];
     
+    // Get style configuration for table headers
+    const headerBg = element.style?.tableHeaderBg || '#2563eb';
+    const headerColor = element.style?.tableHeaderColor || '#ffffff';
+    const borderColor = element.style?.tableBorderColor || '#ddd';
+    
     // Enhanced column configuration based on frontend Items Table
     const defaultColumns = [
       { key: 'no', label: 'S.No.', width: '6%', alignment: 'center' },
@@ -858,19 +863,19 @@ export class EnhancedTemplateBuilder {
 
     return `
       <div class="element-items-table" style="${this.generateElementStyle(element.style || {})}">
-        <table class="items-table" style="width: 100%; border-collapse: collapse;">
+        <table class="items-table" style="width: 100%; border-collapse: collapse; border: 1px solid ${borderColor};">
           ${element.content?.showHeader !== false ? `
             <thead>
-              <tr style="background: #f9f9f9;">
+              <tr style="background: ${headerBg}; color: ${headerColor};">
                 ${columns.map(col => 
-                  `<th style="width: ${col.width}; text-align: ${col.alignment}; padding: 8px; border: 1px solid #ddd;">${col.label}</th>`
+                  `<th style="width: ${col.width}; text-align: ${col.alignment}; padding: 10px 8px; border: 1px solid ${borderColor}; font-weight: 600;">${col.label}</th>`
                 ).join('')}
               </tr>
             </thead>
           ` : ''}
           <tbody>
             ${items.length > 0 ? items.map((item, index) => `
-              <tr class="${element.content?.alternateRows && index % 2 === 1 ? 'alternate-row' : ''}" style="${index % 2 === 1 ? 'background: #f9f9f9;' : ''}">
+              <tr class="${element.content?.alternateRows && index % 2 === 1 ? 'alternate-row' : ''}" style="${index % 2 === 1 ? 'background: #f9f9f9;' : 'background: #ffffff;'}">
                 ${columns.map(col => {
                   let cellValue = item[col.key] || '-';
                   // Format rental values properly as currency
@@ -882,12 +887,12 @@ export class EnhancedTemplateBuilder {
                       maximumFractionDigits: 0
                     }).format(parseFloat(cellValue));
                   }
-                  return `<td style="text-align: ${col.alignment}; padding: 6px 4px; border: 1px solid #ddd; font-size: 0.85em;">${cellValue}</td>`;
+                  return `<td style="text-align: ${col.alignment}; padding: 8px 6px; border: 1px solid ${borderColor}; font-size: 11px;">${cellValue}</td>`;
                 }).join('')}
               </tr>
             `).join('') : `
               <tr>
-                <td colspan="${columns.length}" style="text-align: center; padding: 20px; color: #666;">No items found</td>
+                <td colspan="${columns.length}" style="text-align: center; padding: 20px; color: #666; border: 1px solid ${borderColor};">No items found</td>
               </tr>
             `}
           </tbody>
