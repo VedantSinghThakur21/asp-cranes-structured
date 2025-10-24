@@ -616,8 +616,9 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
                 });
               }}
               onKeyDown={(e) => e.stopPropagation()}
-              rows={4}
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              rows={8}
+              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              style={{ minHeight: '150px', resize: 'vertical' }}
             />
           </div>
         )}
@@ -646,10 +647,14 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
                   });
                 }}
                 onKeyDown={(e) => e.stopPropagation()}
-                rows={8}
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                rows={20}
+                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
                 placeholder="Enter terms and conditions..."
+                style={{ minHeight: '400px', resize: 'vertical' }}
               />
+              <p className="mt-1 text-xs text-gray-500">
+                Tip: Use bullet points (•) or numbered lists for better formatting. The textarea expands automatically.
+              </p>
             </div>
           </>
         )}
