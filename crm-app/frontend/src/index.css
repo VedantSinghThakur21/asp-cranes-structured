@@ -296,7 +296,25 @@ a:hover, a:focus {
     -webkit-text-fill-color: #1a202c !important;
     background-color: #ffffff !important;
   }
-}
+  
+  /* Extra strong rules for template builder inputs */
+  input[type="text"]::placeholder,
+  input[type="email"]::placeholder,
+  input[type="tel"]::placeholder,
+  input[type="number"]::placeholder,
+  input[type="password"]::placeholder,
+  textarea::placeholder {
+    color: #9ca3af !important;
+    -webkit-text-fill-color: #9ca3af !important;
+    opacity: 0.6 !important;
+  }
+  
+  /* Ensure color inputs work properly */
+  input[type="color"] {
+    min-height: 40px;
+    border: 1px solid #d1d5db;
+  }
+
 
 /* Enhanced dark mode support */
 @media (prefers-color-scheme: dark) {
