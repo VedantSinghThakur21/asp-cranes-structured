@@ -1032,14 +1032,15 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <label className="block text-xs font-medium text-gray-600 mb-1">X Position</label>
               <input
                 type="text"
-                value={selectedElement.position?.x ?? '0'}
+                value={selectedElement.position?.x ?? ''}
                 onChange={(e) => {
                   e.stopPropagation();
                   onUpdate(selectedElement.id, {
-                    position: { ...selectedElement.position, x: e.target.value }
+                    position: { ...selectedElement.position, x: e.target.value || '0' }
                   });
                 }}
                 onKeyDown={(e) => e.stopPropagation()}
+                onPaste={(e) => e.stopPropagation()}
                 className="w-full p-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="0px"
               />
@@ -1048,14 +1049,15 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <label className="block text-xs font-medium text-gray-600 mb-1">Y Position</label>
               <input
                 type="text"
-                value={selectedElement.position?.y ?? '0'}
+                value={selectedElement.position?.y ?? ''}
                 onChange={(e) => {
                   e.stopPropagation();
                   onUpdate(selectedElement.id, {
-                    position: { ...selectedElement.position, y: e.target.value }
+                    position: { ...selectedElement.position, y: e.target.value || '0' }
                   });
                 }}
                 onKeyDown={(e) => e.stopPropagation()}
+                onPaste={(e) => e.stopPropagation()}
                 className="w-full p-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="0px"
               />
@@ -1064,11 +1066,16 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <label className="block text-xs font-medium text-gray-600 mb-1">Width</label>
               <input
                 type="text"
-                value={selectedElement.position?.width ?? '100%'}
-                onChange={(e) => onUpdate(selectedElement.id, {
-                  position: { ...selectedElement.position, width: e.target.value }
-                })}
-                className="w-full p-1 text-sm border border-gray-300 rounded"
+                value={selectedElement.position?.width ?? ''}
+                onChange={(e) => {
+                  e.stopPropagation();
+                  onUpdate(selectedElement.id, {
+                    position: { ...selectedElement.position, width: e.target.value || '100%' }
+                  });
+                }}
+                onKeyDown={(e) => e.stopPropagation()}
+                onPaste={(e) => e.stopPropagation()}
+                className="w-full p-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="100%"
               />
             </div>
@@ -1076,11 +1083,16 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <label className="block text-xs font-medium text-gray-600 mb-1">Height</label>
               <input
                 type="text"
-                value={selectedElement.position?.height ?? 'auto'}
-                onChange={(e) => onUpdate(selectedElement.id, {
-                  position: { ...selectedElement.position, height: e.target.value }
-                })}
-                className="w-full p-1 text-sm border border-gray-300 rounded"
+                value={selectedElement.position?.height ?? ''}
+                onChange={(e) => {
+                  e.stopPropagation();
+                  onUpdate(selectedElement.id, {
+                    position: { ...selectedElement.position, height: e.target.value || 'auto' }
+                  });
+                }}
+                onKeyDown={(e) => e.stopPropagation()}
+                onPaste={(e) => e.stopPropagation()}
+                className="w-full p-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="auto"
               />
             </div>
@@ -1095,15 +1107,17 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <label className="block text-sm font-medium text-gray-700 mb-1">Font Size</label>
               <input
                 type="text"
-                value={selectedElement.style?.fontSize ?? '14px'}
+                value={selectedElement.style?.fontSize ?? ''}
                 onChange={(e) => {
                   e.stopPropagation();
                   onUpdate(selectedElement.id, {
-                    style: { ...selectedElement.style, fontSize: e.target.value }
+                    style: { ...selectedElement.style, fontSize: e.target.value || '14px' }
                   });
                 }}
                 onKeyDown={(e) => e.stopPropagation()}
+                onPaste={(e) => e.stopPropagation()}
                 className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="14px"
               />
             </div>
             <div>
@@ -1164,14 +1178,15 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <label className="block text-sm font-medium text-gray-700 mb-1">Padding</label>
               <input
                 type="text"
-                value={selectedElement.style?.padding ?? '8px'}
+                value={selectedElement.style?.padding ?? ''}
                 onChange={(e) => {
                   e.stopPropagation();
                   onUpdate(selectedElement.id, {
-                    style: { ...selectedElement.style, padding: e.target.value }
+                    style: { ...selectedElement.style, padding: e.target.value || '0px' }
                   });
                 }}
                 onKeyDown={(e) => e.stopPropagation()}
+                onPaste={(e) => e.stopPropagation()}
                 className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="e.g., 8px, 10px 15px"
               />
@@ -1180,14 +1195,15 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <label className="block text-sm font-medium text-gray-700 mb-1">Margin</label>
               <input
                 type="text"
-                value={selectedElement.style?.margin ?? '4px 0'}
+                value={selectedElement.style?.margin ?? ''}
                 onChange={(e) => {
                   e.stopPropagation();
                   onUpdate(selectedElement.id, {
-                    style: { ...selectedElement.style, margin: e.target.value }
+                    style: { ...selectedElement.style, margin: e.target.value || '0px' }
                   });
                 }}
                 onKeyDown={(e) => e.stopPropagation()}
+                onPaste={(e) => e.stopPropagation()}
                 className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="e.g., 4px 0, 10px"
               />
