@@ -314,7 +314,7 @@ a:hover, a:focus {
     min-height: 40px;
     border: 1px solid #d1d5db;
   }
-
+}
 
 /* Enhanced dark mode support */
 @media (prefers-color-scheme: dark) {
