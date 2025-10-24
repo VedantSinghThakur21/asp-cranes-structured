@@ -1110,13 +1110,14 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
                 value={selectedElement.style?.fontSize ?? ''}
                 onChange={(e) => {
                   e.stopPropagation();
+                  const newValue = e.target.value;
                   onUpdate(selectedElement.id, {
-                    style: { ...selectedElement.style, fontSize: e.target.value || '14px' }
+                    style: { ...selectedElement.style, fontSize: newValue === '' ? '' : newValue }
                   });
                 }}
                 onKeyDown={(e) => e.stopPropagation()}
                 onPaste={(e) => e.stopPropagation()}
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
                 placeholder="14px"
               />
             </div>
