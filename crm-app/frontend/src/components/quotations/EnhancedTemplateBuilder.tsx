@@ -647,6 +647,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
                   });
                 }}
                 onKeyDown={(e) => e.stopPropagation()}
+                onPaste={(e) => e.stopPropagation()}
                 rows={20}
                 className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
                 placeholder="Enter terms and conditions..."

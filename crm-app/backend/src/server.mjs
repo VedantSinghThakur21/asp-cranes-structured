@@ -136,9 +136,9 @@ if (isProduction) {
   app.use(morgan('dev'));
 }
 
-// Request body parsing
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Request body parsing - increase limits for large content like terms & conditions
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // General API info endpoint
 app.get('/api', (req, res) => {
