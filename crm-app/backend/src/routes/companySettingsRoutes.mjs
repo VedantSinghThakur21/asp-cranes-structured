@@ -58,6 +58,7 @@ router.get('/', async (req, res) => {
           gst_number,
           letterhead_url,
           letterhead_position,
+          default_terms_conditions,
           is_active
         FROM company_settings 
         WHERE is_active = true 
@@ -80,7 +81,9 @@ router.get('/', async (req, res) => {
             letterheadPosition: settings.letterhead_position || {
               x: 0, y: 0, width: '100%', height: 'auto', 
               opacity: 0.1, zIndex: -1
-            }
+            },
+            defaultTermsConditions: settings.default_terms_conditions || 
+              '• Any extension or modification to the rental period must be communicated and agreed upon in writing.\n• Rental fees are based on the agreed-upon crane specified in the quotation. Payment for the rental fees is due in full prior to or upon delivery of the equipment. Late payments may incur late fees or result in the suspension of equipment rental.'
           }
         });
       } else {
@@ -98,7 +101,8 @@ router.get('/', async (req, res) => {
             letterheadPosition: {
               x: 0, y: 0, width: '100%', height: 'auto',
               opacity: 0.1, zIndex: -1
-            }
+            },
+            defaultTermsConditions: '• Any extension or modification to the rental period must be communicated and agreed upon in writing.\n• Rental fees are based on the agreed-upon crane specified in the quotation. Payment for the rental fees is due in full prior to or upon delivery of the equipment. Late payments may incur late fees or result in the suspension of equipment rental.'
           }
         });
       }
@@ -127,7 +131,8 @@ router.put('/', authenticateToken, async (req, res) => {
       email,
       website,
       gstNumber,
-      letterheadPosition
+      letterheadPosition,
+      defaultTermsConditions
     } = req.body;
     
     const client = await pool.connect();
@@ -138,10 +143,11 @@ router.put('/', authenticateToken, async (req, res) => {
       // Insert new settings
       const result = await client.query(`
         INSERT INTO company_settings (
-          company_name, address, phone, email, website, gst_number, letterhead_position, is_active
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, true)
+          company_name, address, phone, email, website, gst_number, 
+          letterhead_position, default_terms_conditions, is_active
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, true)
         RETURNING *
-      `, [name, address, phone, email, website, gstNumber, letterheadPosition]);
+      `, [name, address, phone, email, website, gstNumber, letterheadPosition, defaultTermsConditions]);
       
       res.json({
         success: true,
