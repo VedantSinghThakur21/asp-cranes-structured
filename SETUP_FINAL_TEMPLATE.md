@@ -2,14 +2,20 @@
 
 Run these commands on your Ubuntu server to setup the "Final Template" matching the Jamestown Project design.
 
-## Step 1: Insert the Final Template
+## Step 1: Pull latest changes
 
 ```bash
 cd ~/asp-cranes-structured
+git pull origin master
+```
+
+## Step 2: Insert the Final Template
+
+```bash
 docker exec -i asp-cranes-structured-postgres-1 psql -U postgres -d asp_crm < crm-app/database/migrations/add_final_template.sql
 ```
 
-## Step 2: Verify the template was created
+## Step 3: Verify the template was created
 
 ```bash
 docker exec -it asp-cranes-structured-postgres-1 psql -U postgres -d asp_crm -c "SELECT id, name, description FROM enhanced_templates WHERE id = 'tpl_final_001';"
@@ -22,13 +28,13 @@ You should see:
  tpl_final_001 | Final Template | Professional quotation template with yellow branding...
 ```
 
-## Step 3: Restart the backend to load updated routes
+## Step 4: Restart the backend to load updated code
 
 ```bash
 docker restart asp-cranes-structured-backend-1
 ```
 
-## Step 4: Check backend logs
+## Step 5: Check backend logs
 
 ```bash
 docker logs -f asp-cranes-structured-backend-1
@@ -36,43 +42,63 @@ docker logs -f asp-cranes-structured-backend-1
 
 Wait for: `✅ Server running on port 3001`
 
-## Step 5: Test the template
+Press Ctrl+C to exit logs.
 
-1. Go to your CRM application
-2. Navigate to Templates or Template Builder
+## Step 6: Test the template
+
+1. Go to your CRM application (http://103.224.243.242)
+2. Navigate to Quotations → Templates
 3. You should see "Final Template" in the list
-4. Select it and create a quotation
-5. The quotation PDF should now have:
-   - Yellow header branding (#FFC107)
-   - Client Name, Email, Quote Number on the left
-   - Prepared By and Date on the right
-   - Pricing table with yellow headers
-   - Editable Terms & Conditions with bullet points
+4. Create or edit a quotation and select "Final Template"
+5. Preview the quotation - it should now have:
+   - Clean header with company name
+   - Company address and contact info
+   - Client info on left, Prepared by on right
+   - "Pricing" section header
+   - Table with **YELLOW headers** (#FFC107)
+   - Professional totals section
+   - Terms & Conditions with bullet points
 
-## Features of the Final Template
+## What Was Fixed
 
-### Editable Content
-All text in the template can be edited through the template builder:
-- Company name and address
-- Client information labels
-- Pricing section header
-- Terms & Conditions title and content
-- All other text elements
+### 1. **Proper Element Types**
+   - Changed from unsupported types (`section`, `company`) to supported types (`custom_text`, `company_info`)
+   - Now renders actual content instead of debug info
 
-### Yellow Branding
-- Header background: Yellow (#FFC107)
-- Table headers: Yellow (#FFC107)
-- Clean, professional look matching your design
+### 2. **Yellow Table Headers**
+   - Updated `EnhancedTemplateBuilder.mjs` to read `tableHeaderBg` from style
+   - Template now uses `#FFC107` (yellow) for table headers
+   - Matches your Jamestown Project design exactly
 
-### Bullet Point Terms
-Terms automatically format as bullet points:
-- Each line becomes a bullet point
-- Proper spacing and indentation
-- Clean, readable format
+### 3. **Clean Layout**
+   - Two-column layout: Client info (left) + Prepared by (right)
+   - Proper spacing and typography
+   - Professional appearance matching working template
+
+## Template Features
+
+### ✅ Visual Design
+- Yellow table headers matching your image
+- Clean, professional layout
+- Proper spacing and typography
+- Black text on white background
+
+### ✅ Editable Content
+All text can be edited:
+- Company name and info
+- Client information labels  
+- Pricing header
+- Terms & Conditions
+- All table labels
+
+### ✅ Bullet Point Terms
+- Automatic bullet formatting
+- Each line becomes a bullet
+- Clean, readable style
 
 ## Updating Default Terms
 
-You can set default terms in Company Settings:
+Set default terms in Company Settings API or database:
 
 ```bash
 docker exec -it asp-cranes-structured-postgres-1 psql -U postgres -d asp_crm -c "
@@ -85,35 +111,34 @@ WHERE is_active = true;
 
 ## Troubleshooting
 
-### Template not showing up?
+### Template showing debug info instead of content?
+The backend code has been updated. Make sure you:
+1. Pulled latest code: `git pull origin master`
+2. Restarted backend: `docker restart asp-cranes-structured-backend-1`
+
+### Yellow headers not showing?
+Check the template elements have the style properties:
 ```bash
-# Check if template exists
-docker exec -it asp-cranes-structured-postgres-1 psql -U postgres -d asp_crm -c "SELECT * FROM enhanced_templates WHERE name = 'Final Template';"
+docker exec -it asp-cranes-structured-postgres-1 psql -U postgres -d asp_crm -c "
+SELECT elements::json->>6 FROM enhanced_templates WHERE id = 'tpl_final_001';
+"
 ```
+Should show `tableHeaderBg: #FFC107`
 
 ### Backend not responding?
 ```bash
-# Check backend logs
+# Check logs
 docker logs asp-cranes-structured-backend-1 --tail 50
 
-# Restart backend
+# Restart
 docker restart asp-cranes-structured-backend-1
-```
-
-### Terms not showing?
-```bash
-# Verify column exists
-docker exec -it asp-cranes-structured-postgres-1 psql -U postgres -d asp_crm -c "\d company_settings"
-
-# Should show default_terms_conditions column
 ```
 
 ## Next Steps
 
-1. **Customize company info** in Settings → Company Settings
-2. **Edit template** in Template Builder to match exact requirements
-3. **Set default terms** in Company Settings
-4. **Create quotations** using the Final Template
-5. **Generate PDFs** with the new yellow-branded design
+1. **Test the template** by creating a quotation
+2. **Customize company info** in Settings
+3. **Edit template elements** if needed via Template Builder
+4. **Set as default** if this should be your primary template
 
-The template is fully functional and ready to use!
+The template now matches your Jamestown Project design with yellow branding! 🎉
