@@ -579,7 +579,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
               <input
                 type="text"
-                value={selectedElement.content?.title || ''}
+                value={selectedElement.content?.title ?? ''}
                 onChange={(e) => {
                   e.stopPropagation();
                   onUpdate(selectedElement.id, {
@@ -594,7 +594,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <label className="block text-sm font-medium text-gray-700 mb-2">Subtitle</label>
               <input
                 type="text"
-                value={selectedElement.content?.subtitle || ''}
+                value={selectedElement.content?.subtitle ?? ''}
                 onChange={(e) => onUpdate(selectedElement.id, {
                   content: { ...selectedElement.content, subtitle: e.target.value }
                 })}
@@ -608,7 +608,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Text Content</label>
             <textarea
-              value={selectedElement.content?.text || ''}
+              value={selectedElement.content?.text ?? ''}
               onChange={(e) => {
                 e.stopPropagation();
                 onUpdate(selectedElement.id, {
@@ -628,7 +628,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <label className="block text-sm font-medium text-gray-700 mb-2">Terms Title</label>
               <input
                 type="text"
-                value={selectedElement.content?.title || 'Terms & Conditions'}
+                value={selectedElement.content?.title ?? 'Terms & Conditions'}
                 onChange={(e) => onUpdate(selectedElement.id, {
                   content: { ...selectedElement.content, title: e.target.value }
                 })}
@@ -638,7 +638,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Terms Content</label>
               <textarea
-                value={selectedElement.content?.text || ''}
+                value={selectedElement.content?.text ?? ''}
                 onChange={(e) => {
                   e.stopPropagation();
                   onUpdate(selectedElement.id, {
@@ -660,7 +660,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <label className="block text-sm font-medium text-gray-700 mb-2">Table Title</label>
               <input
                 type="text"
-                value={selectedElement.content?.title || 'Equipment & Services'}
+                value={selectedElement.content?.title ?? 'Equipment & Services'}
                 onChange={(e) => onUpdate(selectedElement.id, {
                   content: { ...selectedElement.content, title: e.target.value }
                 })}
@@ -749,7 +749,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <label className="block text-sm font-medium text-gray-700 mb-2">Section Title</label>
               <input
                 type="text"
-                value={selectedElement.content?.title || ''}
+                value={selectedElement.content?.title ?? ''}
                 onChange={(e) => onUpdate(selectedElement.id, {
                   content: { ...selectedElement.content, title: e.target.value }
                 })}
@@ -760,7 +760,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
             <div className="mt-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">Section Content</label>
               <textarea
-                value={selectedElement.content?.text || ''}
+                value={selectedElement.content?.text ?? ''}
                 onChange={(e) => onUpdate(selectedElement.id, {
                   content: { ...selectedElement.content, text: e.target.value }
                 })}
@@ -830,7 +830,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <label className="block text-sm font-medium text-gray-700 mb-2">Customer Section Title</label>
               <input
                 type="text"
-                value={selectedElement.content?.title || 'Bill To:'}
+                value={selectedElement.content?.title ?? 'Bill To:'}
                 onChange={(e) => onUpdate(selectedElement.id, {
                   content: { ...selectedElement.content, title: e.target.value }
                 })}
@@ -856,7 +856,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <label className="block text-sm font-medium text-gray-700 mb-2">Total Section Title</label>
               <input
                 type="text"
-                value={selectedElement.content?.title || 'Total Amount'}
+                value={selectedElement.content?.title ?? 'Total Amount'}
                 onChange={(e) => onUpdate(selectedElement.id, {
                   content: { ...selectedElement.content, title: e.target.value }
                 })}
@@ -884,7 +884,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <label className="block text-sm font-medium text-gray-700 mb-2">Image Title</label>
               <input
                 type="text"
-                value={selectedElement.content?.title || 'Image'}
+                value={selectedElement.content?.title ?? 'Image'}
                 onChange={(e) => onUpdate(selectedElement.id, {
                   content: { ...selectedElement.content, title: e.target.value }
                 })}
@@ -895,7 +895,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <label className="block text-sm font-medium text-gray-700 mb-2">Alt Text</label>
               <input
                 type="text"
-                value={selectedElement.content?.alt || ''}
+                value={selectedElement.content?.alt ?? ''}
                 onChange={(e) => onUpdate(selectedElement.id, {
                   content: { ...selectedElement.content, alt: e.target.value }
                 })}
@@ -906,7 +906,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <label className="block text-sm font-medium text-gray-700 mb-2">Width</label>
               <input
                 type="text"
-                value={selectedElement.style?.width || '120px'}
+                value={selectedElement.style?.width ?? '120px'}
                 onChange={(e) => onUpdate(selectedElement.id, {
                   style: { ...selectedElement.style, width: e.target.value }
                 })}
@@ -918,7 +918,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <label className="block text-sm font-medium text-gray-700 mb-2">Height</label>
               <input
                 type="text"
-                value={selectedElement.style?.height || 'auto'}
+                value={selectedElement.style?.height ?? 'auto'}
                 onChange={(e) => onUpdate(selectedElement.id, {
                   style: { ...selectedElement.style, height: e.target.value }
                 })}
@@ -936,7 +936,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <label className="block text-sm font-medium text-gray-700 mb-2">Section Title</label>
               <input
                 type="text"
-                value={selectedElement.content?.title || 'Job Details'}
+                value={selectedElement.content?.title ?? 'Job Details'}
                 onChange={(e) => onUpdate(selectedElement.id, {
                   content: { ...selectedElement.content, title: e.target.value }
                 })}
@@ -977,7 +977,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <label className="block text-sm font-medium text-gray-700 mb-2">Table Title</label>
               <input
                 type="text"
-                value={selectedElement.content?.title || 'Additional Charges'}
+                value={selectedElement.content?.title ?? 'Additional Charges'}
                 onChange={(e) => onUpdate(selectedElement.id, {
                   content: { ...selectedElement.content, title: e.target.value }
                 })}
@@ -1017,7 +1017,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <label className="block text-xs font-medium text-gray-600 mb-1">X Position</label>
               <input
                 type="text"
-                value={selectedElement.position?.x || '0'}
+                value={selectedElement.position?.x ?? '0'}
                 onChange={(e) => {
                   e.stopPropagation();
                   onUpdate(selectedElement.id, {
@@ -1033,7 +1033,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <label className="block text-xs font-medium text-gray-600 mb-1">Y Position</label>
               <input
                 type="text"
-                value={selectedElement.position?.y || '0'}
+                value={selectedElement.position?.y ?? '0'}
                 onChange={(e) => {
                   e.stopPropagation();
                   onUpdate(selectedElement.id, {
@@ -1049,7 +1049,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <label className="block text-xs font-medium text-gray-600 mb-1">Width</label>
               <input
                 type="text"
-                value={selectedElement.position?.width || '100%'}
+                value={selectedElement.position?.width ?? '100%'}
                 onChange={(e) => onUpdate(selectedElement.id, {
                   position: { ...selectedElement.position, width: e.target.value }
                 })}
@@ -1061,7 +1061,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <label className="block text-xs font-medium text-gray-600 mb-1">Height</label>
               <input
                 type="text"
-                value={selectedElement.position?.height || 'auto'}
+                value={selectedElement.position?.height ?? 'auto'}
                 onChange={(e) => onUpdate(selectedElement.id, {
                   position: { ...selectedElement.position, height: e.target.value }
                 })}
@@ -1080,7 +1080,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <label className="block text-sm font-medium text-gray-700 mb-1">Font Size</label>
               <input
                 type="text"
-                value={selectedElement.style?.fontSize || '14px'}
+                value={selectedElement.style?.fontSize ?? '14px'}
                 onChange={(e) => {
                   e.stopPropagation();
                   onUpdate(selectedElement.id, {
@@ -1095,7 +1095,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <label className="block text-sm font-medium text-gray-700 mb-1">Text Color</label>
               <input
                 type="color"
-                value={selectedElement.style?.color || '#000000'}
+                value={selectedElement.style?.color ?? '#000000'}
                 onChange={(e) => onUpdate(selectedElement.id, {
                   style: { ...selectedElement.style, color: e.target.value }
                 })}
@@ -1118,7 +1118,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Font Weight</label>
               <select
-                value={selectedElement.style?.fontWeight || 'normal'}
+                value={selectedElement.style?.fontWeight ?? 'normal'}
                 onChange={(e) => onUpdate(selectedElement.id, {
                   style: { ...selectedElement.style, fontWeight: e.target.value }
                 })}
@@ -1133,7 +1133,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Text Alignment</label>
               <select
-                value={selectedElement.style?.textAlign || 'left'}
+                value={selectedElement.style?.textAlign ?? 'left'}
                 onChange={(e) => onUpdate(selectedElement.id, {
                   style: { ...selectedElement.style, textAlign: e.target.value }
                 })}
@@ -1149,7 +1149,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <label className="block text-sm font-medium text-gray-700 mb-1">Padding</label>
               <input
                 type="text"
-                value={selectedElement.style?.padding || '8px'}
+                value={selectedElement.style?.padding ?? '8px'}
                 onChange={(e) => {
                   e.stopPropagation();
                   onUpdate(selectedElement.id, {
@@ -1165,7 +1165,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <label className="block text-sm font-medium text-gray-700 mb-1">Margin</label>
               <input
                 type="text"
-                value={selectedElement.style?.margin || '4px 0'}
+                value={selectedElement.style?.margin ?? '4px 0'}
                 onChange={(e) => {
                   e.stopPropagation();
                   onUpdate(selectedElement.id, {
@@ -1185,7 +1185,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1">Font Family</label>
                   <select
-                    value={selectedElement.style?.fontFamily || 'Arial, sans-serif'}
+                    value={selectedElement.style?.fontFamily ?? 'Arial, sans-serif'}
                     onChange={(e) => onUpdate(selectedElement.id, {
                       style: { ...selectedElement.style, fontFamily: e.target.value }
                     })}
@@ -1204,7 +1204,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1">Line Height</label>
                   <select
-                    value={selectedElement.style?.lineHeight || '1.4'}
+                    value={selectedElement.style?.lineHeight ?? '1.4'}
                     onChange={(e) => onUpdate(selectedElement.id, {
                       style: { ...selectedElement.style, lineHeight: e.target.value }
                     })}
@@ -1220,7 +1220,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1">Letter Spacing</label>
                   <select
-                    value={selectedElement.style?.letterSpacing || 'normal'}
+                    value={selectedElement.style?.letterSpacing ?? 'normal'}
                     onChange={(e) => onUpdate(selectedElement.id, {
                       style: { ...selectedElement.style, letterSpacing: e.target.value }
                     })}
@@ -1235,7 +1235,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1">Text Transform</label>
                   <select
-                    value={selectedElement.style?.textTransform || 'none'}
+                    value={selectedElement.style?.textTransform ?? 'none'}
                     onChange={(e) => onUpdate(selectedElement.id, {
                       style: { ...selectedElement.style, textTransform: e.target.value }
                     })}
@@ -1258,7 +1258,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
                   <div>
                     <label className="block text-xs font-medium text-gray-600 mb-1">Border Width</label>
                     <select
-                      value={selectedElement.style?.borderWidth || '0'}
+                      value={selectedElement.style?.borderWidth ?? '0'}
                       onChange={(e) => onUpdate(selectedElement.id, {
                         style: { 
                           ...selectedElement.style, 
@@ -1278,7 +1278,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
                   <div>
                     <label className="block text-xs font-medium text-gray-600 mb-1">Border Style</label>
                     <select
-                      value={selectedElement.style?.borderStyle || 'solid'}
+                      value={selectedElement.style?.borderStyle ?? 'solid'}
                       onChange={(e) => onUpdate(selectedElement.id, {
                         style: { ...selectedElement.style, borderStyle: e.target.value }
                       })}
@@ -1295,7 +1295,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
                     <label className="block text-xs font-medium text-gray-600 mb-1">Border Color</label>
                     <input
                       type="color"
-                      value={selectedElement.style?.borderColor || '#cccccc'}
+                      value={selectedElement.style?.borderColor ?? '#cccccc'}
                       onChange={(e) => onUpdate(selectedElement.id, {
                         style: { ...selectedElement.style, borderColor: e.target.value }
                       })}
@@ -1308,7 +1308,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
                   <div>
                     <label className="block text-xs font-medium text-gray-600 mb-1">Border Radius</label>
                     <select
-                      value={selectedElement.style?.borderRadius || '0'}
+                      value={selectedElement.style?.borderRadius ?? '0'}
                       onChange={(e) => onUpdate(selectedElement.id, {
                         style: { ...selectedElement.style, borderRadius: e.target.value }
                       })}
@@ -1324,7 +1324,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
                   <div>
                     <label className="block text-xs font-medium text-gray-600 mb-1">Box Shadow</label>
                     <select
-                      value={selectedElement.style?.boxShadow || 'none'}
+                      value={selectedElement.style?.boxShadow ?? 'none'}
                       onChange={(e) => onUpdate(selectedElement.id, {
                         style: { ...selectedElement.style, boxShadow: e.target.value }
                       })}
@@ -1348,7 +1348,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1">Display</label>
                   <select
-                    value={selectedElement.style?.display || 'block'}
+                    value={selectedElement.style?.display ?? 'block'}
                     onChange={(e) => onUpdate(selectedElement.id, {
                       style: { ...selectedElement.style, display: e.target.value }
                     })}
@@ -1363,7 +1363,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1">Width</label>
                   <select
-                    value={selectedElement.style?.width || 'auto'}
+                    value={selectedElement.style?.width ?? 'auto'}
                     onChange={(e) => onUpdate(selectedElement.id, {
                       style: { ...selectedElement.style, width: e.target.value }
                     })}
@@ -1380,7 +1380,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
                   <label className="block text-xs font-medium text-gray-600 mb-1">Min Height</label>
                   <input
                     type="text"
-                    value={selectedElement.style?.minHeight || 'auto'}
+                    value={selectedElement.style?.minHeight ?? 'auto'}
                     onChange={(e) => {
                       e.stopPropagation();
                       onUpdate(selectedElement.id, {
@@ -1395,7 +1395,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1">Overflow</label>
                   <select
-                    value={selectedElement.style?.overflow || 'visible'}
+                    value={selectedElement.style?.overflow ?? 'visible'}
                     onChange={(e) => onUpdate(selectedElement.id, {
                       style: { ...selectedElement.style, overflow: e.target.value }
                     })}
@@ -1582,7 +1582,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
                     <label className="block text-sm font-medium text-gray-700 mb-1">Position X</label>
                     <input
                       type="number"
-                      value={template.letterhead?.position?.x || 0}
+                      value={template.letterhead?.position?.x ?? 0}
                       onChange={(e) => setTemplate(prev => ({
                         ...prev,
                         letterhead: {
@@ -1600,7 +1600,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
                     <label className="block text-sm font-medium text-gray-700 mb-1">Position Y</label>
                     <input
                       type="number"
-                      value={template.letterhead?.position?.y || 0}
+                      value={template.letterhead?.position?.y ?? 0}
                       onChange={(e) => setTemplate(prev => ({
                         ...prev,
                         letterhead: {
@@ -1623,7 +1623,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
                     min="0.1"
                     max="1"
                     step="0.1"
-                    value={template.letterhead?.opacity || 0.3}
+                    value={template.letterhead?.opacity ?? 0.3}
                     onChange={(e) => setTemplate(prev => ({
                       ...prev,
                       letterhead: {

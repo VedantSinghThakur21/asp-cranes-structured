@@ -122,13 +122,13 @@ export function QuotationTemplateEditor() {
               <div className="space-y-4">
                 <Input
                   label="Template Name"
-                  value={template.name}
+                  value={template.name ?? ''}
                   onChange={(e) => setTemplate({ ...template, name: e.target.value })}
                   placeholder="Enter template name"
                 />
                 <Input
                   label="Description"
-                  value={template.description || ''}
+                  value={template.description ?? ''}
                   onChange={(e) => setTemplate({ ...template, description: e.target.value })}
                   placeholder="Enter template description"
                 />
