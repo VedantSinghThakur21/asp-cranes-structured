@@ -1016,24 +1016,37 @@ export class EnhancedTemplateBuilder {
     console.log('🔍 [DEBUG] Data for replacement:', JSON.stringify(data, null, 2));
     
     let result = text
-      // Quotation placeholders
-      .replace(/\{\{quotation\.number\}\}/g, data?.quotation?.number || 'Q-001')
+      // Quotation placeholders (multiple formats)
+      .replace(/\{\{quotation\.number\}\}/g, data?.quotation?.number || data?.quotation?.quotation_number || 'Q-001')
+      .replace(/\{\{quotation\.quotation_number\}\}/g, data?.quotation?.quotation_number || data?.quotation?.number || 'Q-001')
       .replace(/\{\{quotation\.date\}\}/g, data?.quotation?.date || new Date().toLocaleDateString())
+      .replace(/\{\{quotation\.created_at\}\}/g, data?.quotation?.created_at || new Date().toLocaleDateString())
       .replace(/\{\{quotation\.validUntil\}\}/g, data?.quotation?.validUntil || 'N/A')
       .replace(/\{\{quotation\.terms\}\}/g, data?.quotation?.terms || 'Standard terms apply')
       
+      // Customer placeholders (alias for client)
+      .replace(/\{\{customer\.name\}\}/g, data?.customer?.name || data?.client?.name || 'Customer Name')
+      .replace(/\{\{customer\.company\}\}/g, data?.customer?.company || data?.client?.company || '')
+      .replace(/\{\{customer\.address\}\}/g, data?.customer?.address || data?.client?.address || 'Customer Address')
+      .replace(/\{\{customer\.phone\}\}/g, data?.customer?.phone || data?.client?.phone || 'Customer Phone')
+      .replace(/\{\{customer\.email\}\}/g, data?.customer?.email || data?.client?.email || 'customer@email.com')
+      
       // Client placeholders
-      .replace(/\{\{client\.name\}\}/g, data?.client?.name || 'Client Name')
-      .replace(/\{\{client\.company\}\}/g, data?.client?.company || 'Client Company')
-      .replace(/\{\{client\.address\}\}/g, data?.client?.address || 'Client Address')
-      .replace(/\{\{client\.phone\}\}/g, data?.client?.phone || 'Client Phone')
-      .replace(/\{\{client\.email\}\}/g, data?.client?.email || 'client@email.com')
+      .replace(/\{\{client\.name\}\}/g, data?.client?.name || data?.customer?.name || 'Client Name')
+      .replace(/\{\{client\.company\}\}/g, data?.client?.company || data?.customer?.company || '')
+      .replace(/\{\{client\.address\}\}/g, data?.client?.address || data?.customer?.address || 'Client Address')
+      .replace(/\{\{client\.phone\}\}/g, data?.client?.phone || data?.customer?.phone || 'Client Phone')
+      .replace(/\{\{client\.email\}\}/g, data?.client?.email || data?.customer?.email || 'client@email.com')
       
       // Company placeholders
-      .replace(/\{\{company\.name\}\}/g, data?.company?.name || 'Company Name')
+      .replace(/\{\{company\.name\}\}/g, data?.company?.name || 'ASP CRANES')
       .replace(/\{\{company\.address\}\}/g, data?.company?.address || 'Company Address')
       .replace(/\{\{company\.phone\}\}/g, data?.company?.phone || 'Company Phone')
       .replace(/\{\{company\.email\}\}/g, data?.company?.email || 'company@email.com')
+      .replace(/\{\{company\.website\}\}/g, data?.company?.website || 'www.company.com')
+      
+      // User/Prepared by placeholders
+      .replace(/\{\{prepared_by\}\}/g, data?.prepared_by || data?.user?.name || data?.quotation?.created_by || 'Sales Representative')
       
       // Totals placeholders - comprehensive mapping for all financial fields
       .replace(/\{\{totals\.workingCost\}\}/g, data?.totals?.workingCost || '₹0')

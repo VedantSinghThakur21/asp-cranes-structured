@@ -62,7 +62,7 @@ INSERT INTO enhanced_templates (
       "id": "client-info-prepared-section",
       "type": "custom_text",
       "content": {
-        "text": "<div style=\"display: flex; justify-content: space-between; margin-bottom: 30px;\"><div style=\"flex: 1;\"><div style=\"margin-bottom: 4px;\"><strong>Client Name:</strong> {{customer.name}}</div><div style=\"margin-bottom: 4px;\"><strong>Client Email:</strong> {{customer.email}}</div><div><strong>Quote Number:</strong> {{quotation.quotation_number}}</div></div><div style=\"flex: 1; text-align: right;\"><div style=\"margin-bottom: 4px;\"><strong>Prepared By:</strong> Admin User</div><div><strong>Date Prepared:</strong> {{quotation.created_at}}</div></div></div>"
+        "text": "<div style=\"display: flex; justify-content: space-between; margin-bottom: 30px;\"><div style=\"flex: 1;\"><div style=\"margin-bottom: 4px;\"><strong>Client Name:</strong> {{customer.name}}</div><div style=\"margin-bottom: 4px;\"><strong>Client Email:</strong> {{customer.email}}</div><div><strong>Quote Number:</strong> {{quotation.quotation_number}}</div></div><div style=\"flex: 1; text-align: right;\"><div style=\"margin-bottom: 4px;\"><strong>Prepared By:</strong> {{prepared_by}}</div><div><strong>Date Prepared:</strong> {{quotation.created_at}}</div></div></div>"
       },
       "visible": true,
       "style": {
