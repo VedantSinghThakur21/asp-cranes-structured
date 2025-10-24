@@ -196,9 +196,13 @@ class TemplateService {
           {
             "id": "terms-1",
             "type": "terms",
-            "content": "Terms & Conditions:\n• All Risks on \"The Hirer\".\n• Payment terms: 30 days\n• Prices are exclusive of GST",
+            "content": {
+              "title": "Terms & Conditions",
+              "text": "• Any extension or modification to the rental period must be communicated and agreed upon in writing.\n• Rental rates are based on the agreed upon crane specified in the quotation. Payment for the rental fees is due in full prior to or upon delivery of the equipment. Late payments may incur late fees or result in the suspension of equipment rental.\n• All Risks on \"The Hirer\".\n• Payment terms: 30 days from invoice date.\n• Prices are exclusive of GST (GST will be added as per applicable rates).\n• Cancellation charges may apply as per company policy.\n• Equipment must be returned in the same condition as delivered.\n• The hirer is responsible for any damage to the equipment during rental period.",
+              "showTitle": true
+            },
             "visible": true,
-            "style": {"fontSize": "10px"}
+            "style": {"fontSize": "11px", "marginTop": "20px"}
           }
         ];
         

@@ -260,6 +260,7 @@ CREATE TABLE quotations (
     created_by VARCHAR(50) NOT NULL REFERENCES users(uid) ON DELETE SET NULL,
     status VARCHAR(20) NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'sent', 'accepted', 'rejected')),
     template_id VARCHAR(50) REFERENCES quotation_templates(id) ON DELETE SET NULL,
+    terms_conditions TEXT,
     notes TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,

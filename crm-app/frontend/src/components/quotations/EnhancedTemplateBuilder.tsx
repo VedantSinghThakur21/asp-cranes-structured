@@ -2364,7 +2364,17 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
         } 
       },
       [ELEMENT_TYPES.CUSTOM_TEXT]: { text: 'Custom text content...' },
-      [ELEMENT_TYPES.TERMS]: { title: 'Terms & Conditions', text: 'Standard terms and conditions...' }
+      [ELEMENT_TYPES.TERMS]: { 
+        title: 'Terms & Conditions', 
+        text: `• Any extension or modification to the rental period must be communicated and agreed upon in writing.
+• Rental rates are based on the agreed upon crane specified in the quotation. Payment for the rental fees is due in full prior to or upon delivery of the equipment. Late payments may incur late fees or result in the suspension of equipment rental.
+• All Risks on "The Hirer".
+• Payment terms: 30 days from invoice date.
+• Prices are exclusive of GST (GST will be added as per applicable rates).
+• Cancellation charges may apply as per company policy.
+• Equipment must be returned in the same condition as delivered.
+• The hirer is responsible for any damage to the equipment during rental period.` 
+      }
     };
     return defaults[elementType] || {};
   };

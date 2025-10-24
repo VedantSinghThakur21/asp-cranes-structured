@@ -384,8 +384,12 @@ export class EnhancedTemplateBuilder {
           ...baseElement,
           content: {
             title: 'Terms & Conditions',
-            text: '{{quotation.terms}}',
-            defaultText: 'Please review the terms and conditions before accepting this quotation.',
+            text: `• Any extension or modification to the rental period must be communicated and agreed upon in writing.
+• Rental rates are based on the agreed upon crane specified in the quotation. Payment for the rental fees is due in full prior to or upon delivery of the equipment. Late payments may incur late fees or result in the suspension of equipment rental.
+• All Risks on "The Hirer".
+• Payment terms: 30 days from invoice date.
+• Prices are exclusive of GST (GST will be added as per applicable rates).`,
+            defaultText: '• Please review the terms and conditions before accepting this quotation.',
             showTitle: true
           }
         };
@@ -744,27 +748,28 @@ export class EnhancedTemplateBuilder {
         const termsTitle = element.content?.title || 'Terms & Conditions';
         const termsText = element.content?.text || element.content?.defaultText || 'Terms and conditions apply.';
         
-        // Format terms text with proper line breaks and paragraph structure
+        // Format terms text with proper bullet points
         const formatTermsText = (text) => {
-          return text
-            .replace(/\*\*/g, '') // Remove ** markers
-            .split(/\s*\.\s+(?=[A-Z]|\d+\.|[a-z]\))/g) // Split on periods followed by capital letters or numbers
-            .map(sentence => sentence.trim())
-            .filter(sentence => sentence.length > 0)
-            .map(sentence => {
-              // Add period if missing
-              if (!sentence.endsWith('.') && !sentence.endsWith(':')) {
-                sentence += '.';
-              }
-              return `<p style="margin-bottom: 8px; line-height: 1.4;">${sentence}</p>`;
-            })
-            .join('');
+          // Replace placeholders first
+          const replacedText = this.replacePlaceholders(text, data);
+          
+          // Split by newlines and format as bullet list
+          const lines = replacedText
+            .split('\n')
+            .map(line => line.trim())
+            .filter(line => line.length > 0);
+          
+          return lines.map(line => {
+            // Remove existing bullet markers if any
+            const cleanLine = line.replace(/^[•\-\*]\s*/, '');
+            return `<p style="margin-bottom: 6px; line-height: 1.6; padding-left: 20px; text-indent: -15px;">• ${cleanLine}</p>`;
+          }).join('');
         };
         
         return `
           <div class="${elementClass}" style="${elementStyle}">
-            ${element.content?.showTitle ? `<h3>${this.replacePlaceholders(termsTitle, data)}</h3>` : '<h3>Terms & Conditions</h3>'}
-            <div class="terms-content" style="margin-top: 15px;">${formatTermsText(this.replacePlaceholders(termsText, data))}</div>
+            <h3 style="font-weight: 600; margin-bottom: 12px; font-size: 16px;">${this.replacePlaceholders(termsTitle, data)}</h3>
+            <div class="terms-content" style="margin-top: 10px; font-size: 11px; color: #333;">${formatTermsText(termsText)}</div>
           </div>`;
 
       case TEMPLATE_ELEMENT_TYPES.CUSTOM_TEXT:
