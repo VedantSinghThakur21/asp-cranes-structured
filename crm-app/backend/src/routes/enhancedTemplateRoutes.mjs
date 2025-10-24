@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Enhanced Template Management Routes
  * Advanced template builder and PDF generation functionality
  * Inspired by InvoiceNinja's template system adapted for ASP Cranes
@@ -50,7 +50,7 @@ const upload = multer({
  * Get enhanced template builder information and capabilities
  */
 router.get('/info', (req, res) => {
-  console.log('ðŸ” [EnhancedTemplates] Info endpoint requested');
+  console.log('🔍 [EnhancedTemplates] Info endpoint requested');
   res.json({
     success: true,
     message: 'Enhanced Template System is operational',
@@ -66,7 +66,7 @@ router.get('/info', (req, res) => {
  * Health check endpoint (no auth required)
  */
 router.get('/health', (req, res) => {
-  console.log('ðŸ¥ [EnhancedTemplates] Health check requested');
+  console.log('🏥 [EnhancedTemplates] Health check requested');
   res.json({ 
     success: true, 
     message: 'Enhanced Template system is operational',
@@ -117,7 +117,7 @@ router.post('/create', async (req, res) => {
       try {
         user = jwt.verify(token, jwtSecret);
       } catch (err) {
-        console.log('âš ï¸ Invalid token provided, using demo user');
+        console.log('⚠️ Invalid token provided, using demo user');
       }
     }
     
@@ -172,7 +172,7 @@ router.post('/create', async (req, res) => {
       const result = await client.query(query, values);
       const savedTemplate = result.rows[0];
       
-      console.log('âœ… Created enhanced template:', savedTemplate.name);
+      console.log('✅ Created enhanced template:', savedTemplate.name);
       
       res.status(201).json({
         success: true,
@@ -215,7 +215,7 @@ router.post('/create', async (req, res) => {
  */
 router.get('/sample-data', async (req, res) => {
   try {
-    console.log('ðŸ” [SAMPLE DATA] Fetching real quotation data using individual quotation API...');
+    console.log('🔍 [SAMPLE DATA] Fetching real quotation data using individual quotation API...');
     
     // First, get the list of quotations to find one with data
     const listResponse = await fetch('http://localhost:3001/api/quotations');
@@ -231,8 +231,8 @@ router.get('/sample-data', async (req, res) => {
     }
     
     // Get the first quotation ID  
-    const quotationId = listResult.data[0].id;
-    console.log('ðŸ“‹ Using quotation ID:', quotationId);
+    const requestedId = req.query.quotationId; const quotationId = requestedId || listResult.data[0].id;
+    console.log('📋 Using quotation ID:', quotationId);
     
     // Now fetch the individual quotation using the working API endpoint
     const individualResponse = await fetch(`http://localhost:3001/api/quotations/${quotationId}`);
@@ -248,7 +248,7 @@ router.get('/sample-data', async (req, res) => {
     }
     
     const quotation = individualResult.data;
-    console.log('✅ Successfully fetched quotation with camelCase fields:', {
+    console.log('? Successfully fetched quotation with camelCase fields:', {
       totalCost: quotation.totalCost,
       gstAmount: quotation.gstAmount,
       workingCost: quotation.workingCost,
@@ -325,7 +325,7 @@ router.get('/sample-data', async (req, res) => {
       riskUsageTotalCalculated = riskAdjustmentCalculated + usageLoadFactorCalculated;
     }
     
-    console.log('🔧 Risk & Usage Factor Calculation:', {
+    console.log('?? Risk & Usage Factor Calculation:', {
       monthlyBaseRate,
       riskType,
       usageType,
@@ -371,10 +371,10 @@ router.get('/sample-data', async (req, res) => {
             jobType: machine.jobType || jobType,
             quantity: machine.quantity || 1,
             duration: `${machine.duration || numberOfDays} days`,
-            rate: `₹${(machine.baseRate || machine.dailyRate || dailyRate).toLocaleString('en-IN')}/day`,
-            rental: `₹${(machine.rental || machine.totalRent || workingCostTotal).toLocaleString('en-IN')}`,
-            mobDemob: `₹${(machine.mobDemob || machine.mobDemobCost || mobDemobTotal).toLocaleString('en-IN')}`,
-            riskUsage: `₹${riskUsageTotalCalculated.toLocaleString('en-IN')}`,
+            rate: `?${(machine.baseRate || machine.dailyRate || dailyRate).toLocaleString('en-IN')}/day`,
+            rental: `?${(machine.rental || machine.totalRent || workingCostTotal).toLocaleString('en-IN')}`,
+            mobDemob: `?${(machine.mobDemob || machine.mobDemobCost || mobDemobTotal).toLocaleString('en-IN')}`,
+            riskUsage: `?${riskUsageTotalCalculated.toLocaleString('en-IN')}`,
             riskFactor: `${riskType} (${riskPercentage}%)`,
             usageFactor: `${usageType} (${usagePercentage}%)`
           }))
@@ -384,27 +384,27 @@ router.get('/sample-data', async (req, res) => {
             jobType: jobType, 
             quantity: 1,
             duration: `${numberOfDays} days`,
-            rate: `₹${dailyRate.toLocaleString('en-IN')}/day`,
-            rental: `₹${totalRentalAmount.toLocaleString('en-IN')}`,
-            mobDemob: `₹${mobDemobTotal.toLocaleString('en-IN')}`,
-            riskUsage: `₹${riskUsageTotalCalculated.toLocaleString('en-IN')}`,
+            rate: `?${dailyRate.toLocaleString('en-IN')}/day`,
+            rental: `?${totalRentalAmount.toLocaleString('en-IN')}`,
+            mobDemob: `?${mobDemobTotal.toLocaleString('en-IN')}`,
+            riskUsage: `?${riskUsageTotalCalculated.toLocaleString('en-IN')}`,
             riskFactor: `${riskType} (${riskPercentage}%)`,
             usageFactor: `${usageType} (${usagePercentage}%)`
           }]
       ),
       totals: {
-        subtotal: `₹${Math.round(totalCostAmount - gstAmountTotal).toLocaleString('en-IN')}`,
-        discount: '₹0', 
-        tax: `₹${Math.round(gstAmountTotal).toLocaleString('en-IN')}`,
-        total: `₹${Math.round(totalCostAmount).toLocaleString('en-IN')}`,
-        riskAdjustment: `₹${riskAdjustmentCalculated.toLocaleString('en-IN')}`,
-        usageLoadFactor: `₹${usageLoadFactorCalculated.toLocaleString('en-IN')}`,
-        riskUsageTotal: `₹${riskUsageTotalCalculated.toLocaleString('en-IN')}`
+        subtotal: `?${Math.round(totalCostAmount - gstAmountTotal).toLocaleString('en-IN')}`,
+        discount: '?0', 
+        tax: `?${Math.round(gstAmountTotal).toLocaleString('en-IN')}`,
+        total: `?${Math.round(totalCostAmount).toLocaleString('en-IN')}`,
+        riskAdjustment: `?${riskAdjustmentCalculated.toLocaleString('en-IN')}`,
+        usageLoadFactor: `?${usageLoadFactorCalculated.toLocaleString('en-IN')}`,
+        riskUsageTotal: `?${riskUsageTotalCalculated.toLocaleString('en-IN')}`
       }
     };
     
-    console.log('✅ Template data prepared with totals:', quotationData.totals);
-    console.log('🔍 [DEBUG] Extracted values:', {
+    console.log('? Template data prepared with totals:', quotationData.totals);
+    console.log('?? [DEBUG] Extracted values:', {
       totalCostAmount,
       gstAmountTotal,
       workingCostTotal,
@@ -425,7 +425,7 @@ router.get('/sample-data', async (req, res) => {
     });
     
   } catch (error) {
-    console.error('âŒ Error using individual quotation API, falling back to sample data:', error.message);
+    console.error('❌ Error using individual quotation API, falling back to sample data:', error.message);
     
     // Fallback to sample data
     try {
@@ -439,7 +439,7 @@ router.get('/sample-data', async (req, res) => {
         message: 'Sample data retrieved (fallback)'
       });
     } catch (fallbackError) {
-      console.error('âŒ Fallback error:', fallbackError);
+      console.error('❌ Fallback error:', fallbackError);
       res.status(500).json({
         success: false,
         error: 'Failed to retrieve data',
@@ -464,7 +464,7 @@ router.get('/default', async (req, res) => {
       try {
         user = jwt.verify(token, jwtSecret);
       } catch (err) {
-        console.log('âš ï¸ Invalid token provided, continuing without auth');
+        console.log('⚠️ Invalid token provided, continuing without auth');
       }
     }
 
@@ -545,7 +545,7 @@ async function ensureDefaultTemplate(client) {
     const checkResult = await client.query(checkQuery);
     
     if (checkResult.rows.length === 0) {
-      console.log('ðŸ”§ Creating default template as it does not exist...');
+      console.log('🔧 Creating default template as it does not exist...');
       
       const defaultElements = [
         {
@@ -602,10 +602,10 @@ async function ensureDefaultTemplate(client) {
         JSON.stringify(defaultBranding)
       ]);
       
-      console.log('âœ… Default template created successfully');
+      console.log('✅ Default template created successfully');
     }
   } catch (error) {
-    console.error('âš ï¸ Error ensuring default template exists:', error);
+    console.error('⚠️ Error ensuring default template exists:', error);
   }
 }
 
@@ -615,7 +615,7 @@ async function ensureDefaultTemplate(client) {
  */
 router.get('/quotation', async (req, res) => {
   try {
-    console.log('ðŸ“‹ [Enhanced Templates] Loading templates for quotation printing');
+    console.log('📋 [Enhanced Templates] Loading templates for quotation printing');
     
     // Try database first
     try {
@@ -645,7 +645,7 @@ router.get('/quotation', async (req, res) => {
           category: row.category
         }));
         
-        console.log(`âœ… [Enhanced Templates] Found ${templates.length} active templates for quotation printing`);
+        console.log(`✅ [Enhanced Templates] Found ${templates.length} active templates for quotation printing`);
         
         res.json({
           success: true,
@@ -658,7 +658,7 @@ router.get('/quotation', async (req, res) => {
       }
       
     } catch (dbError) {
-      console.warn('âš ï¸ [Enhanced Templates] Database error, using fallback templates:', dbError.message);
+      console.warn('⚠️ [Enhanced Templates] Database error, using fallback templates:', dbError.message);
       
       // Fallback templates when database is unavailable
       const fallbackTemplates = [
@@ -682,7 +682,7 @@ router.get('/quotation', async (req, res) => {
         }
       ];
       
-      console.log(`âœ… [Enhanced Templates] Using ${fallbackTemplates.length} fallback templates`);
+      console.log(`✅ [Enhanced Templates] Using ${fallbackTemplates.length} fallback templates`);
       
       res.json({
         success: true,
@@ -693,7 +693,7 @@ router.get('/quotation', async (req, res) => {
     }
     
   } catch (error) {
-    console.error('âŒ [Enhanced Templates] Critical error loading quotation templates:', error);
+    console.error('❌ [Enhanced Templates] Critical error loading quotation templates:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to load quotation templates',
@@ -719,7 +719,7 @@ router.get('/list', async (req, res) => {
       try {
         user = jwt.verify(token, jwtSecret);
       } catch (err) {
-        console.log('âš ï¸ Invalid token provided, continuing without auth');
+        console.log('⚠️ Invalid token provided, continuing without auth');
       }
     }
     
@@ -749,7 +749,7 @@ router.get('/list', async (req, res) => {
       `);
       
       if (!tableCheck.rows[0].exists) {
-        console.log('âš ï¸ Enhanced templates table does not exist, returning default template');
+        console.log('⚠️ Enhanced templates table does not exist, returning default template');
         templates = [{
           id: 'default_asp_template',
           name: 'Default ASP Cranes Template',
@@ -829,7 +829,7 @@ router.get('/:id', async (req, res) => {
       try {
         user = jwt.verify(token, jwtSecret);
       } catch (err) {
-        console.log('âš ï¸ Invalid token provided, continuing without auth');
+        console.log('⚠️ Invalid token provided, continuing without auth');
       }
     }
     
@@ -868,9 +868,9 @@ router.get('/:id', async (req, res) => {
       const template = result.rows[0];
       
       // Debug: log element types
-      console.log('ðŸ” [DEBUG] Template elements from DB:', template.elements);
+      console.log('🔍 [DEBUG] Template elements from DB:', template.elements);
       if (template.elements && Array.isArray(template.elements)) {
-        console.log('ðŸ” [DEBUG] Element types found:', template.elements.map(el => el.type));
+        console.log('🔍 [DEBUG] Element types found:', template.elements.map(el => el.type));
       }
       
       res.json({
@@ -923,7 +923,7 @@ router.put('/:id', async (req, res) => {
       try {
         user = jwt.verify(token, jwtSecret);
       } catch (err) {
-        console.log('âš ï¸ Invalid token provided, using demo user');
+        console.log('⚠️ Invalid token provided, using demo user');
       }
     }
     
@@ -1034,7 +1034,7 @@ router.patch('/:id', async (req, res) => {
       try {
         user = jwt.verify(token, jwtSecret);
       } catch (err) {
-        console.log('âš ï¸ Invalid token provided, using demo user');
+        console.log('⚠️ Invalid token provided, using demo user');
       }
     }
     
@@ -1174,7 +1174,7 @@ router.delete('/:id', async (req, res) => {
       try {
         user = jwt.verify(token, jwtSecret);
       } catch (err) {
-        console.log('âš ï¸ Invalid token provided, using demo user');
+        console.log('⚠️ Invalid token provided, using demo user');
       }
     }
     
@@ -1247,18 +1247,18 @@ router.post('/preview', async (req, res) => {
       try {
         user = jwt.verify(token, jwtSecret);
       } catch (err) {
-        console.log('âš ï¸ Invalid token provided, continuing with demo preview');
+        console.log('⚠️ Invalid token provided, continuing with demo preview');
       }
     }
     
     const { templateData, quotationData, format = 'html', options = {} } = req.body;
     
     // Debug: log template data
-    console.log('ðŸ” [DEBUG] Preview template data:', templateData);
+    console.log('🔍 [DEBUG] Preview template data:', templateData);
     if (templateData.elements && Array.isArray(templateData.elements)) {
-      console.log('ðŸ” [DEBUG] Preview element types:', templateData.elements.map(el => el.type));
+      console.log('🔍 [DEBUG] Preview element types:', templateData.elements.map(el => el.type));
     }
-    console.log('ðŸ” [DEBUG] Preview quotation data:', quotationData);
+    console.log('🔍 [DEBUG] Preview quotation data:', quotationData);
     
     const templateBuilder = new EnhancedTemplateBuilder();
     
@@ -1268,7 +1268,7 @@ router.post('/preview', async (req, res) => {
     // If no quotation data provided, get sample data
     let finalQuotationData = quotationData;
     if (!finalQuotationData) {
-      console.log('ðŸ“ No quotation data provided, using sample data');
+      console.log('📝 No quotation data provided, using sample data');
       finalQuotationData = templateBuilder.getSampleQuotationData();
     }
     
@@ -1324,7 +1324,7 @@ router.post('/generate-pdf', async (req, res) => {
       try {
         user = jwt.verify(token, jwtSecret);
       } catch (err) {
-        console.log('âš ï¸ Invalid token provided, continuing with demo PDF generation');
+        console.log('⚠️ Invalid token provided, continuing with demo PDF generation');
       }
     }
     const {
@@ -1334,9 +1334,9 @@ router.post('/generate-pdf', async (req, res) => {
       filename
     } = req.body;
     
-    console.log('ðŸŽ¨ [Enhanced PDF] Generating PDF with advanced options...');
-    console.log('ðŸ“‹ Template ID:', templateId);
-    console.log('âš™ï¸ Options:', options);
+    console.log('🎨 [Enhanced PDF] Generating PDF with advanced options...');
+    console.log('📋 Template ID:', templateId);
+    console.log('⚙️ Options:', options);
     
     const templateBuilder = new EnhancedTemplateBuilder();
     await templateBuilder.loadTemplate(templateId);
@@ -1354,18 +1354,18 @@ router.post('/generate-pdf', async (req, res) => {
       ...options
     };
     
-    console.log('ðŸ”§ PDF Options:', pdfOptions);
+    console.log('🔧 PDF Options:', pdfOptions);
     
     let pdfBuffer;
     
     if (options.watermark) {
-      console.log('ðŸ’§ Adding watermark...');
+      console.log('💧 Adding watermark...');
       pdfBuffer = await pdfGenerator.generatePDFWithWatermark(html, options.watermark, pdfOptions);
     } else if (options.headerFooter) {
-      console.log('ðŸ“„ Adding header/footer...');
+      console.log('📄 Adding header/footer...');
       pdfBuffer = await pdfGenerator.generatePDFWithHeaderFooter(html, options.headerFooter, pdfOptions);
     } else {
-      console.log('ðŸ“ Generating standard PDF...');
+      console.log('📝 Generating standard PDF...');
       pdfBuffer = await pdfGenerator.generatePDF(html, pdfOptions);
     }
     
@@ -1373,14 +1373,14 @@ router.post('/generate-pdf', async (req, res) => {
     
     const downloadFilename = filename || `quotation_${quotationData.quotation?.number || Date.now()}.pdf`;
     
-    console.log('âœ… PDF generated successfully, size:', pdfBuffer.length);
+    console.log('✅ PDF generated successfully, size:', pdfBuffer.length);
     
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="${downloadFilename}"`);
     res.send(pdfBuffer);
     
   } catch (error) {
-    console.error('âŒ Error generating enhanced PDF:', error);
+    console.error('❌ Error generating enhanced PDF:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to generate enhanced PDF',
@@ -1397,9 +1397,9 @@ router.post('/generate-quotation-pdf', authenticateToken, async (req, res) => {
   try {
     const { quotationId, templateId, options = {} } = req.body;
     
-    console.log('ðŸŽ¯ [Enhanced Quotation PDF] Starting generation...');
-    console.log('ðŸ“‹ Quotation ID:', quotationId);
-    console.log('ðŸŽ¨ Template ID:', templateId);
+    console.log('🎯 [Enhanced Quotation PDF] Starting generation...');
+    console.log('📋 Quotation ID:', quotationId);
+    console.log('🎨 Template ID:', templateId);
     
     // Fetch quotation data from your existing system
     // This should integrate with your existing quotation fetching logic
@@ -1443,14 +1443,14 @@ router.post('/generate-quotation-pdf', authenticateToken, async (req, res) => {
     
     const filename = `ASP_Quotation_${quotationData.quotation?.number || quotationId}.pdf`;
     
-    console.log('âœ… Enhanced quotation PDF generated successfully');
+    console.log('✅ Enhanced quotation PDF generated successfully');
     
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.send(pdfBuffer);
     
   } catch (error) {
-    console.error('âŒ Error generating enhanced quotation PDF:', error);
+    console.error('❌ Error generating enhanced quotation PDF:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to generate enhanced quotation PDF',
@@ -1471,9 +1471,9 @@ router.post('/batch-pdf', authenticateToken, async (req, res) => {
       options = {}
     } = req.body;
     
-    console.log('ðŸ“š [Batch PDF] Starting batch generation...');
-    console.log('ðŸ“‹ Template ID:', templateId);
-    console.log('ðŸ“Š Quotations count:', quotations.length);
+    console.log('📚 [Batch PDF] Starting batch generation...');
+    console.log('📋 Template ID:', templateId);
+    console.log('📊 Quotations count:', quotations.length);
     
     const templateBuilder = new EnhancedTemplateBuilder();
     await templateBuilder.loadTemplate(templateId);
@@ -1490,7 +1490,7 @@ router.post('/batch-pdf', authenticateToken, async (req, res) => {
     const successful = results.filter(r => r.success);
     const failed = results.filter(r => !r.success);
     
-    console.log(`âœ… Batch PDF generation completed: ${successful.length}/${results.length} successful`);
+    console.log(`✅ Batch PDF generation completed: ${successful.length}/${results.length} successful`);
     
     res.json({
       success: true,
@@ -1509,7 +1509,7 @@ router.post('/batch-pdf', authenticateToken, async (req, res) => {
     });
     
   } catch (error) {
-    console.error('âŒ Error in batch PDF generation:', error);
+    console.error('❌ Error in batch PDF generation:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to generate batch PDFs',
@@ -1617,7 +1617,7 @@ router.post('/upload-asset', authenticateToken, upload.single('asset'), async (r
  * This should integrate with your existing quotation system
  */
 async function getQuotationData(quotationId) {
-  console.log('ðŸ” Fetching quotation data for ID:', quotationId);
+  console.log('🔍 Fetching quotation data for ID:', quotationId);
   
   try {
     // Connect directly to database to fetch quotation data
@@ -1640,14 +1640,14 @@ async function getQuotationData(quotationId) {
       );
       
       if (quotationResult.rows.length === 0) {
-        console.log('âŒ Quotation not found:', quotationId);
+        console.log('❌ Quotation not found:', quotationId);
         return null;
       }
       
       const quotationRow = quotationResult.rows[0];
-      console.log('âœ… Quotation found:', quotationRow.quotation_number);
-      console.log('ðŸ” Machine type:', quotationRow.machine_type);
-      console.log('ðŸ” Customer:', quotationRow.customer_name);
+      console.log('✅ Quotation found:', quotationRow.quotation_number);
+      console.log('🔍 Machine type:', quotationRow.machine_type);
+      console.log('🔍 Customer:', quotationRow.customer_name);
       
       // Parse customer_contact JSON if it exists
       let customerContact = {};
@@ -1658,7 +1658,7 @@ async function getQuotationData(quotationId) {
             : quotationRow.customer_contact;
         }
       } catch (parseError) {
-        console.log('âš ï¸ Error parsing customer_contact:', parseError.message);
+        console.log('⚠️ Error parsing customer_contact:', parseError.message);
       }
       
       // Transform database data to template format
@@ -1694,20 +1694,20 @@ async function getQuotationData(quotationId) {
           quantity: 1,
           duration: `${quotationRow.number_of_days} days`,
           rate: quotationRow.working_cost 
-            ? `â‚¹${Math.round(quotationRow.working_cost / quotationRow.number_of_days).toLocaleString('en-IN')}/day`
-            : 'â‚¹0/day',
-          rental: `â‚¹${Math.round(quotationRow.total_rent || 0).toLocaleString('en-IN')}`,
-          mobDemob: `â‚¹${Math.round(quotationRow.mob_demob_cost || 0).toLocaleString('en-IN')}`
+            ? `₹${Math.round(quotationRow.working_cost / quotationRow.number_of_days).toLocaleString('en-IN')}/day`
+            : '₹0/day',
+          rental: `₹${Math.round(quotationRow.total_rent || 0).toLocaleString('en-IN')}`,
+          mobDemob: `₹${Math.round(quotationRow.mob_demob_cost || 0).toLocaleString('en-IN')}`
         }],
         totals: {
-          subtotal: `â‚¹${Math.round((quotationRow.total_cost || 0) - (quotationRow.gst_amount || 0)).toLocaleString('en-IN')}`,
-          discount: 'â‚¹0',
-          tax: `â‚¹${Math.round(quotationRow.gst_amount || 0).toLocaleString('en-IN')}`,
-          total: `â‚¹${Math.round(quotationRow.total_cost || 0).toLocaleString('en-IN')}`
+          subtotal: `₹${Math.round((quotationRow.total_cost || 0) - (quotationRow.gst_amount || 0)).toLocaleString('en-IN')}`,
+          discount: '₹0',
+          tax: `₹${Math.round(quotationRow.gst_amount || 0).toLocaleString('en-IN')}`,
+          total: `₹${Math.round(quotationRow.total_cost || 0).toLocaleString('en-IN')}`
         }
       };
       
-      console.log('ðŸ“‹ Template data prepared:', {
+      console.log('📋 Template data prepared:', {
         itemsCount: templateData.items.length,
         customerName: templateData.client.name,
         quotationNumber: templateData.quotation.number
@@ -1721,7 +1721,7 @@ async function getQuotationData(quotationId) {
     }
     
   } catch (error) {
-    console.error('âŒ Error fetching quotation data:', error);
+    console.error('❌ Error fetching quotation data:', error);
     // Return sample data as fallback
     const templateBuilder = new EnhancedTemplateBuilder();
     return templateBuilder.getSampleQuotationData();
@@ -1821,7 +1821,7 @@ router.post('/duplicate', async (req, res) => {
       try {
         user = jwt.verify(token, jwtSecret);
       } catch (err) {
-        console.log('âš ï¸ Invalid token provided, using demo user');
+        console.log('⚠️ Invalid token provided, using demo user');
       }
     }
 
@@ -1922,3 +1922,4 @@ router.post('/duplicate', async (req, res) => {
 });
 
 export default router;
+

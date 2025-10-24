@@ -1789,8 +1789,13 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
 
   const loadSampleData = async () => {
     try {
-      // No auth needed for sample data
-      const response = await fetch('/api/templates/enhanced/sample-data');
+      // If we have a quotationId, fetch that specific quotation's data
+      // Otherwise, fetch generic sample data
+      const url = quotationId 
+        ? `/api/templates/enhanced/sample-data?quotationId=${quotationId}`
+        : '/api/templates/enhanced/sample-data';
+      
+      const response = await fetch(url);
       const result = await response.json();
       if (result.success) {
         setPreviewData(result.data);
