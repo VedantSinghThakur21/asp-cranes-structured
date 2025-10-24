@@ -309,6 +309,11 @@ router.get('/', async (req, res) => {
         total_rent: parseFloat(q.total_rent || 0)
       }));
       
+      // Set no-cache headers to prevent stale data
+      res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.set('Pragma', 'no-cache');
+      res.set('Expires', '0');
+      
       return res.status(200).json({
         success: true,
         data: quotations
