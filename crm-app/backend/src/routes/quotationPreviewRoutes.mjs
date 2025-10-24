@@ -283,8 +283,8 @@ router.get('/:id/preview/iframe', async (req, res) => {
     console.log('✅ [Preview] HTML generated for iframe, length:', html.length);
     console.log('🔍 [Preview] Debug info added to HTML:', debugInfo);
 
-    // Generate weak ETag to allow conditional GET caching
-    const etagSeed = `${template.id || 'default'}:${template.updated_at || template.updatedAt || 'na'}:${meta.degraded ? 'D' : 'OK'}`;
+    // Generate weak ETag that includes quotation number to prevent wrong cache hits
+    const etagSeed = `${template.id || 'default'}:${template.updated_at || template.updatedAt || 'na'}:${meta.degraded ? 'D' : 'OK'}:${previewData.quotation?.number || 'nonum'}`;
     const etag = 'W/"' + Buffer.from(etagSeed).toString('base64').substring(0,32) + '"';
     res.setHeader('ETag', etag);
     res.setHeader('Content-Type', 'text/html');
