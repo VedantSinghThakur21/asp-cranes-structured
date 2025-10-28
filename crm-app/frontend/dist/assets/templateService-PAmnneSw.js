@@ -1,1 +1,0 @@
-import{g as e,a as t}from"./index-BSmYoUjT.js";import{c as o,d as T,t as r,u as g}from"./index-BSmYoUjT.js";const p=e,m=t;export{o as createTemplate,T as deleteTemplate,m as getTemplate,t as getTemplateById,p as getTemplates,r as templateApiClient,g as updateTemplate};
