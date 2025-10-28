@@ -1,0 +1,36 @@
+name: postgres-database
+
+services:
+  postgres:
+    image: postgres:18
+    container_name: postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: crmdb@21
+      POSTGRES_DB: asp_crm
+    ports:
+      - "5433:5432"
+    networks:
+      - postgres_network
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  postgres_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+
+
+
+
+
+
+

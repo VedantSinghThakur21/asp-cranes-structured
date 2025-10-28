@@ -9,14 +9,11 @@ import dotenv from 'dotenv';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import compression from 'compression';
-import cookieParser from 'cookie-parser';
-import rateLimit from 'express-rate-limit';
 import { fileURLToPath } from 'url';
 import path from 'path';
 import fs from 'fs';
 
 // Import security middleware
-import { authenticateToken } from './middleware/authMiddleware.mjs';
 
 // Import all route files
 import authRoutes from './routes/authRoutes.mjs';
@@ -95,7 +92,7 @@ if (isProduction) {
 app.use(cors({
   origin: function (origin, callback) {
     // Allow same-origin and iframe requests
-    if (!origin || origin === FRONTEND_ORIGIN || origin === 'http://localhost:3000') {
+    if (!origin || origin === FRONTEND_ORIGIN || origin === 'http://localhost:3000' || origin === "http://localhost:5173") {
       callback(null, true);
     } else {
       console.log('🚫 CORS blocked origin:', origin);
