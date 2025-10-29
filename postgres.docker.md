@@ -1,8 +1,9 @@
 ```sh
+# To view the logs of the PostgreSQL container, use the following command:
 docker compose -f postgres.yml logs --no-color postgres --tail 200
 
+# To connect to the PostgreSQL database inside the Docker container, use the following command:
 docker exec -it <container-id-or-name> psql -U postgres -d asp_crm
-
 docker exec -it postgres psql -U postgres -d asp_crm
 
 # To access the PostgreSQL database inside the Docker container, use the following command:
@@ -31,6 +32,5 @@ VALUES (
 );
 SQL
 
-SELECT * FROM users;
-SQL
+SELECT * FROM users; "SQL"
 ```
