@@ -16,61 +16,66 @@ export function LoginForm() {
   const [renderError, setRenderError] = useState<string | null>(null);
   const [apiState, setApiState] = useState<'loading' | 'available' | 'error'>('loading');
   const { login, error, isAuthenticated, user } = useAuthStore();
-  
+
   // Debug logging for LoginForm render
-  console.log("LoginForm rendering");
-  console.log("Auth state:", { error, isAuthenticated });
-  
+  console.log('LoginForm rendering');
+  console.log('Auth state:', { error, isAuthenticated });
+
   useEffect(() => {
-    console.log("LoginForm mounted");
+    console.log('LoginForm mounted');
     // Check if the API is reachable
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-    
+
     fetch(`${apiUrl}/health`, {
       // Add credentials and mode to support CORS
       credentials: 'include',
       mode: 'cors',
       headers: {
         'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      }
+        'Content-Type': 'application/json',
+      },
     })
       .then(response => {
-        console.log("API health check response:", response.status);
+        console.log('API health check response:', response.status);
         setApiState(response.ok ? 'available' : 'error');
         return response.text();
       })
       .then(data => {
-        console.log("API health check data:", data);
+        console.log('API health check data:', data);
       })
       .catch(err => {
-        console.error("API health check failed:", err);
+        console.error('API health check failed:', err);
         setApiState('error');
-        setRenderError(`API connection error: ${err.message}. Make sure the API server is running at ${apiUrl}`);
+        setRenderError(
+          `API connection error: ${err.message}. Make sure the API server is running at ${apiUrl}`
+        );
       });
-      
+
     // Check for critical environment variables
-    console.log("Environment variables check:", {
+    console.log('Environment variables check:', {
       apiUrl: import.meta.env.VITE_API_URL || 'not set',
-      dbHost: import.meta.env.VITE_DB_HOST || 'not set'
+      dbHost: import.meta.env.VITE_DB_HOST || 'not set',
     });
   }, []);
-  
+
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   // Get the redirect path if available
   const from = (location.state as LocationState)?.from?.pathname || '/dashboard';
-  
+
   // If already authenticated, redirect to dashboard
   useEffect(() => {
-    console.log('🔍 LoginForm useEffect - Authentication check:', { isAuthenticated, user: user?.name });
+    console.log('🔍 LoginForm useEffect - Authentication check:', {
+      isAuthenticated,
+      user: user?.name,
+    });
     if (isAuthenticated && user) {
       console.log('✅ User is authenticated, navigating to:', from);
       navigate(from, { replace: true });
     }
   }, [isAuthenticated, user, navigate, from]);
-  
+
   // Stabilize the login form by marking it as mounted
   useEffect(() => {
     // Clear any previous JWT token if on login page
@@ -79,48 +84,48 @@ export function LoginForm() {
       localStorage.removeItem('jwt-token');
     }
   }, [location.pathname]);
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Basic validation
     if (!email || !password) {
-      setRenderError("Email and password are required");
+      setRenderError('Email and password are required');
       return;
     }
-    
+
     setIsLoading(true);
-    console.log("🔑 Login attempt for:", email);
-    
+    console.log('🔑 Login attempt for:', email);
+
     try {
       // Check if API is reachable before attempting login
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-      
+
       try {
-        const healthCheck = await fetch(`${apiUrl}/health`, { 
+        const healthCheck = await fetch(`${apiUrl}/health`, {
           method: 'GET',
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         });
-        
+
         if (!healthCheck.ok) {
-          console.error("API health check failed before login attempt:", await healthCheck.text());
+          console.error('API health check failed before login attempt:', await healthCheck.text());
           setApiState('error');
           throw new Error(`API server is not responding correctly. Status: ${healthCheck.status}`);
         }
-        
+
         setApiState('available');
-        console.log("API health check passed, proceeding with login");
+        console.log('API health check passed, proceeding with login');
       } catch (healthErr) {
-        console.error("Failed to connect to API:", healthErr);
+        console.error('Failed to connect to API:', healthErr);
         setApiState('error');
-        throw new Error("Cannot connect to API. Please ensure the server is running.");
+        throw new Error('Cannot connect to API. Please ensure the server is running.');
       }
-      
+
       // Call login function from auth store (now uses PostgreSQL)
       console.log('🔐 Calling auth store login...');
       await login(email, password);
       console.log('✅ Login attempt successful, auth state should be updated');
-      
+
       // Wait a moment for state to update, then force navigation
       setTimeout(() => {
         const currentState = useAuthStore.getState();
@@ -129,23 +134,26 @@ export function LoginForm() {
           user: currentState.user?.name,
           userRole: currentState.user?.role,
           token: currentState.token ? 'Present' : 'Missing',
-          fullUser: currentState.user
+          fullUser: currentState.user,
         });
-        
+
         // Force navigation if authenticated
         if (currentState.isAuthenticated && currentState.user) {
           console.log('🚀 Forcing navigation to dashboard...');
-          console.log('👤 User object before navigation:', JSON.stringify(currentState.user, null, 2));
+          console.log(
+            '👤 User object before navigation:',
+            JSON.stringify(currentState.user, null, 2)
+          );
           navigate('/dashboard', { replace: true });
         } else {
           console.log('❌ Auth state not updated properly, user may need to refresh');
         }
       }, 500);
-      
+
       // Login will update isAuthenticated, triggering the redirect effect
     } catch (err) {
-      console.error("Login error:", err);
-      
+      console.error('Login error:', err);
+
       // Auth store already tracks the error, but we might want to clear password
       // Show a specific error message for HTML responses
       if (err instanceof Error) {
@@ -153,18 +161,21 @@ export function LoginForm() {
           const apiUrl = import.meta.env.VITE_API_URL || '/api';
           setRenderError(`API returned HTML instead of JSON. The API server might not be running correctly. 
             Make sure the API server is running at ${apiUrl}.`);
-        } else if (err.message.includes('NetworkError') || err.message.includes('Failed to fetch')) {
+        } else if (
+          err.message.includes('NetworkError') ||
+          err.message.includes('Failed to fetch')
+        ) {
           setRenderError(`Network error: Cannot connect to API server. 
             Please check your network connection and make sure the server is running.`);
         }
       }
-      
+
       setPassword('');
     } finally {
       setIsLoading(false);
     }
   };
-  
+
   // Handle rendering errors
   if (renderError) {
     return (
@@ -172,7 +183,7 @@ export function LoginForm() {
         <div className="w-full max-w-md px-6 py-8 bg-white rounded-lg shadow-md">
           <h2 className="text-2xl font-bold text-red-600 mb-4">Error Rendering Login Form</h2>
           <p className="text-gray-700 mb-4">{renderError}</p>
-          <button 
+          <button
             onClick={() => window.location.reload()}
             className="w-full py-2 px-4 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
@@ -182,7 +193,7 @@ export function LoginForm() {
       </div>
     );
   }
-  
+
   // Show API status
   if (apiState === 'error') {
     return (
@@ -203,7 +214,7 @@ export function LoginForm() {
               <li>Check browser console for network errors</li>
             </ol>
           </div>
-          <button 
+          <button
             onClick={() => window.location.reload()}
             className="w-full py-2 px-4 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
@@ -213,7 +224,7 @@ export function LoginForm() {
       </div>
     );
   }
-  
+
   // Try to render the form with error handling
   try {
     return (
@@ -225,7 +236,7 @@ export function LoginForm() {
               name="email"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={e => setEmail(e.target.value)}
               required
               autoComplete="email"
               placeholder="Email address"
@@ -239,7 +250,7 @@ export function LoginForm() {
               name="password"
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={e => setPassword(e.target.value)}
               required
               autoComplete="current-password"
               placeholder="Password"
@@ -249,7 +260,9 @@ export function LoginForm() {
           </div>
         </div>
         <div className="flex justify-end text-xs mt-1">
-          <a href="#" className="text-blue-700 hover:underline">Forget password <span className="font-bold">Click here</span></a>
+          <a href="#" className="text-blue-700 hover:underline">
+            Forget password <span className="font-bold">Click here</span>
+          </a>
         </div>
         <button
           type="submit"
@@ -268,7 +281,9 @@ export function LoginForm() {
     );
   } catch (err) {
     console.error('Error rendering login form:', err);
-    setRenderError(`Error rendering login form: ${err instanceof Error ? err.message : String(err)}`);
+    setRenderError(
+      `Error rendering login form: ${err instanceof Error ? err.message : String(err)}`
+    );
     return null;
   }
 }

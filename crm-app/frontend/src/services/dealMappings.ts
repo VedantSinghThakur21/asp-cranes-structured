@@ -1,6 +1,6 @@
 /**
  * Deal Database Mapping Utility
- * 
+ *
  * This file maps between frontend Deal properties and database column names
  */
 

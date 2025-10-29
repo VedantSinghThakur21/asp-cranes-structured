@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Printer, 
-  Download, 
-  Mail, 
-  Eye, 
+import {
+  Printer,
+  Download,
+  Mail,
+  Eye,
   CheckCircle,
   AlertCircle,
   Loader2,
   FileText,
-  X
+  X,
 } from 'lucide-react';
 
 interface SuiteCRMQuotationSystemProps {
@@ -20,44 +20,54 @@ interface SuiteCRMQuotationSystemProps {
 const SuiteCRMQuotationSystem: React.FC<SuiteCRMQuotationSystemProps> = ({
   quotationId,
   quotationData,
-  onClose
+  onClose,
 }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [notifications, setNotifications] = useState<Array<{
-    id: string;
-    type: 'success' | 'error' | 'info';
-    message: string;
-  }>>([]);
+  const [notifications, setNotifications] = useState<
+    Array<{
+      id: string;
+      type: 'success' | 'error' | 'info';
+      message: string;
+    }>
+  >([]);
 
   const handlePreview = async () => {
     setIsLoading(true);
     try {
       if (!quotationData) {
         console.error('No quotation data available');
-        setNotifications(prev => [...prev, {
-          id: Date.now().toString(),
-          type: 'error',
-          message: 'No quotation data available'
-        }]);
+        setNotifications(prev => [
+          ...prev,
+          {
+            id: Date.now().toString(),
+            type: 'error',
+            message: 'No quotation data available',
+          },
+        ]);
         return;
       }
-      
+
       // Simple preview - just log the data or show in console
       console.log('Quotation data:', quotationData);
-      
-      setNotifications(prev => [...prev, {
-        id: Date.now().toString(),
-        type: 'success',
-        message: 'Preview functionality ready'
-      }]);
-      
+
+      setNotifications(prev => [
+        ...prev,
+        {
+          id: Date.now().toString(),
+          type: 'success',
+          message: 'Preview functionality ready',
+        },
+      ]);
     } catch (error) {
       console.error('Error generating preview:', error);
-      setNotifications(prev => [...prev, {
-        id: Date.now().toString(),
-        type: 'error',
-        message: 'Error generating preview'
-      }]);
+      setNotifications(prev => [
+        ...prev,
+        {
+          id: Date.now().toString(),
+          type: 'error',
+          message: 'Error generating preview',
+        },
+      ]);
     } finally {
       setIsLoading(false);
     }
@@ -76,7 +86,7 @@ const SuiteCRMQuotationSystem: React.FC<SuiteCRMQuotationSystemProps> = ({
       const timer = setTimeout(() => {
         setNotifications(prev => prev.slice(0, -1));
       }, 5000);
-      
+
       return () => clearTimeout(timer);
     }
   }, [notifications]);
@@ -85,7 +95,7 @@ const SuiteCRMQuotationSystem: React.FC<SuiteCRMQuotationSystemProps> = ({
     <div className="suite-crm-quotation-system bg-gray-50 min-h-screen">
       {/* Notifications */}
       <div className="fixed top-4 right-4 z-50 space-y-2">
-        {notifications.map((notification) => (
+        {notifications.map(notification => (
           <div
             key={notification.id}
             className={`
@@ -110,22 +120,22 @@ const SuiteCRMQuotationSystem: React.FC<SuiteCRMQuotationSystemProps> = ({
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
                 <FileText className="w-6 h-6 text-blue-600" />
-                <h1 className="text-xl font-semibold text-gray-900">
-                  Quotation #{quotationId}
-                </h1>
+                <h1 className="text-xl font-semibold text-gray-900">Quotation #{quotationId}</h1>
               </div>
               {quotationData?.status && (
-                <span className={`
+                <span
+                  className={`
                   px-3 py-1 rounded-full text-xs font-medium
                   ${quotationData.status === 'approved' ? 'bg-green-100 text-green-800' : ''}
                   ${quotationData.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : ''}
                   ${quotationData.status === 'draft' ? 'bg-gray-100 text-gray-800' : ''}
-                `}>
+                `}
+                >
                   {quotationData.status.charAt(0).toUpperCase() + quotationData.status.slice(1)}
                 </span>
               )}
             </div>
-            
+
             <div className="flex items-center space-x-3">
               <button
                 onClick={handlePreview}
@@ -139,22 +149,22 @@ const SuiteCRMQuotationSystem: React.FC<SuiteCRMQuotationSystemProps> = ({
                 )}
                 <span>Preview</span>
               </button>
-              
+
               <button className="flex items-center space-x-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
                 <Printer className="w-4 h-4" />
                 <span>Print</span>
               </button>
-              
+
               <button className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
                 <Download className="w-4 h-4" />
                 <span>Download</span>
               </button>
-              
+
               <button className="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
                 <Mail className="w-4 h-4" />
                 <span>Email</span>
               </button>
-              
+
               <button
                 onClick={onClose}
                 className="flex items-center justify-center w-10 h-10 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
@@ -173,12 +183,8 @@ const SuiteCRMQuotationSystem: React.FC<SuiteCRMQuotationSystemProps> = ({
           <div className="p-6">
             <div className="text-center py-12">
               <FileText className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                Quotation System
-              </h3>
-              <p className="text-gray-500">
-                Click "Preview" to view the quotation details.
-              </p>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Quotation System</h3>
+              <p className="text-gray-500">Click "Preview" to view the quotation details.</p>
             </div>
           </div>
         </div>

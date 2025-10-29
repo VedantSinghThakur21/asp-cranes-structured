@@ -1,6 +1,6 @@
 /**
  * Deal API Service
- * 
+ *
  * Browser-side implementation that uses API requests instead of direct database access.
  * This service will be used by the frontend to interact with the backend API.
  */
@@ -37,7 +37,9 @@ export const getDealById = async (id: string): Promise<Deal | null> => {
 /**
  * Create a new deal via the API
  */
-export const createDeal = async (deal: Omit<Deal, 'id' | 'createdAt' | 'updatedAt'>): Promise<Deal> => {
+export const createDeal = async (
+  deal: Omit<Deal, 'id' | 'createdAt' | 'updatedAt'>
+): Promise<Deal> => {
   try {
     const response = await api.post<Deal>('/deals', deal);
     return response;

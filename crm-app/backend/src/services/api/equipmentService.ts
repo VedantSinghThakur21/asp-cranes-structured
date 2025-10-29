@@ -1,6 +1,6 @@
 /**
  * Equipment API Service
- * 
+ *
  * Browser-side implementation that uses API requests instead of direct database access.
  * This service will be used by the frontend to interact with the backend API.
  */
@@ -50,7 +50,9 @@ export const getEquipmentById = async (id: string): Promise<Equipment | null> =>
 /**
  * Create new equipment via the API
  */
-export const createEquipment = async (equipmentData: Omit<Equipment, 'id' | 'createdAt' | 'updatedAt'>): Promise<Equipment> => {
+export const createEquipment = async (
+  equipmentData: Omit<Equipment, 'id' | 'createdAt' | 'updatedAt'>
+): Promise<Equipment> => {
   try {
     const response = await api.post<Equipment>('/equipment', equipmentData);
     return response;
@@ -63,7 +65,10 @@ export const createEquipment = async (equipmentData: Omit<Equipment, 'id' | 'cre
 /**
  * Update equipment via the API
  */
-export const updateEquipment = async (id: string, equipmentData: Partial<Equipment>): Promise<Equipment | null> => {
+export const updateEquipment = async (
+  id: string,
+  equipmentData: Partial<Equipment>
+): Promise<Equipment | null> => {
   try {
     const response = await api.put<Equipment>(`/equipment/${id}`, equipmentData);
     return response;

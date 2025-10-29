@@ -1,9 +1,4 @@
-import { 
-  BrowserRouter as Router, 
-  Routes, 
-  Route, 
-  Navigate
-} from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Suspense } from 'react';
 import { FloatingChatWidget } from './components/chat/FloatingChatWidget';
 import { AuthErrorBoundary } from './components/auth/AuthErrorBoundary';
@@ -39,31 +34,31 @@ import { ProtectedRoute } from './components/auth/SimpleProtectedRoute';
 // Pre-determine the appropriate dashboard component based on user role
 function DashboardRouter() {
   const { user, isAuthenticated } = useAuthStore();
-  
+
   console.log('🎯 DashboardRouter called');
   console.log('🔍 Authentication state:', { isAuthenticated });
   console.log('👤 User object:', JSON.stringify(user, null, 2));
   console.log('🏷️ User role:', user?.role);
-  
+
   // This should never actually happen because of ProtectedRoute,
   // but it's a safety check
   if (!isAuthenticated || !user) {
     console.log('❌ DashboardRouter: Not authenticated, redirecting to login');
     return <Navigate to="/login" replace />;
   }
-  
+
   // Check for role
   if (!user.role) {
     console.error('❌ DashboardRouter: User authenticated but role is undefined!');
     console.error('📊 Full user object:', user);
-    
+
     // Try to show unified dashboard as fallback
     console.log('🔄 Fallback: Showing UnifiedDashboard due to missing role');
     return <UnifiedDashboard />;
   }
-  
+
   console.log('✅ DashboardRouter: User role is', user.role);
-  
+
   // Use the unified dashboard for all roles - provides consistent experience
   // with role-based data filtering handled by the backend API
   console.log('📊 Rendering UnifiedDashboard for role:', user.role);
@@ -76,7 +71,7 @@ export function ErrorFallback() {
     <div className="fixed inset-0 bg-white flex flex-col items-center justify-center">
       <h2 className="text-2xl font-bold mb-4">Something went wrong</h2>
       <p className="mb-6">We encountered an error loading your dashboard.</p>
-      <button 
+      <button
         onClick={() => {
           // Clear potential error state
           sessionStorage.clear();
@@ -94,16 +89,16 @@ export function ErrorFallback() {
 function AppContent() {
   // Force render login page if URL is empty or root
   const isRootUrl = window.location.pathname === '/' || window.location.pathname === '';
-  
+
   console.log('🔍 AppContent - Current pathname:', window.location.pathname);
   console.log('🔍 AppContent - Is root URL:', isRootUrl);
-  
+
   // If we're at root URL, use React Router's Navigate for better SPA experience
   if (isRootUrl) {
     console.log('📍 Redirecting from root to /login');
     return <Navigate to="/login" replace />;
   }
-  
+
   // Enhanced fallback with better loading experience
   const fallbackContent = (
     <div className="fixed inset-0 bg-white flex min-h-screen items-center justify-center z-50 loading-screen">
@@ -121,145 +116,212 @@ function AppContent() {
         {/* Direct access to diagnostic pages */}
         <Route path="/blank-check.html" element={<Navigate to="/blank-check.html" replace />} />
         <Route path="/api-test.html" element={<Navigate to="/api-test.html" replace />} />
-        
+
         {/* Public routes */}
         <Route path="/login" element={<LoginPage />} />
-        
+
         {/* Protected routes that require authentication */}
         <Route element={<ProtectedRoute />}>
           <Route path="/" element={<AppShell />}>
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<DashboardRouter />} />
-            
+
             {/* Admin Only Routes */}
-            <Route path="admin/users" element={
-              <ProtectedRoute allowedRoles={['admin']}>
-                <UserManagement />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="admin/config" element={
-              <ProtectedRoute allowedRoles={['admin']}>
-                <Config />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="admin/equipment" element={
-              <ProtectedRoute allowedRoles={['admin', 'operations_manager']}>
-                <EquipmentManagement />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="admin/services" element={
-              <ProtectedRoute allowedRoles={['admin', 'operations_manager']}>
-                <ServicesManagement />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="admin/templates" element={
-              <ProtectedRoute allowedRoles={['admin', 'sales_agent']}>
-                <QuotationTemplates />
-              </ProtectedRoute>
-            } />
-            
+            <Route
+              path="admin/users"
+              element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <UserManagement />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="admin/config"
+              element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <Config />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="admin/equipment"
+              element={
+                <ProtectedRoute allowedRoles={['admin', 'operations_manager']}>
+                  <EquipmentManagement />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="admin/services"
+              element={
+                <ProtectedRoute allowedRoles={['admin', 'operations_manager']}>
+                  <ServicesManagement />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="admin/templates"
+              element={
+                <ProtectedRoute allowedRoles={['admin', 'sales_agent']}>
+                  <QuotationTemplates />
+                </ProtectedRoute>
+              }
+            />
+
             {/* SuiteCRM-inspired enhancements */}
-            <Route path="analytics" element={
-              <ProtectedRoute allowedRoles={['admin', 'sales_agent', 'operations_manager']}>
-                <AnalyticsDashboard />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="tasks" element={
-              <ProtectedRoute allowedRoles={['admin', 'sales_agent', 'operations_manager', 'operator']}>
-                <TaskManagement />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="campaigns" element={
-              <ProtectedRoute allowedRoles={['admin', 'sales_agent', 'operations_manager']}>
-                <CampaignManagement />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="documents" element={
-              <ProtectedRoute allowedRoles={['admin', 'sales_agent', 'operations_manager', 'operator']}>
-                <DocumentManagement />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="contacts" element={
-              <ProtectedRoute allowedRoles={['admin', 'sales_agent', 'operations_manager']}>
-                <ContactManagement />
-              </ProtectedRoute>
-            } />
-            
+            <Route
+              path="analytics"
+              element={
+                <ProtectedRoute allowedRoles={['admin', 'sales_agent', 'operations_manager']}>
+                  <AnalyticsDashboard />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="tasks"
+              element={
+                <ProtectedRoute
+                  allowedRoles={['admin', 'sales_agent', 'operations_manager', 'operator']}
+                >
+                  <TaskManagement />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="campaigns"
+              element={
+                <ProtectedRoute allowedRoles={['admin', 'sales_agent', 'operations_manager']}>
+                  <CampaignManagement />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="documents"
+              element={
+                <ProtectedRoute
+                  allowedRoles={['admin', 'sales_agent', 'operations_manager', 'operator']}
+                >
+                  <DocumentManagement />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="contacts"
+              element={
+                <ProtectedRoute allowedRoles={['admin', 'sales_agent', 'operations_manager']}>
+                  <ContactManagement />
+                </ProtectedRoute>
+              }
+            />
+
             {/* Shared Routes for Multiple Roles */}
-            <Route path="leads" element={
-              <ProtectedRoute allowedRoles={['admin', 'sales_agent', 'operations_manager']}>
-                <LeadManagement />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="customers" element={
-              <ProtectedRoute allowedRoles={['admin', 'sales_agent', 'operations_manager']}>
-                <Customers />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="deals" element={
-              <ProtectedRoute allowedRoles={['admin', 'sales_agent', 'operations_manager']}>
-                <Deals />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="deals/:id" element={
-              <ProtectedRoute allowedRoles={['admin', 'sales_agent', 'operations_manager']}>
-                <DealDetails />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="quotations" element={
-              <ProtectedRoute allowedRoles={['admin', 'sales_agent', 'operations_manager']}>
-                <QuotationManagement />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="quotations/:id" element={
-              <ProtectedRoute allowedRoles={['admin', 'sales_agent', 'operations_manager']}>
-                <QuotationDetail />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="quotation-creation" element={
-              <ProtectedRoute allowedRoles={['admin', 'sales_agent', 'operations_manager']}>
-                <QuotationCreation />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="select-deal" element={
-              <ProtectedRoute allowedRoles={['admin', 'sales_agent', 'operations_manager']}>
-                <DealSelectionPage />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="jobs" element={
-              <ProtectedRoute allowedRoles={['admin', 'operations_manager', 'operator']}>
-                <JobScheduling />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="site-assessments" element={
-              <ProtectedRoute allowedRoles={['admin', 'operations_manager', 'operator']}>
-                <SiteAssessment />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="job-summary" element={
-              <ProtectedRoute allowedRoles={['admin', 'operations_manager', 'operator']}>
-                <JobSummaryFeedback />
-              </ProtectedRoute>
-            } />
-            
+            <Route
+              path="leads"
+              element={
+                <ProtectedRoute allowedRoles={['admin', 'sales_agent', 'operations_manager']}>
+                  <LeadManagement />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="customers"
+              element={
+                <ProtectedRoute allowedRoles={['admin', 'sales_agent', 'operations_manager']}>
+                  <Customers />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="deals"
+              element={
+                <ProtectedRoute allowedRoles={['admin', 'sales_agent', 'operations_manager']}>
+                  <Deals />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="deals/:id"
+              element={
+                <ProtectedRoute allowedRoles={['admin', 'sales_agent', 'operations_manager']}>
+                  <DealDetails />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="quotations"
+              element={
+                <ProtectedRoute allowedRoles={['admin', 'sales_agent', 'operations_manager']}>
+                  <QuotationManagement />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="quotations/:id"
+              element={
+                <ProtectedRoute allowedRoles={['admin', 'sales_agent', 'operations_manager']}>
+                  <QuotationDetail />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="quotation-creation"
+              element={
+                <ProtectedRoute allowedRoles={['admin', 'sales_agent', 'operations_manager']}>
+                  <QuotationCreation />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="select-deal"
+              element={
+                <ProtectedRoute allowedRoles={['admin', 'sales_agent', 'operations_manager']}>
+                  <DealSelectionPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="jobs"
+              element={
+                <ProtectedRoute allowedRoles={['admin', 'operations_manager', 'operator']}>
+                  <JobScheduling />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="site-assessments"
+              element={
+                <ProtectedRoute allowedRoles={['admin', 'operations_manager', 'operator']}>
+                  <SiteAssessment />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="job-summary"
+              element={
+                <ProtectedRoute allowedRoles={['admin', 'operations_manager', 'operator']}>
+                  <JobSummaryFeedback />
+                </ProtectedRoute>
+              }
+            />
+
             {/* Catch All - Redirect to Dashboard */}
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Route>

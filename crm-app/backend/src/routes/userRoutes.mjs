@@ -21,7 +21,7 @@ const pool = new pg.Pool({
   database: process.env.DB_NAME || 'asp_crm',
   user: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD || 'crmdb@21',
-  ssl: process.env.DB_SSL === 'true' ? true : false
+  ssl: process.env.DB_SSL === 'true' ? true : false,
 });
 
 // Public API endpoint for testing connection - does not require authentication
@@ -31,10 +31,10 @@ router.get('/public/count', async (req, res) => {
     console.log('Public count endpoint accessed');
     const result = await pool.query('SELECT COUNT(*) FROM users');
     const count = parseInt(result.rows[0].count);
-    
-    res.json({ 
+
+    res.json({
       count,
-      message: 'Public endpoint working correctly'
+      message: 'Public endpoint working correctly',
     });
   } catch (error) {
     console.error('Error getting user count:', error);
@@ -95,7 +95,7 @@ router.get('/', authenticateToken, requireAdmin, async (req, res) => {
       FROM users
       WHERE 1=1
     `;
-    
+
     const params = [];
     let paramCount = 0;
 
@@ -150,13 +150,14 @@ router.get('/', authenticateToken, requireAdmin, async (req, res) => {
 router.get('/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     // Allow access to own profile or admin access
     if (req.user.id !== id && req.user.role !== 'admin') {
       return res.status(403).json({ message: 'Access denied' });
     }
 
-    const result = await pool.query(`
+    const result = await pool.query(
+      `
       SELECT 
         uid as id,
         email,
@@ -175,7 +176,9 @@ router.get('/:id', authenticateToken, async (req, res) => {
         END as status
       FROM users 
       WHERE uid = $1
-    `, [id]);
+    `,
+      [id]
+    );
 
     if (result.rows.length === 0) {
       return res.status(404).json({ message: 'User not found' });
@@ -213,18 +216,21 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Insert new user
-    const result = await pool.query(`
+    const result = await pool.query(
+      `
       INSERT INTO users (uid, email, password_hash, display_name, role, avatar)
       VALUES ($1, $2, $3, $4, $5, $6)
       RETURNING uid as id, email, display_name as name, role, avatar, created_at, updated_at
-    `, [userUid, email, hashedPassword, name, role, avatar]);
+    `,
+      [userUid, email, hashedPassword, name, role, avatar]
+    );
 
     const newUser = result.rows[0];
     newUser.status = 'pending'; // New users start as pending
 
     res.status(201).json({
       message: 'User created successfully',
-      user: newUser
+      user: newUser,
     });
   } catch (error) {
     console.error('Create user error:', error);
@@ -247,7 +253,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
     }
 
     // Non-admin users can only update their own limited fields
-    if (!isAdmin && (role !== undefined)) {
+    if (!isAdmin && role !== undefined) {
       return res.status(403).json({ message: 'Cannot update role - admin access required' });
     }
 
@@ -319,11 +325,12 @@ router.put('/:id', authenticateToken, async (req, res) => {
 
     res.json({
       message: 'User updated successfully',
-      user: updatedUser
+      user: updatedUser,
     });
   } catch (error) {
     console.error('Update user error:', error);
-    if (error.code === '23505') { // Unique constraint violation
+    if (error.code === '23505') {
+      // Unique constraint violation
       res.status(409).json({ message: 'Email already exists' });
     } else {
       res.status(500).json({ message: 'Internal server error' });
@@ -365,7 +372,8 @@ router.delete('/:id', authenticateToken, requireAdmin, async (req, res) => {
 // GET /api/users/profile/me - Get current user profile
 router.get('/profile/me', authenticateToken, async (req, res) => {
   try {
-    const result = await pool.query(`
+    const result = await pool.query(
+      `
       SELECT 
         uid as id,
         email,
@@ -384,7 +392,9 @@ router.get('/profile/me', authenticateToken, async (req, res) => {
         END as status
       FROM users 
       WHERE uid = $1
-    `, [req.user.id]);
+    `,
+      [req.user.id]
+    );
 
     if (result.rows.length === 0) {
       return res.status(404).json({ message: 'User not found' });

@@ -18,15 +18,10 @@ export interface PDFGenerationOptions {
  * Generate PDF from HTML content
  */
 export const generatePDFFromHTML = async (
-  htmlContent: string, 
+  htmlContent: string,
   options: PDFGenerationOptions = {}
 ): Promise<Blob> => {
-  const {
-    format = 'a4',
-    orientation = 'portrait',
-    quality = 1.0,
-    scale = 2
-  } = options;
+  const { format = 'a4', orientation = 'portrait', quality = 1.0, scale = 2 } = options;
 
   try {
     // Create a temporary container for the HTML content
@@ -38,7 +33,7 @@ export const generatePDFFromHTML = async (
     tempContainer.style.width = '210mm'; // A4 width
     tempContainer.style.background = 'white';
     tempContainer.style.padding = '20px';
-    
+
     document.body.appendChild(tempContainer);
 
     // Convert HTML to canvas
@@ -47,7 +42,7 @@ export const generatePDFFromHTML = async (
       useCORS: true,
       allowTaint: false,
       backgroundColor: '#ffffff',
-      logging: false
+      logging: false,
     });
 
     // Remove temporary container
@@ -56,14 +51,14 @@ export const generatePDFFromHTML = async (
     // Create PDF
     const imgWidth = format === 'a4' ? 210 : 216; // A4: 210mm, Letter: 216mm
     const pageHeight = format === 'a4' ? 297 : 279; // A4: 297mm, Letter: 279mm
-    
+
     const imgHeight = (canvas.height * imgWidth) / canvas.width;
     let heightLeft = imgHeight;
 
     const pdf = new jsPDF({
       orientation: orientation,
       unit: 'mm',
-      format: format
+      format: format,
     });
 
     let position = 0;
@@ -102,7 +97,9 @@ export const generatePDFFromHTML = async (
     return pdf.output('blob');
   } catch (error) {
     console.error('PDF Generation Error:', error);
-    throw new Error(`Failed to generate PDF: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Failed to generate PDF: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
   }
 };
 
@@ -113,12 +110,7 @@ export const generatePDFFromElement = async (
   element: HTMLElement,
   options: PDFGenerationOptions = {}
 ): Promise<Blob> => {
-  const {
-    format = 'a4',
-    orientation = 'portrait',
-    quality = 1.0,
-    scale = 2
-  } = options;
+  const { format = 'a4', orientation = 'portrait', quality = 1.0, scale = 2 } = options;
 
   try {
     // Convert element to canvas
@@ -127,20 +119,20 @@ export const generatePDFFromElement = async (
       useCORS: true,
       allowTaint: false,
       backgroundColor: '#ffffff',
-      logging: false
+      logging: false,
     });
 
     // Create PDF
     const imgWidth = format === 'a4' ? 210 : 216;
     const pageHeight = format === 'a4' ? 297 : 279;
-    
+
     const imgHeight = (canvas.height * imgWidth) / canvas.width;
     let heightLeft = imgHeight;
 
     const pdf = new jsPDF({
       orientation: orientation,
       unit: 'mm',
-      format: format
+      format: format,
     });
 
     let position = 0;
@@ -179,7 +171,9 @@ export const generatePDFFromElement = async (
     return pdf.output('blob');
   } catch (error) {
     console.error('PDF Generation Error:', error);
-    throw new Error(`Failed to generate PDF: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Failed to generate PDF: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
   }
 };
 

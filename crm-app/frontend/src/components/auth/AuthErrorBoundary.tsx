@@ -21,25 +21,25 @@ class AuthErrorBoundaryClass extends Component<AuthErrorBoundaryProps, AuthError
 
   static getDerivedStateFromError(error: Error): AuthErrorBoundaryState {
     // Filter for authentication-related errors
-    const isAuthError = 
+    const isAuthError =
       error.message.includes('Authentication required') ||
       error.message.includes('JWT') ||
       error.message.includes('401') ||
       error.message.includes('token') ||
       error.message.includes('unauthorized');
-    
+
     // Only catch auth-related errors
     if (isAuthError) {
       return { hasError: true, error };
     }
-    
+
     // For other errors, propagate up to the next error boundary
     throw error;
   }
 
   componentDidCatch(error: Error): void {
     console.error('Auth Error Boundary caught error:', error);
-    
+
     // Log to analytics or monitoring service
     // reportErrorToAnalytics(error);
   }
@@ -53,7 +53,7 @@ class AuthErrorBoundaryClass extends Component<AuthErrorBoundaryProps, AuthError
     localStorage.removeItem('jwt-token');
     localStorage.removeItem('explicit-login-performed');
     localStorage.removeItem('auth-storage');
-    
+
     // Force page reload to login
     window.location.href = '/login';
   };
@@ -66,7 +66,8 @@ class AuthErrorBoundaryClass extends Component<AuthErrorBoundaryProps, AuthError
           <div className="max-w-md p-6 bg-white rounded-lg shadow-lg border border-gray-200">
             <h2 className="text-2xl font-bold text-gray-800 mb-4">Authentication Error</h2>
             <p className="text-gray-600 mb-6">
-              We encountered an authentication error. Your session may have expired or been invalidated.
+              We encountered an authentication error. Your session may have expired or been
+              invalidated.
             </p>
             <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-6">
               <p className="text-sm text-red-700">

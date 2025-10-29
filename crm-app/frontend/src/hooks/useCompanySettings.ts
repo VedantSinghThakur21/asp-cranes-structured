@@ -43,20 +43,20 @@ export const useCompanySettings = (): UseCompanySettingsReturn => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await fetch('/api/company-settings', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
       });
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const result = await response.json();
-      
+
       if (result.success) {
         setSettings(result.data);
       } else {
@@ -65,7 +65,7 @@ export const useCompanySettings = (): UseCompanySettingsReturn => {
     } catch (err) {
       console.error('Error fetching company settings:', err);
       setError(err instanceof Error ? err.message : 'Unknown error occurred');
-      
+
       // Set default settings on error
       setSettings({
         name: 'ASP Cranes Pvt. Ltd.',
@@ -82,73 +82,80 @@ export const useCompanySettings = (): UseCompanySettingsReturn => {
           height: 'auto',
           opacity: 0.3,
           zIndex: -1,
-          enabled: false
-        }
+          enabled: false,
+        },
       });
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const updateSettings = useCallback(async (newSettings: Partial<CompanySettings>): Promise<boolean> => {
-    try {
-      setError(null);
-      
-      const response = await fetch('/api/company-settings', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newSettings),
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+  const updateSettings = useCallback(
+    async (newSettings: Partial<CompanySettings>): Promise<boolean> => {
+      try {
+        setError(null);
+
+        const response = await fetch('/api/company-settings', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(newSettings),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        if (result.success) {
+          setSettings(prev => (prev ? { ...prev, ...newSettings } : null));
+          return true;
+        } else {
+          throw new Error(result.error || 'Failed to update company settings');
+        }
+      } catch (err) {
+        console.error('Error updating company settings:', err);
+        setError(err instanceof Error ? err.message : 'Failed to update settings');
+        return false;
       }
-      
-      const result = await response.json();
-      
-      if (result.success) {
-        setSettings(prev => prev ? { ...prev, ...newSettings } : null);
-        return true;
-      } else {
-        throw new Error(result.error || 'Failed to update company settings');
-      }
-    } catch (err) {
-      console.error('Error updating company settings:', err);
-      setError(err instanceof Error ? err.message : 'Failed to update settings');
-      return false;
-    }
-  }, []);
+    },
+    []
+  );
 
   const uploadLetterhead = useCallback(async (file: File, position?: any): Promise<boolean> => {
     try {
       setError(null);
-      
+
       const formData = new FormData();
       formData.append('letterhead', file);
-      
+
       if (position) {
         formData.append('position', JSON.stringify(position));
       }
-      
+
       const response = await fetch('/api/company-settings/letterhead', {
         method: 'POST',
         body: formData,
       });
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const result = await response.json();
-      
+
       if (result.success) {
-        setSettings(prev => prev ? {
-          ...prev,
-          letterheadUrl: result.data.letterheadUrl,
-          letterheadPosition: result.data.letterheadPosition
-        } : null);
+        setSettings(prev =>
+          prev
+            ? {
+                ...prev,
+                letterheadUrl: result.data.letterheadUrl,
+                letterheadPosition: result.data.letterheadPosition,
+              }
+            : null
+        );
         return true;
       } else {
         throw new Error(result.error || 'Failed to upload letterhead');
@@ -163,26 +170,30 @@ export const useCompanySettings = (): UseCompanySettingsReturn => {
   const removeLetterhead = useCallback(async (): Promise<boolean> => {
     try {
       setError(null);
-      
+
       const response = await fetch('/api/company-settings/letterhead', {
         method: 'DELETE',
       });
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const result = await response.json();
-      
+
       if (result.success) {
-        setSettings(prev => prev ? {
-          ...prev,
-          letterheadUrl: null,
-          letterheadPosition: {
-            ...prev.letterheadPosition,
-            enabled: false
-          }
-        } : null);
+        setSettings(prev =>
+          prev
+            ? {
+                ...prev,
+                letterheadUrl: null,
+                letterheadPosition: {
+                  ...prev.letterheadPosition,
+                  enabled: false,
+                },
+              }
+            : null
+        );
         return true;
       } else {
         throw new Error(result.error || 'Failed to remove letterhead');
@@ -205,6 +216,6 @@ export const useCompanySettings = (): UseCompanySettingsReturn => {
     updateSettings,
     uploadLetterhead,
     removeLetterhead,
-    refetch: fetchSettings
+    refetch: fetchSettings,
   };
 };

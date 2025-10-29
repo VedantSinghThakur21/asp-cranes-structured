@@ -18,7 +18,7 @@ const pool = new pg.Pool({
   database: process.env.DB_NAME || 'asp_crm',
   user: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD || 'crmdb@21',
-  ssl: (process.env.DB_SSL === 'true') ? true : false
+  ssl: process.env.DB_SSL === 'true' ? true : false,
 });
 
 /**
@@ -37,7 +37,7 @@ export const TEMPLATE_ELEMENT_TYPES = {
   IMAGE: 'image',
   DIVIDER: 'divider',
   SPACER: 'spacer',
-  SIGNATURE: 'signature'
+  SIGNATURE: 'signature',
 };
 
 /**
@@ -51,7 +51,7 @@ export const TEMPLATE_THEMES = {
     accentColor: '#f59e0b',
     fontFamily: 'Inter, sans-serif',
     headerStyle: 'minimal',
-    tableStyle: 'bordered'
+    tableStyle: 'bordered',
   },
   CLASSIC: {
     name: 'Classic',
@@ -60,7 +60,7 @@ export const TEMPLATE_THEMES = {
     accentColor: '#dc2626',
     fontFamily: 'Georgia, serif',
     headerStyle: 'traditional',
-    tableStyle: 'striped'
+    tableStyle: 'striped',
   },
   PROFESSIONAL: {
     name: 'Professional',
@@ -69,7 +69,7 @@ export const TEMPLATE_THEMES = {
     accentColor: '#059669',
     fontFamily: 'system-ui, sans-serif',
     headerStyle: 'corporate',
-    tableStyle: 'minimal'
+    tableStyle: 'minimal',
   },
   CREATIVE: {
     name: 'Creative',
@@ -78,8 +78,8 @@ export const TEMPLATE_THEMES = {
     accentColor: '#f97316',
     fontFamily: 'Poppins, sans-serif',
     headerStyle: 'artistic',
-    tableStyle: 'gradient'
-  }
+    tableStyle: 'gradient',
+  },
 };
 
 /**
@@ -97,7 +97,7 @@ export class EnhancedTemplateBuilder {
         orientation: 'portrait',
         margins: { top: 20, right: 20, bottom: 20, left: 20 },
         header: { height: 80, enabled: true },
-        footer: { height: 60, enabled: true }
+        footer: { height: 60, enabled: true },
       },
       elements: [],
       settings: {
@@ -107,21 +107,21 @@ export class EnhancedTemplateBuilder {
         includeAttachments: false,
         multiLanguage: false,
         currency: 'INR',
-        taxDisplay: 'inclusive'
+        taxDisplay: 'inclusive',
       },
       branding: {
         logo: null,
         logoPosition: 'top-left',
         logoSize: { width: 150, height: 60 },
         companyColors: true,
-        customCSS: ''
+        customCSS: '',
       },
       version: 1,
       isActive: true,
       isDefault: false,
       createdBy: null,
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
   }
 
@@ -137,7 +137,7 @@ export class EnhancedTemplateBuilder {
         visible: element.visible !== undefined ? element.visible : true,
         id: element.id || this.generateElementId(),
         style: element.style || {},
-        content: element.content || {}
+        content: element.content || {},
       }));
     }
 
@@ -147,7 +147,7 @@ export class EnhancedTemplateBuilder {
       elements: normalizedElements,
       id: this.generateTemplateId(),
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
     return this;
   }
@@ -159,10 +159,9 @@ export class EnhancedTemplateBuilder {
     try {
       const client = await pool.connect();
       try {
-        const result = await client.query(
-          'SELECT * FROM enhanced_templates WHERE id = $1',
-          [templateId]
-        );
+        const result = await client.query('SELECT * FROM enhanced_templates WHERE id = $1', [
+          templateId,
+        ]);
 
         if (result.rows.length === 0) {
           throw new Error('Template not found');
@@ -181,13 +180,17 @@ export class EnhancedTemplateBuilder {
               const trimmed = raw.trim();
               if (!trimmed) return fallback;
               // Guard against common corruption pattern "[object Object]"
-              if (trimmed === '[object Object]') throw new Error('Corrupted value: [object Object]');
+              if (trimmed === '[object Object]')
+                throw new Error('Corrupted value: [object Object]');
               const firstChar = trimmed[0];
               if (firstChar === '{' || firstChar === '[') {
                 return JSON.parse(trimmed);
               } else {
                 // Attempt lenient fix: sometimes double-stringified JSON (quoted JSON string)
-                if ((trimmed.startsWith('"{') && trimmed.endsWith('}"')) || (trimmed.startsWith('"[') && trimmed.endsWith(']"'))) {
+                if (
+                  (trimmed.startsWith('"{') && trimmed.endsWith('}"')) ||
+                  (trimmed.startsWith('"[') && trimmed.endsWith(']"'))
+                ) {
                   const unwrapped = trimmed.slice(1, -1).replace(/\\"/g, '"');
                   return JSON.parse(unwrapped);
                 }
@@ -196,7 +199,11 @@ export class EnhancedTemplateBuilder {
             }
             return fallback;
           } catch (e) {
-            degradedColumns.push({ column, reason: e.message, sample: (typeof raw === 'string') ? raw.substring(0, 80) : typeof raw });
+            degradedColumns.push({
+              column,
+              reason: e.message,
+              sample: typeof raw === 'string' ? raw.substring(0, 80) : typeof raw,
+            });
             return fallback;
           }
         };
@@ -212,43 +219,55 @@ export class EnhancedTemplateBuilder {
             top: 20,
             right: 20,
             bottom: 20,
-            left: 20
+            left: 20,
           },
           spacing: {
             elementGap: 15,
-            sectionGap: 30
-          }
-        };
-        
-        const finalLayout = (parsedLayout && typeof parsedLayout === 'object' && !Array.isArray(parsedLayout)) ? {
-          ...defaultLayout,
-          ...parsedLayout,
-          margins: {
-            ...defaultLayout.margins,
-            ...(parsedLayout.margins || {})
+            sectionGap: 30,
           },
-          spacing: {
-            ...defaultLayout.spacing,
-            ...(parsedLayout.spacing || {})
-          }
-        } : defaultLayout;
+        };
+
+        const finalLayout =
+          parsedLayout && typeof parsedLayout === 'object' && !Array.isArray(parsedLayout)
+            ? {
+                ...defaultLayout,
+                ...parsedLayout,
+                margins: {
+                  ...defaultLayout.margins,
+                  ...(parsedLayout.margins || {}),
+                },
+                spacing: {
+                  ...defaultLayout.spacing,
+                  ...(parsedLayout.spacing || {}),
+                },
+              }
+            : defaultLayout;
 
         this.template = {
           ...this.template,
-            ...templateData,
-            elements: Array.isArray(parsedElements) ? parsedElements : [],
-            layout: finalLayout,
-            settings: (parsedSettings && typeof parsedSettings === 'object' && !Array.isArray(parsedSettings)) ? parsedSettings : {},
-            branding: (parsedBranding && typeof parsedBranding === 'object' && !Array.isArray(parsedBranding)) ? parsedBranding : {},
-            __meta: {
-              degraded: degradedColumns.length > 0,
-              degradedColumns,
-              loadedAt: new Date().toISOString()
-            }
+          ...templateData,
+          elements: Array.isArray(parsedElements) ? parsedElements : [],
+          layout: finalLayout,
+          settings:
+            parsedSettings && typeof parsedSettings === 'object' && !Array.isArray(parsedSettings)
+              ? parsedSettings
+              : {},
+          branding:
+            parsedBranding && typeof parsedBranding === 'object' && !Array.isArray(parsedBranding)
+              ? parsedBranding
+              : {},
+          __meta: {
+            degraded: degradedColumns.length > 0,
+            degradedColumns,
+            loadedAt: new Date().toISOString(),
+          },
         };
 
         if (degradedColumns.length) {
-          console.warn(`⚠️ Template ${templateId} loaded in DEGRADED mode – problematic columns:`, degradedColumns);
+          console.warn(
+            `⚠️ Template ${templateId} loaded in DEGRADED mode – problematic columns:`,
+            degradedColumns
+          );
         }
 
         return this;
@@ -282,7 +301,7 @@ export class EnhancedTemplateBuilder {
       style: this.getDefaultElementStyle(type),
       visible: true,
       conditional: null,
-      ...data
+      ...data,
     };
 
     switch (type) {
@@ -294,8 +313,8 @@ export class EnhancedTemplateBuilder {
             subtitle: 'QUOTATION',
             showDate: true,
             showQuotationNumber: true,
-            alignment: 'center'
-          }
+            alignment: 'center',
+          },
         };
 
       case TEMPLATE_ELEMENT_TYPES.COMPANY_INFO:
@@ -307,11 +326,11 @@ export class EnhancedTemplateBuilder {
               '{{company.address}}',
               '{{company.phone}}',
               '{{company.email}}',
-              '{{company.website}}'
+              '{{company.website}}',
             ],
             layout: 'vertical',
-            alignment: 'left'
-          }
+            alignment: 'left',
+          },
         };
 
       case TEMPLATE_ELEMENT_TYPES.CLIENT_INFO:
@@ -324,11 +343,11 @@ export class EnhancedTemplateBuilder {
               '{{client.company}}',
               '{{client.address}}',
               '{{client.phone}}',
-              '{{client.email}}'
+              '{{client.email}}',
             ],
             layout: 'vertical',
-            alignment: 'left'
-          }
+            alignment: 'left',
+          },
         };
 
       case TEMPLATE_ELEMENT_TYPES.QUOTATION_INFO:
@@ -339,11 +358,11 @@ export class EnhancedTemplateBuilder {
               { label: 'Quotation #', value: '{{quotation.number}}' },
               { label: 'Date', value: '{{quotation.date}}' },
               { label: 'Valid Until', value: '{{quotation.validUntil}}' },
-              { label: 'Terms', value: '{{quotation.paymentTerms}}' }
+              { label: 'Terms', value: '{{quotation.paymentTerms}}' },
             ],
             layout: 'table',
-            alignment: 'right'
-          }
+            alignment: 'right',
+          },
         };
 
       case TEMPLATE_ELEMENT_TYPES.ITEMS_TABLE:
@@ -355,13 +374,13 @@ export class EnhancedTemplateBuilder {
               { key: 'description', label: 'Description', width: '40%', alignment: 'left' },
               { key: 'quantity', label: 'Qty', width: '15%', alignment: 'center' },
               { key: 'rate', label: 'Rate', width: '20%', alignment: 'right' },
-              { key: 'amount', label: 'Amount', width: '25%', alignment: 'right' }
+              { key: 'amount', label: 'Amount', width: '25%', alignment: 'right' },
             ],
             showHeader: true,
             showFooter: false,
             alternateRows: true,
-            showBorders: true
-          }
+            showBorders: true,
+          },
         };
 
       case TEMPLATE_ELEMENT_TYPES.TOTALS:
@@ -372,11 +391,11 @@ export class EnhancedTemplateBuilder {
               { label: 'Subtotal', value: '{{totals.subtotal}}', showIf: 'always' },
               { label: 'Discount', value: '{{totals.discount}}', showIf: 'hasDiscount' },
               { label: 'Tax ({{tax.rate}}%)', value: '{{totals.tax}}', showIf: 'hasTax' },
-              { label: 'Total', value: '{{totals.total}}', showIf: 'always', emphasized: true }
+              { label: 'Total', value: '{{totals.total}}', showIf: 'always', emphasized: true },
             ],
             alignment: 'right',
-            width: '50%'
-          }
+            width: '50%',
+          },
         };
 
       case TEMPLATE_ELEMENT_TYPES.TERMS:
@@ -389,9 +408,10 @@ export class EnhancedTemplateBuilder {
 • All Risks on "The Hirer".
 • Payment terms: 30 days from invoice date.
 • Prices are exclusive of GST (GST will be added as per applicable rates).`,
-            defaultText: '• Please review the terms and conditions before accepting this quotation.',
-            showTitle: true
-          }
+            defaultText:
+              '• Please review the terms and conditions before accepting this quotation.',
+            showTitle: true,
+          },
         };
 
       case TEMPLATE_ELEMENT_TYPES.FOOTER:
@@ -401,8 +421,8 @@ export class EnhancedTemplateBuilder {
             text: 'Thank you for your business!',
             showPageNumbers: true,
             showGeneratedDate: true,
-            alignment: 'center'
-          }
+            alignment: 'center',
+          },
         };
 
       case TEMPLATE_ELEMENT_TYPES.CUSTOM_TEXT:
@@ -411,8 +431,8 @@ export class EnhancedTemplateBuilder {
           content: {
             text: data.text || 'Custom text content',
             markdown: false,
-            variables: true
-          }
+            variables: true,
+          },
         };
 
       case TEMPLATE_ELEMENT_TYPES.SIGNATURE:
@@ -423,8 +443,8 @@ export class EnhancedTemplateBuilder {
             showDate: true,
             showName: true,
             signatureLine: true,
-            alignment: 'right'
-          }
+            alignment: 'right',
+          },
         };
 
       default:
@@ -445,7 +465,7 @@ export class EnhancedTemplateBuilder {
       backgroundColor: 'transparent',
       padding: '10px',
       margin: '5px 0',
-      border: 'none'
+      border: 'none',
     };
 
     switch (type) {
@@ -457,7 +477,7 @@ export class EnhancedTemplateBuilder {
           color: theme.primaryColor,
           textAlign: 'center',
           padding: '20px',
-          borderBottom: `2px solid ${theme.primaryColor}`
+          borderBottom: `2px solid ${theme.primaryColor}`,
         };
 
       case TEMPLATE_ELEMENT_TYPES.ITEMS_TABLE:
@@ -465,7 +485,7 @@ export class EnhancedTemplateBuilder {
         return {
           ...baseStyle,
           border: '1px solid #e5e7eb',
-          borderRadius: '4px'
+          borderRadius: '4px',
         };
 
       case TEMPLATE_ELEMENT_TYPES.TOTALS:
@@ -474,7 +494,7 @@ export class EnhancedTemplateBuilder {
           fontWeight: '500',
           backgroundColor: '#f9fafb',
           border: '1px solid #e5e7eb',
-          borderRadius: '4px'
+          borderRadius: '4px',
         };
 
       default:
@@ -494,7 +514,7 @@ export class EnhancedTemplateBuilder {
     this.template.elements[elementIndex] = {
       ...this.template.elements[elementIndex],
       ...updates,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     this.template.updatedAt = new Date();
@@ -543,8 +563,9 @@ export class EnhancedTemplateBuilder {
       style: {
         ...element.style,
         fontFamily: theme.fontFamily,
-        color: element.type === TEMPLATE_ELEMENT_TYPES.HEADER ? theme.primaryColor : element.style.color
-      }
+        color:
+          element.type === TEMPLATE_ELEMENT_TYPES.HEADER ? theme.primaryColor : element.style.color,
+      },
     }));
 
     this.template.updatedAt = new Date();
@@ -558,44 +579,46 @@ export class EnhancedTemplateBuilder {
     try {
       const client = await pool.connect();
       try {
-        const query = this.template.id ? 
-          `UPDATE enhanced_templates SET 
+        const query = this.template.id
+          ? `UPDATE enhanced_templates SET 
            name = $1, description = $2, theme = $3, layout = $4, 
            elements = $5, settings = $6, branding = $7, 
            is_active = $8, is_default = $9, updated_at = $10, version = version + 1
-           WHERE id = $11 RETURNING *` :
-          `INSERT INTO enhanced_templates 
+           WHERE id = $11 RETURNING *`
+          : `INSERT INTO enhanced_templates 
            (name, description, theme, layout, elements, settings, branding, 
             is_active, is_default, created_by, created_at, updated_at, version)
            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *`;
 
-        const values = this.template.id ? [
-          this.template.name,
-          this.template.description,
-          this.template.theme,
-          JSON.stringify(this.template.layout),
-          JSON.stringify(this.template.elements),
-          JSON.stringify(this.template.settings),
-          JSON.stringify(this.template.branding),
-          this.template.isActive,
-          this.template.isDefault,
-          this.template.updatedAt,
-          this.template.id
-        ] : [
-          this.template.name,
-          this.template.description,
-          this.template.theme,
-          JSON.stringify(this.template.layout),
-          JSON.stringify(this.template.elements),
-          JSON.stringify(this.template.settings),
-          JSON.stringify(this.template.branding),
-          this.template.isActive,
-          this.template.isDefault,
-          this.template.createdBy,
-          this.template.createdAt,
-          this.template.updatedAt,
-          this.template.version
-        ];
+        const values = this.template.id
+          ? [
+              this.template.name,
+              this.template.description,
+              this.template.theme,
+              JSON.stringify(this.template.layout),
+              JSON.stringify(this.template.elements),
+              JSON.stringify(this.template.settings),
+              JSON.stringify(this.template.branding),
+              this.template.isActive,
+              this.template.isDefault,
+              this.template.updatedAt,
+              this.template.id,
+            ]
+          : [
+              this.template.name,
+              this.template.description,
+              this.template.theme,
+              JSON.stringify(this.template.layout),
+              JSON.stringify(this.template.elements),
+              JSON.stringify(this.template.settings),
+              JSON.stringify(this.template.branding),
+              this.template.isActive,
+              this.template.isDefault,
+              this.template.createdBy,
+              this.template.createdAt,
+              this.template.updatedAt,
+              this.template.version,
+            ];
 
         const result = await client.query(query, values);
         this.template = {
@@ -604,7 +627,7 @@ export class EnhancedTemplateBuilder {
           elements: JSON.parse(result.rows[0].elements),
           layout: JSON.parse(result.rows[0].layout),
           settings: JSON.parse(result.rows[0].settings),
-          branding: JSON.parse(result.rows[0].branding)
+          branding: JSON.parse(result.rows[0].branding),
         };
 
         return this;
@@ -637,11 +660,14 @@ export class EnhancedTemplateBuilder {
    */
   renderTemplate(data, options = {}) {
     const theme = TEMPLATE_THEMES[this.template.theme] || TEMPLATE_THEMES.MODERN;
-    
+
     console.log('🎨 [TemplateBuilder] Rendering template:', this.template.name);
     console.log('🎨 [TemplateBuilder] Template has', this.template.elements?.length, 'elements');
-    console.log('🎨 [TemplateBuilder] Element types:', this.template.elements?.map(e => `${e.type}(${e.visible !== false ? 'visible' : 'hidden'})`));
-    
+    console.log(
+      '🎨 [TemplateBuilder] Element types:',
+      this.template.elements?.map(e => `${e.type}(${e.visible !== false ? 'visible' : 'hidden'})`)
+    );
+
     let html = `
 <!DOCTYPE html>
 <html lang="en">
@@ -679,7 +705,10 @@ export class EnhancedTemplateBuilder {
     // Debug logging to trace element types
     console.log('🔍 [RenderElement] Rendering element:', element.type, element.id);
     console.log('🔍 [RenderElement] Element content:', JSON.stringify(element.content, null, 2));
-    console.log('🔍 [RenderElement] Type match found:', Object.values(TEMPLATE_ELEMENT_TYPES).includes(element.type));
+    console.log(
+      '🔍 [RenderElement] Type match found:',
+      Object.values(TEMPLATE_ELEMENT_TYPES).includes(element.type)
+    );
 
     switch (element.type) {
       case TEMPLATE_ELEMENT_TYPES.HEADER:
@@ -711,14 +740,17 @@ export class EnhancedTemplateBuilder {
       case 'quotation_info':
         const quotationFields = element.content?.fields || [
           { label: 'Quotation #', value: 'QUOTE-001' },
-          { label: 'Date', value: new Date().toLocaleDateString() }
+          { label: 'Date', value: new Date().toLocaleDateString() },
         ];
         return `
           <div class="${elementClass}" style="${elementStyle}">
             <table class="info-table">
-              ${quotationFields.map(field => 
-                `<tr><td class="label">${field.label}:</td><td class="value">${field.value}</td></tr>`
-              ).join('')}
+              ${quotationFields
+                .map(
+                  field =>
+                    `<tr><td class="label">${field.label}:</td><td class="value">${field.value}</td></tr>`
+                )
+                .join('')}
             </table>
           </div>`;
 
@@ -746,26 +778,29 @@ export class EnhancedTemplateBuilder {
       case TEMPLATE_ELEMENT_TYPES.TERMS:
       case 'terms':
         const termsTitle = element.content?.title || 'Terms & Conditions';
-        const termsText = element.content?.text || element.content?.defaultText || 'Terms and conditions apply.';
-        
+        const termsText =
+          element.content?.text || element.content?.defaultText || 'Terms and conditions apply.';
+
         // Format terms text with proper bullet points
-        const formatTermsText = (text) => {
+        const formatTermsText = text => {
           // Replace placeholders first
           const replacedText = this.replacePlaceholders(text, data);
-          
+
           // Split by newlines and format as bullet list
           const lines = replacedText
             .split('\n')
             .map(line => line.trim())
             .filter(line => line.length > 0);
-          
-          return lines.map(line => {
-            // Remove existing bullet markers if any
-            const cleanLine = line.replace(/^[•\-\*]\s*/, '');
-            return `<p style="margin-bottom: 6px; line-height: 1.6; padding-left: 20px; text-indent: -15px;">• ${cleanLine}</p>`;
-          }).join('');
+
+          return lines
+            .map(line => {
+              // Remove existing bullet markers if any
+              const cleanLine = line.replace(/^[•\-\*]\s*/, '');
+              return `<p style="margin-bottom: 6px; line-height: 1.6; padding-left: 20px; text-indent: -15px;">• ${cleanLine}</p>`;
+            })
+            .join('');
         };
-        
+
         return `
           <div class="${elementClass}" style="${elementStyle}">
             <h3 style="font-weight: 600; margin-bottom: 12px; font-size: 16px;">${this.replacePlaceholders(termsTitle, data)}</h3>
@@ -775,7 +810,10 @@ export class EnhancedTemplateBuilder {
       case TEMPLATE_ELEMENT_TYPES.CUSTOM_TEXT:
       case 'custom_text':
         console.log('🔍 [CUSTOM_TEXT] Element content.text:', element.content?.text);
-        const replacedText = this.replacePlaceholders(element.content?.text || 'Custom text content', data);
+        const replacedText = this.replacePlaceholders(
+          element.content?.text || 'Custom text content',
+          data
+        );
         console.log('🔍 [CUSTOM_TEXT] After replacement:', replacedText);
         return `
           <div class="${elementClass}" style="${elementStyle}">
@@ -819,10 +857,11 @@ export class EnhancedTemplateBuilder {
       default:
         console.warn(`⚠️ Unknown element type: ${element.type}`);
         // Instead of showing "Unknown element type", render the element with available content
-        const fallbackContent = element.content?.text || 
-                               element.content?.title || 
-                               (element.content && typeof element.content === 'string' ? element.content : '') ||
-                               `Element type: ${element.type}`;
+        const fallbackContent =
+          element.content?.text ||
+          element.content?.title ||
+          (element.content && typeof element.content === 'string' ? element.content : '') ||
+          `Element type: ${element.type}`;
         return `
           <div class="${elementClass}" style="${elementStyle}">
             <div style="padding: 10px; background: #f9f9f9; border: 1px dashed #ccc;">
@@ -839,12 +878,12 @@ export class EnhancedTemplateBuilder {
    */
   renderItemsTable(element, data) {
     const items = data?.items || data?.selectedMachines || [];
-    
+
     // Get style configuration for table headers
     const headerBg = element.style?.tableHeaderBg || '#2563eb';
     const headerColor = element.style?.tableHeaderColor || '#ffffff';
     const borderColor = element.style?.tableBorderColor || '#ddd';
-    
+
     // Enhanced column configuration based on frontend Items Table
     const defaultColumns = [
       { key: 'no', label: 'S.No.', width: '6%', alignment: 'center' },
@@ -855,49 +894,70 @@ export class EnhancedTemplateBuilder {
       { key: 'rate', label: 'Rate', width: '10%', alignment: 'right' },
       { key: 'mobDemob', label: 'Mob/Demob', width: '10%', alignment: 'right' },
       { key: 'riskUsage', label: 'Risk & Usage', width: '10%', alignment: 'right' },
-      { key: 'rental', label: 'Total Rental', width: '12%', alignment: 'right' }
+      { key: 'rental', label: 'Total Rental', width: '12%', alignment: 'right' },
     ];
-    
+
     // Filter columns based on element configuration
     const columnConfig = element.content?.columns || {};
-    const columns = defaultColumns.filter(col => 
-      columnConfig[col.key] !== false // Show column if not explicitly disabled
+    const columns = defaultColumns.filter(
+      col => columnConfig[col.key] !== false // Show column if not explicitly disabled
     );
 
     return `
       <div class="element-items-table" style="${this.generateElementStyle(element.style || {})}">
         <table class="items-table" style="width: 100%; border-collapse: collapse; border: 1px solid ${borderColor};">
-          ${element.content?.showHeader !== false ? `
+          ${
+            element.content?.showHeader !== false
+              ? `
             <thead>
               <tr style="background: ${headerBg}; color: ${headerColor};">
-                ${columns.map(col => 
-                  `<th style="width: ${col.width}; text-align: ${col.alignment}; padding: 10px 8px; border: 1px solid ${borderColor}; font-weight: 600;">${col.label}</th>`
-                ).join('')}
+                ${columns
+                  .map(
+                    col =>
+                      `<th style="width: ${col.width}; text-align: ${col.alignment}; padding: 10px 8px; border: 1px solid ${borderColor}; font-weight: 600;">${col.label}</th>`
+                  )
+                  .join('')}
               </tr>
             </thead>
-          ` : ''}
+          `
+              : ''
+          }
           <tbody>
-            ${items.length > 0 ? items.map((item, index) => `
+            ${
+              items.length > 0
+                ? items
+                    .map(
+                      (item, index) => `
               <tr class="${element.content?.alternateRows && index % 2 === 1 ? 'alternate-row' : ''}" style="${index % 2 === 1 ? 'background: #f9f9f9;' : 'background: #ffffff;'}">
-                ${columns.map(col => {
-                  let cellValue = item[col.key] || '-';
-                  // Format rental values properly as currency
-                  if (col.key === 'rental' && cellValue !== '-' && !isNaN(parseFloat(cellValue))) {
-                    cellValue = new Intl.NumberFormat('en-IN', {
-                      style: 'currency',
-                      currency: 'INR',
-                      minimumFractionDigits: 0,
-                      maximumFractionDigits: 0
-                    }).format(parseFloat(cellValue));
-                  }
-                  return `<td style="text-align: ${col.alignment}; padding: 8px 6px; border: 1px solid ${borderColor}; font-size: 11px;">${cellValue}</td>`;
-                }).join('')}
+                ${columns
+                  .map(col => {
+                    let cellValue = item[col.key] || '-';
+                    // Format rental values properly as currency
+                    if (
+                      col.key === 'rental' &&
+                      cellValue !== '-' &&
+                      !isNaN(parseFloat(cellValue))
+                    ) {
+                      cellValue = new Intl.NumberFormat('en-IN', {
+                        style: 'currency',
+                        currency: 'INR',
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0,
+                      }).format(parseFloat(cellValue));
+                    }
+                    return `<td style="text-align: ${col.alignment}; padding: 8px 6px; border: 1px solid ${borderColor}; font-size: 11px;">${cellValue}</td>`;
+                  })
+                  .join('')}
               </tr>
-            `).join('') : `
+            `
+                    )
+                    .join('')
+                : `
               <tr>
                 <td colspan="${columns.length}" style="text-align: center; padding: 20px; color: #666; border: 1px solid ${borderColor};">No items found</td>
               </tr>
-            `}
+            `
+            }
           </tbody>
         </table>
       </div>`;
@@ -909,42 +969,52 @@ export class EnhancedTemplateBuilder {
   renderTotals(element, data) {
     const totals = data?.totals || {};
     console.log('🔍 [DEBUG] Totals data received:', totals);
-    
+
     // Comprehensive list of all financial fields that should be displayed
     const fields = element.content?.fields || [
       { label: 'Working Cost', value: '{{totals.workingCost}}', showIf: 'always' },
       { label: 'Mob/Demob Cost', value: '{{totals.mobDemobCost}}', showIf: 'always' },
-      { label: 'Food & Accommodation Cost', value: '{{totals.foodAccomCost}}', showIf: 'hasFoodAccom' },
+      {
+        label: 'Food & Accommodation Cost',
+        value: '{{totals.foodAccomCost}}',
+        showIf: 'hasFoodAccom',
+      },
       { label: 'Usage Load Factor', value: '{{totals.usageLoadFactor}}', showIf: 'hasUsageLoad' },
       { label: 'Risk Adjustment', value: '{{totals.riskAdjustment}}', showIf: 'hasRiskAdjustment' },
       { label: 'Risk & Usage Total', value: '{{totals.riskUsageTotal}}', showIf: 'hasRiskUsage' },
       { label: 'Subtotal', value: '{{totals.subtotal}}', showIf: 'always' },
       { label: 'Tax (GST)', value: '{{totals.tax}}', showIf: 'always' },
-      { label: 'Total', value: '{{totals.total}}', showIf: 'always', emphasized: true }
+      { label: 'Total', value: '{{totals.total}}', showIf: 'always', emphasized: true },
     ];
-    
+
     // Process placeholders in field labels and values so dynamic labels like Tax ({{tax.rate}}%) render properly
     const processedFields = fields.map(field => ({
       ...field,
       label: this.replacePlaceholders(field.label || '', data),
-      value: this.replacePlaceholders(field.value, data)
+      value: this.replacePlaceholders(field.value, data),
     }));
-    
-    console.log('🔍 [DEBUG] Processed field values:', processedFields.map(f => f.value));
-    
+
+    console.log(
+      '🔍 [DEBUG] Processed field values:',
+      processedFields.map(f => f.value)
+    );
+
     return `
       <div class="element-totals" style="${this.generateElementStyle(element.style || {})}">
         <table class="totals-table" style="width: 100%; max-width: 300px; margin-left: auto;">
-          ${processedFields.map(field => {
-            const showField = this.shouldShowTotalField(field, data);
-            if (!showField) return '';
-            
-            return `
+          ${processedFields
+            .map(field => {
+              const showField = this.shouldShowTotalField(field, data);
+              if (!showField) return '';
+
+              return `
               <tr class="${field.emphasized ? 'emphasized' : ''}" style="${field.emphasized ? 'font-weight: bold; border-top: 2px solid #000;' : ''}">
                 <td class="label" style="text-align: right; padding: 5px 10px;">${field.label}:</td>
                 <td class="value" style="text-align: right; padding: 5px 10px;">${field.value}</td>
               </tr>`;
-          }).filter(row => row).join('')}
+            })
+            .filter(row => row)
+            .join('')}
         </table>
       </div>`;
   }
@@ -955,11 +1025,11 @@ export class EnhancedTemplateBuilder {
   renderCustomText(element, data) {
     const content = element.content?.text || element.content?.title || 'Custom Text';
     const title = element.content?.title;
-    
+
     // Process placeholders in content and title
     const processedContent = this.replacePlaceholders(content, data);
     const processedTitle = title ? this.replacePlaceholders(title, data) : null;
-    
+
     return `
       <div class="element-custom-text" style="${this.generateElementStyle(element.style || {})}">
         ${processedTitle ? `<h3 style="margin: 0 0 10px 0; font-weight: bold;">${processedTitle}</h3>` : ''}
@@ -973,18 +1043,22 @@ export class EnhancedTemplateBuilder {
   renderQuotationInfo(element, data) {
     const quotation = data?.quotation || {};
     console.log('🔍 [DEBUG] Quotation data received:', quotation);
-    
+
     const fields = element.content?.fields || [
       'Quotation No: {{quotation.number}}',
       'Date: {{quotation.date}}',
-      'Valid Until: {{quotation.validUntil}}'
+      'Valid Until: {{quotation.validUntil}}',
     ];
-    
+
     return `
       <div class="element-quotation-info" style="${this.generateElementStyle(element.style || {})}">
-        ${fields.map(field => `
+        ${fields
+          .map(
+            field => `
           <div style="margin: 5px 0;">${this.replacePlaceholders(field, data)}</div>
-        `).join('')}
+        `
+          )
+          .join('')}
       </div>`;
   }
 
@@ -994,10 +1068,10 @@ export class EnhancedTemplateBuilder {
   renderClientInfo(element, data) {
     const client = data?.client || {};
     const title = element.content?.title || 'Bill To:';
-    
+
     // Process placeholders in title and content
     const processedTitle = this.replacePlaceholders(title, data);
-    
+
     return `
       <div class="element-client-info" style="${this.generateElementStyle(element.style || {})}">
         <h4 style="margin: 0 0 10px 0; font-weight: bold;">${processedTitle}</h4>
@@ -1017,40 +1091,76 @@ export class EnhancedTemplateBuilder {
   replacePlaceholders(text, data) {
     console.log('🔍 [DEBUG] Replacing placeholders in text:', text);
     console.log('🔍 [DEBUG] Data for replacement:', JSON.stringify(data, null, 2));
-    
+
     let result = text
       // Quotation placeholders (multiple formats)
-      .replace(/\{\{quotation\.number\}\}/g, data?.quotation?.number || data?.quotation?.quotation_number || 'Q-001')
-      .replace(/\{\{quotation\.quotation_number\}\}/g, data?.quotation?.quotation_number || data?.quotation?.number || 'Q-001')
+      .replace(
+        /\{\{quotation\.number\}\}/g,
+        data?.quotation?.number || data?.quotation?.quotation_number || 'Q-001'
+      )
+      .replace(
+        /\{\{quotation\.quotation_number\}\}/g,
+        data?.quotation?.quotation_number || data?.quotation?.number || 'Q-001'
+      )
       .replace(/\{\{quotation\.date\}\}/g, data?.quotation?.date || new Date().toLocaleDateString())
-      .replace(/\{\{quotation\.created_at\}\}/g, data?.quotation?.created_at || new Date().toLocaleDateString())
+      .replace(
+        /\{\{quotation\.created_at\}\}/g,
+        data?.quotation?.created_at || new Date().toLocaleDateString()
+      )
       .replace(/\{\{quotation\.validUntil\}\}/g, data?.quotation?.validUntil || 'N/A')
       .replace(/\{\{quotation\.terms\}\}/g, data?.quotation?.terms || 'Standard terms apply')
-      
+
       // Customer placeholders (alias for client)
-      .replace(/\{\{customer\.name\}\}/g, data?.customer?.name || data?.client?.name || 'Customer Name')
+      .replace(
+        /\{\{customer\.name\}\}/g,
+        data?.customer?.name || data?.client?.name || 'Customer Name'
+      )
       .replace(/\{\{customer\.company\}\}/g, data?.customer?.company || data?.client?.company || '')
-      .replace(/\{\{customer\.address\}\}/g, data?.customer?.address || data?.client?.address || 'Customer Address')
-      .replace(/\{\{customer\.phone\}\}/g, data?.customer?.phone || data?.client?.phone || 'Customer Phone')
-      .replace(/\{\{customer\.email\}\}/g, data?.customer?.email || data?.client?.email || 'customer@email.com')
-      
+      .replace(
+        /\{\{customer\.address\}\}/g,
+        data?.customer?.address || data?.client?.address || 'Customer Address'
+      )
+      .replace(
+        /\{\{customer\.phone\}\}/g,
+        data?.customer?.phone || data?.client?.phone || 'Customer Phone'
+      )
+      .replace(
+        /\{\{customer\.email\}\}/g,
+        data?.customer?.email || data?.client?.email || 'customer@email.com'
+      )
+
       // Client placeholders
       .replace(/\{\{client\.name\}\}/g, data?.client?.name || data?.customer?.name || 'Client Name')
       .replace(/\{\{client\.company\}\}/g, data?.client?.company || data?.customer?.company || '')
-      .replace(/\{\{client\.address\}\}/g, data?.client?.address || data?.customer?.address || 'Client Address')
-      .replace(/\{\{client\.phone\}\}/g, data?.client?.phone || data?.customer?.phone || 'Client Phone')
-      .replace(/\{\{client\.email\}\}/g, data?.client?.email || data?.customer?.email || 'client@email.com')
-      
+      .replace(
+        /\{\{client\.address\}\}/g,
+        data?.client?.address || data?.customer?.address || 'Client Address'
+      )
+      .replace(
+        /\{\{client\.phone\}\}/g,
+        data?.client?.phone || data?.customer?.phone || 'Client Phone'
+      )
+      .replace(
+        /\{\{client\.email\}\}/g,
+        data?.client?.email || data?.customer?.email || 'client@email.com'
+      )
+
       // Company placeholders
       .replace(/\{\{company\.name\}\}/g, data?.company?.name || 'ASP CRANES')
       .replace(/\{\{company\.address\}\}/g, data?.company?.address || 'Company Address')
       .replace(/\{\{company\.phone\}\}/g, data?.company?.phone || 'Company Phone')
       .replace(/\{\{company\.email\}\}/g, data?.company?.email || 'company@email.com')
       .replace(/\{\{company\.website\}\}/g, data?.company?.website || 'www.company.com')
-      
+
       // User/Prepared by placeholders
-      .replace(/\{\{prepared_by\}\}/g, data?.prepared_by || data?.user?.name || data?.quotation?.created_by || 'Sales Representative')
-      
+      .replace(
+        /\{\{prepared_by\}\}/g,
+        data?.prepared_by ||
+          data?.user?.name ||
+          data?.quotation?.created_by ||
+          'Sales Representative'
+      )
+
       // Totals placeholders - comprehensive mapping for all financial fields
       .replace(/\{\{totals\.workingCost\}\}/g, data?.totals?.workingCost || '₹0')
       .replace(/\{\{totals\.mobDemobCost\}\}/g, data?.totals?.mobDemobCost || '₹0')
@@ -1062,8 +1172,11 @@ export class EnhancedTemplateBuilder {
       .replace(/\{\{totals\.tax\}\}/g, data?.totals?.tax || '₹0')
       .replace(/\{\{totals\.total\}\}/g, data?.totals?.total || '₹0')
       .replace(/\{\{totals\.discount\}\}/g, data?.totals?.discount || '₹0')
-      .replace(/\{\{tax\.rate\}\}/g, (data?.tax?.rate !== undefined ? data.tax.rate : (data?.quotation?.taxRate || 18)) + '');
-      
+      .replace(
+        /\{\{tax\.rate\}\}/g,
+        (data?.tax?.rate !== undefined ? data.tax.rate : data?.quotation?.taxRate || 18) + ''
+      );
+
     console.log('🔍 [DEBUG] Result after replacement:', result);
     return result;
   }
@@ -1086,8 +1199,8 @@ export class EnhancedTemplateBuilder {
         max-width: 800px;
         margin: ${options.preview ? '20px auto' : '0 auto'};
         background: white;
-        padding: ${(this.template.layout?.margins?.top || 20)}px ${(this.template.layout?.margins?.right || 20)}px 
-                  ${(this.template.layout?.margins?.bottom || 20)}px ${(this.template.layout?.margins?.left || 20)}px;
+        padding: ${this.template.layout?.margins?.top || 20}px ${this.template.layout?.margins?.right || 20}px 
+                  ${this.template.layout?.margins?.bottom || 20}px ${this.template.layout?.margins?.left || 20}px;
         ${options.preview ? 'box-shadow: 0 2px 10px rgba(0,0,0,0.1);' : ''}
       }
       
@@ -1293,20 +1406,28 @@ export class EnhancedTemplateBuilder {
   }
 
   shouldShowTotalField(field, data) {
-    const parseAmount = (amount) => {
+    const parseAmount = amount => {
       if (!amount) return 0;
       return parseFloat(amount.toString().replace(/[^\d.-]/g, ''));
     };
 
     switch (field.showIf) {
-      case 'always': return true;
-      case 'hasDiscount': return parseAmount(data.totals?.discount) > 0;
-      case 'hasTax': return parseAmount(data.totals?.tax) > 0;
-      case 'hasFoodAccom': return parseAmount(data.totals?.foodAccomCost) > 0;
-      case 'hasUsageLoad': return parseAmount(data.totals?.usageLoadFactor) > 0;
-      case 'hasRiskAdjustment': return parseAmount(data.totals?.riskAdjustment) > 0;
-      case 'hasRiskUsage': return parseAmount(data.totals?.riskUsageTotal) > 0;
-      default: return true;
+      case 'always':
+        return true;
+      case 'hasDiscount':
+        return parseAmount(data.totals?.discount) > 0;
+      case 'hasTax':
+        return parseAmount(data.totals?.tax) > 0;
+      case 'hasFoodAccom':
+        return parseAmount(data.totals?.foodAccomCost) > 0;
+      case 'hasUsageLoad':
+        return parseAmount(data.totals?.usageLoadFactor) > 0;
+      case 'hasRiskAdjustment':
+        return parseAmount(data.totals?.riskAdjustment) > 0;
+      case 'hasRiskUsage':
+        return parseAmount(data.totals?.riskUsageTotal) > 0;
+      default:
+        return true;
     }
   }
 
@@ -1317,21 +1438,21 @@ export class EnhancedTemplateBuilder {
         address: 'Industrial Area, Pune, Maharashtra 411019',
         phone: '+91 99999 88888',
         email: 'sales@aspcranes.com',
-        website: 'www.aspcranes.com'
+        website: 'www.aspcranes.com',
       },
       client: {
         name: 'John Doe',
         company: 'Construction Corp.',
         address: 'Mumbai, Maharashtra',
         phone: '+91 98765 43210',
-        email: 'john@constructioncorp.com'
+        email: 'john@constructioncorp.com',
       },
       quotation: {
         number: 'QUO-2025-001',
         date: new Date().toLocaleDateString('en-IN'),
         validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN'),
         paymentTerms: '50% advance, balance on completion',
-        terms: 'This quotation is valid for 30 days. All rates are inclusive of GST.'
+        terms: 'This quotation is valid for 30 days. All rates are inclusive of GST.',
       },
       items: [
         {
@@ -1342,7 +1463,7 @@ export class EnhancedTemplateBuilder {
           duration: '30 days',
           rate: '₹25,000',
           rental: '₹7,50,000',
-          mobDemob: '₹1,00,000'
+          mobDemob: '₹1,00,000',
         },
         {
           no: 2,
@@ -1352,15 +1473,15 @@ export class EnhancedTemplateBuilder {
           duration: '5 days',
           rate: '₹15,000',
           rental: '₹75,000',
-          mobDemob: '₹20,000'
-        }
+          mobDemob: '₹20,000',
+        },
       ],
       totals: {
         subtotal: '₹8,25,000',
         discount: '₹25,000',
         tax: '₹1,44,000',
-        total: '₹9,44,000'
-      }
+        total: '₹9,44,000',
+      },
     };
   }
 
@@ -1371,7 +1492,7 @@ export class EnhancedTemplateBuilder {
     return {
       ...this.template,
       exportedAt: new Date(),
-      version: '1.0'
+      version: '1.0',
     };
   }
 
@@ -1384,7 +1505,7 @@ export class EnhancedTemplateBuilder {
       ...templateConfig,
       id: null, // Reset ID for import
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
     return this;
   }

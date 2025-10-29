@@ -5,8 +5,8 @@ type DealStatus = 'qualification' | 'proposal' | 'negotiation' | 'won' | 'lost';
 
 export interface Customer {
   id: string;
-  customerId: string;  // Unique business identifier
-  name: string;        // Customer Name
+  customerId: string; // Unique business identifier
+  name: string; // Customer Name
   companyName: string; // Company Name
   email: string;
   phone: string;
@@ -52,9 +52,9 @@ export interface Lead {
   shiftTiming?: string;
   status: LeadStatus;
   source?: LeadSource;
-  assignedTo?: string;  // ID of the sales agent
-  assignedToName?: string;  // Name of the sales agent
-  designation?: string;  // Customer's designation
+  assignedTo?: string; // ID of the sales agent
+  assignedToName?: string; // Name of the sales agent
+  designation?: string; // Customer's designation
   createdAt: string;
   updatedAt: string;
   files?: string[];

@@ -1,14 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Card } from '../common/Card';
 import { Badge } from '../common/Badge';
-import { 
-  Clock, 
-  User, 
-  FileText, 
-  Truck, 
-  DollarSign,
-  AlertCircle 
-} from 'lucide-react';
+import { Clock, User, FileText, Truck, DollarSign, AlertCircle } from 'lucide-react';
 import { getRecentActivities, Activity } from '../../services/activityService';
 
 interface RecentActivitiesProps {
@@ -70,7 +63,7 @@ const mockActivities: Activity[] = [
     description: 'John Doe submitted a crane rental inquiry',
     timestamp: new Date(Date.now() - 1000 * 60 * 15), // 15 minutes ago
     status: 'info',
-    user: 'System'
+    user: 'System',
   },
   {
     id: '2',
@@ -79,7 +72,7 @@ const mockActivities: Activity[] = [
     description: 'Construction project deal worth ₹2,50,000 closed successfully',
     timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
     status: 'success',
-    user: 'Sales Agent'
+    user: 'Sales Agent',
   },
   {
     id: '3',
@@ -88,7 +81,7 @@ const mockActivities: Activity[] = [
     description: 'Crane deployment for Site A scheduled for tomorrow',
     timestamp: new Date(Date.now() - 1000 * 60 * 60 * 4), // 4 hours ago
     status: 'info',
-    user: 'Operations Manager'
+    user: 'Operations Manager',
   },
   {
     id: '4',
@@ -97,7 +90,7 @@ const mockActivities: Activity[] = [
     description: 'Crane CR-001 requires scheduled maintenance',
     timestamp: new Date(Date.now() - 1000 * 60 * 60 * 6), // 6 hours ago
     status: 'warning',
-    user: 'System'
+    user: 'System',
   },
   {
     id: '5',
@@ -106,8 +99,8 @@ const mockActivities: Activity[] = [
     description: 'New operator account created for Mike Johnson',
     timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
     status: 'info',
-    user: 'Admin'
-  }
+    user: 'Admin',
+  },
 ];
 
 export function RecentActivities({ activities, className }: RecentActivitiesProps) {
@@ -157,7 +150,7 @@ export function RecentActivities({ activities, className }: RecentActivitiesProp
         <h3 className="text-lg font-semibold text-gray-900">Recent Activities</h3>
         <Clock className="h-5 w-5 text-gray-400" />
       </div>
-      
+
       <div className="space-y-4">
         {localActivities.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
@@ -165,26 +158,25 @@ export function RecentActivities({ activities, className }: RecentActivitiesProp
             <p>No recent activities</p>
           </div>
         ) : (
-          localActivities.map((activity) => (
-            <div key={activity.id} className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+          localActivities.map(activity => (
+            <div
+              key={activity.id}
+              className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
+            >
               <div className={`flex-shrink-0 p-2 rounded-full ${getStatusColor(activity.status)}`}>
                 {getActivityIcon(activity.type)}
               </div>
-              
+
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-gray-900 truncate">
-                    {activity.title}
-                  </p>
+                  <p className="text-sm font-medium text-gray-900 truncate">{activity.title}</p>
                   <span className="text-xs text-gray-500 flex-shrink-0 ml-2">
                     {formatTimeAgo(activity.timestamp)}
                   </span>
                 </div>
-                
-                <p className="text-sm text-gray-600 mt-1">
-                  {activity.description}
-                </p>
-                
+
+                <p className="text-sm text-gray-600 mt-1">{activity.description}</p>
+
                 {activity.user && (
                   <div className="flex items-center mt-2">
                     <Badge variant="secondary" className="text-xs">
@@ -197,7 +189,7 @@ export function RecentActivities({ activities, className }: RecentActivitiesProp
           ))
         )}
       </div>
-      
+
       {localActivities.length > 0 && (
         <div className="mt-6 pt-4 border-t border-gray-200">
           <button className="text-sm text-blue-600 hover:text-blue-800 font-medium">

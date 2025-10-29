@@ -5,17 +5,12 @@ import {
   Legend,
   Filler,
   ChartData,
-  ChartOptions
+  ChartOptions,
 } from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
 
 // Register ChartJS components
-ChartJS.register(
-  ArcElement,
-  Tooltip,
-  Legend,
-  Filler
-);
+ChartJS.register(ArcElement, Tooltip, Legend, Filler);
 
 interface DoughnutChartProps {
   data: ChartData<'doughnut'>;
@@ -40,15 +35,18 @@ export function DoughnutChart({ data, options, height = 250 }: DoughnutChartProp
       },
       tooltip: {
         callbacks: {
-          label: function(context) {
+          label: function (context) {
             const label = context.label || '';
             const value = context.raw as number;
-            const total = context.chart.data.datasets[0].data.reduce((a, b) => (a as number) + (b as number), 0) as number;
+            const total = context.chart.data.datasets[0].data.reduce(
+              (a, b) => (a as number) + (b as number),
+              0
+            ) as number;
             const percentage = Math.round((value / total) * 100);
             return `${label}: ${value} (${percentage}%)`;
-          }
-        }
-      }
+          },
+        },
+      },
     },
     cutout: '60%',
   };

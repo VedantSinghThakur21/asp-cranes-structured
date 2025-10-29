@@ -77,7 +77,7 @@ class DashboardService {
     const token = localStorage.getItem('jwt-token');
     return {
       'Content-Type': 'application/json',
-      ...(token && { Authorization: `Bearer ${token}` })
+      ...(token && { Authorization: `Bearer ${token}` }),
     };
   }
 
@@ -93,7 +93,7 @@ class DashboardService {
       }
 
       const result = await response.json();
-      
+
       if (!result.success) {
         throw new Error(result.message || 'Failed to fetch dashboard analytics');
       }
@@ -117,7 +117,7 @@ class DashboardService {
       }
 
       const result = await response.json();
-      
+
       if (!result.success) {
         throw new Error(result.message || 'Failed to fetch revenue chart data');
       }
@@ -141,7 +141,7 @@ class DashboardService {
       }
 
       const result = await response.json();
-      
+
       if (!result.success) {
         throw new Error(result.message || 'Failed to fetch pipeline overview');
       }
@@ -165,7 +165,7 @@ class DashboardService {
       }
 
       const result = await response.json();
-      
+
       if (!result.success) {
         throw new Error(result.message || 'Failed to fetch notifications');
       }

@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Users, 
-  TrendingUp, 
-  DollarSign, 
-  Target, 
-  BarChart3, 
+import {
+  Users,
+  TrendingUp,
+  DollarSign,
+  Target,
+  BarChart3,
   Activity,
   RefreshCw,
   AlertCircle,
@@ -22,14 +22,20 @@ import {
   CheckCircle,
   XCircle,
   Star,
-  Gauge
+  Gauge,
 } from 'lucide-react';
 
 // Store
 import { useAuthStore } from '../store/authStore';
 
 // Services
-import { dashboardService, DashboardAnalytics, RevenueChartData, PipelineData, Notification } from '../services/dashboardService';
+import {
+  dashboardService,
+  DashboardAnalytics,
+  RevenueChartData,
+  PipelineData,
+  Notification,
+} from '../services/dashboardService';
 
 // Components
 import { Card, CardHeader, CardTitle, CardContent } from '../components/common/Card';
@@ -57,19 +63,33 @@ function MetricCard({ title, value, change, icon, color, subtitle }: MetricCardP
       <CardContent className="p-6">
         <div className="flex items-center justify-between">
           <div className="space-y-2">
-            <p className="text-sm font-semibold text-gray-700 group-hover:text-gray-800 transition-colors" style={{ color: '#374151' }}>{title}</p>
+            <p
+              className="text-sm font-semibold text-gray-700 group-hover:text-gray-800 transition-colors"
+              style={{ color: '#374151' }}
+            >
+              {title}
+            </p>
             <div className="space-y-1">
-              <p className="text-2xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors" style={{ color: '#111827' }}>{value}</p>
+              <p
+                className="text-2xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors"
+                style={{ color: '#111827' }}
+              >
+                {value}
+              </p>
               {subtitle && (
-                <p className="text-xs font-medium text-gray-600" style={{ color: '#4b5563' }}>{subtitle}</p>
+                <p className="text-xs font-medium text-gray-600" style={{ color: '#4b5563' }}>
+                  {subtitle}
+                </p>
               )}
             </div>
           </div>
-          <div className={`w-12 h-12 rounded-lg ${color} flex items-center justify-center group-hover:scale-110 transition-transform duration-200 shadow-lg`}>
+          <div
+            className={`w-12 h-12 rounded-lg ${color} flex items-center justify-center group-hover:scale-110 transition-transform duration-200 shadow-lg`}
+          >
             {icon}
           </div>
         </div>
-        
+
         {change !== undefined && (
           <div className="mt-4 flex items-center">
             {change >= 0 ? (
@@ -77,15 +97,20 @@ function MetricCard({ title, value, change, icon, color, subtitle }: MetricCardP
             ) : (
               <ArrowDownRight className="h-4 w-4 text-red-500" />
             )}
-            <span className={`text-sm font-semibold ml-1 ${
-              change >= 0 ? 'text-green-600' : 'text-red-600'
-            }`} style={{ color: change >= 0 ? '#059669' : '#dc2626' }}>
+            <span
+              className={`text-sm font-semibold ml-1 ${
+                change >= 0 ? 'text-green-600' : 'text-red-600'
+              }`}
+              style={{ color: change >= 0 ? '#059669' : '#dc2626' }}
+            >
               {formatChange(change)}
             </span>
-            <span className="text-sm text-gray-500 ml-1" style={{ color: '#6b7280' }}>vs last period</span>
+            <span className="text-sm text-gray-500 ml-1" style={{ color: '#6b7280' }}>
+              vs last period
+            </span>
           </div>
         )}
-        
+
         {/* Subtle gradient overlay on hover */}
         <div className="absolute inset-0 bg-gradient-to-r from-blue-50 to-transparent opacity-0 group-hover:opacity-50 transition-opacity duration-300 pointer-events-none" />
       </CardContent>
@@ -117,8 +142,8 @@ function NotificationCenter() {
             message: 'Your real-time notifications will appear here',
             time: 'Just now',
             icon: 'users',
-            priority: 'low'
-          }
+            priority: 'low',
+          },
         ]);
       } finally {
         setLoading(false);
@@ -126,7 +151,7 @@ function NotificationCenter() {
     };
 
     fetchNotifications();
-    
+
     // Set up auto-refresh every 30 seconds
     const interval = setInterval(fetchNotifications, 30000);
     return () => clearInterval(interval);
@@ -134,24 +159,37 @@ function NotificationCenter() {
 
   const getNotificationColor = (type: string) => {
     switch (type) {
-      case 'success': return 'bg-green-50 text-green-800 border-green-200';
-      case 'warning': return 'bg-yellow-50 text-yellow-800 border-yellow-200';
-      case 'info': return 'bg-blue-50 text-blue-800 border-blue-200';
-      case 'error': return 'bg-red-50 text-red-800 border-red-200';
-      default: return 'bg-gray-50 text-gray-800 border-gray-200';
+      case 'success':
+        return 'bg-green-50 text-green-800 border-green-200';
+      case 'warning':
+        return 'bg-yellow-50 text-yellow-800 border-yellow-200';
+      case 'info':
+        return 'bg-blue-50 text-blue-800 border-blue-200';
+      case 'error':
+        return 'bg-red-50 text-red-800 border-red-200';
+      default:
+        return 'bg-gray-50 text-gray-800 border-gray-200';
     }
   };
 
   const getNotificationIcon = (iconType: string) => {
     switch (iconType) {
-      case 'trophy': return <Trophy className="h-4 w-4" />;
-      case 'clock': return <Clock className="h-4 w-4" />;
-      case 'alert-circle': return <AlertCircle className="h-4 w-4" />;
-      case 'users': return <Users className="h-4 w-4" />;
-      case 'phone': return <Phone className="h-4 w-4" />;
-      case 'mail': return <Mail className="h-4 w-4" />;
-      case 'file-text': return <FileText className="h-4 w-4" />;
-      default: return <Bell className="h-4 w-4" />;
+      case 'trophy':
+        return <Trophy className="h-4 w-4" />;
+      case 'clock':
+        return <Clock className="h-4 w-4" />;
+      case 'alert-circle':
+        return <AlertCircle className="h-4 w-4" />;
+      case 'users':
+        return <Users className="h-4 w-4" />;
+      case 'phone':
+        return <Phone className="h-4 w-4" />;
+      case 'mail':
+        return <Mail className="h-4 w-4" />;
+      case 'file-text':
+        return <FileText className="h-4 w-4" />;
+      default:
+        return <Bell className="h-4 w-4" />;
     }
   };
 
@@ -162,14 +200,16 @@ function NotificationCenter() {
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Bell className="h-5 w-5 text-blue-500" />
-              <span className="text-gray-900 font-semibold" style={{ color: '#111827' }}>Live Updates</span>
+              <span className="text-gray-900 font-semibold" style={{ color: '#111827' }}>
+                Live Updates
+              </span>
             </div>
             <div className="animate-pulse bg-gray-300 h-6 w-8 rounded-full"></div>
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
+            {[1, 2, 3].map(i => (
               <div key={i} className="animate-pulse p-3 bg-gray-100 rounded-lg">
                 <div className="flex gap-3">
                   <div className="w-4 h-4 bg-gray-300 rounded"></div>
@@ -192,7 +232,9 @@ function NotificationCenter() {
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Bell className="h-5 w-5 text-blue-500" />
-            <span className="text-gray-900 font-semibold" style={{ color: '#111827' }}>Live Updates</span>
+            <span className="text-gray-900 font-semibold" style={{ color: '#111827' }}>
+              Live Updates
+            </span>
           </div>
           <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-semibold">
             {notifications.length}
@@ -212,7 +254,7 @@ function NotificationCenter() {
               <p className="text-sm">No new notifications</p>
             </div>
           ) : (
-            notifications.map((notification) => (
+            notifications.map(notification => (
               <div
                 key={notification.id}
                 className={`p-3 rounded-lg border-2 ${getNotificationColor(notification.type)} hover:shadow-md transition-shadow duration-200`}
@@ -222,10 +264,16 @@ function NotificationCenter() {
                     {getNotificationIcon(notification.icon)}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-sm" style={{ color: 'inherit' }}>{notification.title}</p>
-                    <p className="text-sm opacity-90 mt-1" style={{ color: 'inherit' }}>{notification.message}</p>
+                    <p className="font-semibold text-sm" style={{ color: 'inherit' }}>
+                      {notification.title}
+                    </p>
+                    <p className="text-sm opacity-90 mt-1" style={{ color: 'inherit' }}>
+                      {notification.message}
+                    </p>
                     <div className="flex justify-between items-center mt-2">
-                      <p className="text-xs opacity-70 font-medium" style={{ color: 'inherit' }}>{notification.time}</p>
+                      <p className="text-xs opacity-70 font-medium" style={{ color: 'inherit' }}>
+                        {notification.time}
+                      </p>
                       {notification.priority === 'high' && (
                         <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full font-medium">
                           Urgent
@@ -265,29 +313,29 @@ function QuickActions() {
       icon: <Plus className="h-4 w-4" />,
       color: 'bg-blue-500 hover:bg-blue-600 shadow-blue-200',
       href: '/leads',
-      onClick: () => handleNavigation('/leads')
+      onClick: () => handleNavigation('/leads'),
     },
     {
       label: 'New Deal',
       icon: <DollarSign className="h-4 w-4" />,
       color: 'bg-green-500 hover:bg-green-600 shadow-green-200',
       href: '/deals',
-      onClick: () => handleNavigation('/deals')
+      onClick: () => handleNavigation('/deals'),
     },
     {
       label: 'Schedule Call',
       icon: <Phone className="h-4 w-4" />,
       color: 'bg-purple-500 hover:bg-purple-600 shadow-purple-200',
       href: '/activities',
-      onClick: () => handleNavigation('/activities')
+      onClick: () => handleNavigation('/activities'),
     },
     {
       label: 'New Quotation',
       icon: <FileText className="h-4 w-4" />,
       color: 'bg-orange-500 hover:bg-orange-600 shadow-orange-200',
       href: '#',
-      onClick: handleNewQuotation
-    }
+      onClick: handleNewQuotation,
+    },
   ];
 
   return (
@@ -295,12 +343,14 @@ function QuickActions() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Zap className="h-5 w-5 text-yellow-500" />
-          <span className="text-gray-900 font-semibold" style={{ color: '#111827' }}>Quick Actions</span>
+          <span className="text-gray-900 font-semibold" style={{ color: '#111827' }}>
+            Quick Actions
+          </span>
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 gap-3">
-          {actions.map((action) => (
+          {actions.map(action => (
             <button
               key={action.label}
               className={`${action.color} text-white p-3 rounded-lg transition-all duration-200 flex items-center gap-2 text-sm font-semibold hover:shadow-lg hover:scale-105 transform active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50`}
@@ -354,43 +404,71 @@ function PerformanceIndicators({ analytics }: { analytics: DashboardAnalytics })
       label: 'Sales Velocity',
       value: `₹${calculateSalesVelocity()}K/day`,
       status: analytics.revenue.growth > 0 ? 'good' : 'needs-improvement',
-      change: getGrowthIndicator(analytics.revenue.growth)
+      change: getGrowthIndicator(analytics.revenue.growth),
     },
     {
       label: 'Lead Response Time',
       value: calculateResponseTime(),
-      status: analytics.leads.qualificationRate > 50 ? 'excellent' : analytics.leads.qualificationRate > 30 ? 'good' : 'needs-improvement',
-      change: analytics.leads.qualificationRate > 50 ? '-15%' : analytics.leads.qualificationRate > 30 ? '-8%' : '+5%'
+      status:
+        analytics.leads.qualificationRate > 50
+          ? 'excellent'
+          : analytics.leads.qualificationRate > 30
+            ? 'good'
+            : 'needs-improvement',
+      change:
+        analytics.leads.qualificationRate > 50
+          ? '-15%'
+          : analytics.leads.qualificationRate > 30
+            ? '-8%'
+            : '+5%',
     },
     {
       label: 'Conversion Rate',
       value: `${analytics.deals.winRate.toFixed(1)}%`,
-      status: analytics.deals.winRate > 60 ? 'excellent' : analytics.deals.winRate > 40 ? 'good' : 'needs-improvement',
-      change: getGrowthIndicator(analytics.deals.winRate - 45) // Assuming 45% as baseline
+      status:
+        analytics.deals.winRate > 60
+          ? 'excellent'
+          : analytics.deals.winRate > 40
+            ? 'good'
+            : 'needs-improvement',
+      change: getGrowthIndicator(analytics.deals.winRate - 45), // Assuming 45% as baseline
     },
     {
       label: 'Customer Satisfaction',
       value: calculateCustomerSatisfaction(),
-      status: analytics.quotations.approvalRate > 70 ? 'excellent' : analytics.quotations.approvalRate > 50 ? 'good' : 'needs-improvement',
-      change: getGrowthIndicator(analytics.quotations.approvalRate - 65) // Assuming 65% as baseline
-    }
+      status:
+        analytics.quotations.approvalRate > 70
+          ? 'excellent'
+          : analytics.quotations.approvalRate > 50
+            ? 'good'
+            : 'needs-improvement',
+      change: getGrowthIndicator(analytics.quotations.approvalRate - 65), // Assuming 65% as baseline
+    },
   ];
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'excellent': return 'text-green-600 bg-green-100';
-      case 'good': return 'text-blue-600 bg-blue-100';
-      case 'needs-improvement': return 'text-orange-600 bg-orange-100';
-      default: return 'text-gray-600 bg-gray-100';
+      case 'excellent':
+        return 'text-green-600 bg-green-100';
+      case 'good':
+        return 'text-blue-600 bg-blue-100';
+      case 'needs-improvement':
+        return 'text-orange-600 bg-orange-100';
+      default:
+        return 'text-gray-600 bg-gray-100';
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'excellent': return <CheckCircle className="h-4 w-4" />;
-      case 'good': return <Star className="h-4 w-4" />;
-      case 'needs-improvement': return <XCircle className="h-4 w-4" />;
-      default: return <Gauge className="h-4 w-4" />;
+      case 'excellent':
+        return <CheckCircle className="h-4 w-4" />;
+      case 'good':
+        return <Star className="h-4 w-4" />;
+      case 'needs-improvement':
+        return <XCircle className="h-4 w-4" />;
+      default:
+        return <Gauge className="h-4 w-4" />;
     }
   };
 
@@ -399,27 +477,41 @@ function PerformanceIndicators({ analytics }: { analytics: DashboardAnalytics })
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Gauge className="h-5 w-5 text-purple-500" />
-          <span className="text-gray-900 font-semibold" style={{ color: '#111827' }}>Performance Indicators</span>
+          <span className="text-gray-900 font-semibold" style={{ color: '#111827' }}>
+            Performance Indicators
+          </span>
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {indicators.map((indicator) => (
-            <div key={indicator.label} className="flex items-center justify-between p-4 bg-gray-50 border border-gray-100 rounded-lg hover:shadow-md transition-shadow duration-200">
+          {indicators.map(indicator => (
+            <div
+              key={indicator.label}
+              className="flex items-center justify-between p-4 bg-gray-50 border border-gray-100 rounded-lg hover:shadow-md transition-shadow duration-200"
+            >
               <div className="flex items-center gap-3">
                 <div className={`p-2 rounded-full ${getStatusColor(indicator.status)}`}>
                   {getStatusIcon(indicator.status)}
                 </div>
                 <div>
-                  <p className="font-semibold text-sm text-gray-900" style={{ color: '#111827' }}>{indicator.label}</p>
-                  <p className="text-lg font-bold text-gray-800" style={{ color: '#1f2937' }}>{indicator.value}</p>
+                  <p className="font-semibold text-sm text-gray-900" style={{ color: '#111827' }}>
+                    {indicator.label}
+                  </p>
+                  <p className="text-lg font-bold text-gray-800" style={{ color: '#1f2937' }}>
+                    {indicator.value}
+                  </p>
                 </div>
               </div>
               <div className="text-right">
-                <span className={`text-sm font-semibold px-2 py-1 rounded-full ${
-                  indicator.change.startsWith('+') ? 'text-green-600 bg-green-50' : 
-                  indicator.change.startsWith('-') ? 'text-red-600 bg-red-50' : 'text-gray-600 bg-gray-50'
-                }`}>
+                <span
+                  className={`text-sm font-semibold px-2 py-1 rounded-full ${
+                    indicator.change.startsWith('+')
+                      ? 'text-green-600 bg-green-50'
+                      : indicator.change.startsWith('-')
+                        ? 'text-red-600 bg-red-50'
+                        : 'text-gray-600 bg-gray-50'
+                  }`}
+                >
                   {indicator.change}
                 </span>
               </div>
@@ -459,7 +551,7 @@ function GoalTracking({ analytics }: { analytics: DashboardAnalytics }) {
       target: calculateMonthlyRevenueTarget(),
       unit: '$',
       color: 'bg-green-500',
-      description: `${analytics.revenue.dealsCount} deals closed this period`
+      description: `${analytics.revenue.dealsCount} deals closed this period`,
     },
     {
       label: 'New Leads',
@@ -467,7 +559,7 @@ function GoalTracking({ analytics }: { analytics: DashboardAnalytics }) {
       target: calculateLeadsTarget(),
       unit: '',
       color: 'bg-blue-500',
-      description: `${analytics.leads.qualified} qualified leads`
+      description: `${analytics.leads.qualified} qualified leads`,
     },
     {
       label: 'Deals Closed',
@@ -475,8 +567,8 @@ function GoalTracking({ analytics }: { analytics: DashboardAnalytics }) {
       target: calculateDealsTarget(),
       unit: '',
       color: 'bg-purple-500',
-      description: `${analytics.deals.avgCycleDays} days avg cycle`
-    }
+      description: `${analytics.deals.avgCycleDays} days avg cycle`,
+    },
   ];
 
   return (
@@ -484,28 +576,40 @@ function GoalTracking({ analytics }: { analytics: DashboardAnalytics }) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Target className="h-5 w-5 text-purple-500" />
-          <span className="text-gray-900 font-semibold" style={{ color: '#111827' }}>Goal Progress</span>
+          <span className="text-gray-900 font-semibold" style={{ color: '#111827' }}>
+            Goal Progress
+          </span>
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
-          {goals.map((goal) => {
+          {goals.map(goal => {
             const percentage = Math.min((goal.current / goal.target) * 100, 100);
             const isOnTrack = percentage >= 75;
             const isExceeding = percentage >= 100;
-            
+
             return (
-              <div key={goal.label} className="space-y-3 p-3 bg-gray-50 border border-gray-100 rounded-lg">
+              <div
+                key={goal.label}
+                className="space-y-3 p-3 bg-gray-50 border border-gray-100 rounded-lg"
+              >
                 <div className="flex justify-between items-center">
-                  <span className="font-semibold text-gray-900" style={{ color: '#111827' }}>{goal.label}</span>
-                  <span className="text-sm font-medium text-gray-700 bg-white px-2 py-1 rounded border" style={{ color: '#374151' }}>
-                    {goal.unit}{goal.current.toLocaleString()} / {goal.unit}{goal.target.toLocaleString()}
+                  <span className="font-semibold text-gray-900" style={{ color: '#111827' }}>
+                    {goal.label}
+                  </span>
+                  <span
+                    className="text-sm font-medium text-gray-700 bg-white px-2 py-1 rounded border"
+                    style={{ color: '#374151' }}
+                  >
+                    {goal.unit}
+                    {goal.current.toLocaleString()} / {goal.unit}
+                    {goal.target.toLocaleString()}
                   </span>
                 </div>
-                
+
                 <div className="relative">
                   <div className="w-full bg-gray-200 rounded-full h-4">
-                    <div 
+                    <div
                       className={`${goal.color} h-4 rounded-full transition-all duration-1000 relative overflow-hidden ${
                         isExceeding ? 'animate-pulse' : ''
                       }`}
@@ -515,28 +619,40 @@ function GoalTracking({ analytics }: { analytics: DashboardAnalytics }) {
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-30 -skew-x-12 animate-pulse" />
                     </div>
                   </div>
-                  
+
                   {/* Goal marker */}
                   <div className="absolute right-0 top-0 h-4 w-1 bg-gray-400 rounded" />
                 </div>
-                
+
                 <div className="flex justify-between items-center text-sm">
-                  <span className={`font-semibold px-3 py-1 rounded-full ${
-                    isExceeding ? 'text-purple-800 bg-purple-100' :
-                    isOnTrack ? 'text-green-800 bg-green-100' : 
-                    'text-orange-800 bg-orange-100'
-                  }`}>
+                  <span
+                    className={`font-semibold px-3 py-1 rounded-full ${
+                      isExceeding
+                        ? 'text-purple-800 bg-purple-100'
+                        : isOnTrack
+                          ? 'text-green-800 bg-green-100'
+                          : 'text-orange-800 bg-orange-100'
+                    }`}
+                  >
                     {percentage.toFixed(1)}% complete
                   </span>
-                  <span className={`font-medium ${
-                    isExceeding ? 'text-purple-700' :
-                    isOnTrack ? 'text-green-700' : 
-                    'text-orange-700'
-                  }`}>
-                    {isExceeding ? '🎉 Exceeded!' : isOnTrack ? '🎯 On track' : '⚠️ Needs attention'}
+                  <span
+                    className={`font-medium ${
+                      isExceeding
+                        ? 'text-purple-700'
+                        : isOnTrack
+                          ? 'text-green-700'
+                          : 'text-orange-700'
+                    }`}
+                  >
+                    {isExceeding
+                      ? '🎉 Exceeded!'
+                      : isOnTrack
+                        ? '🎯 On track'
+                        : '⚠️ Needs attention'}
                   </span>
                 </div>
-                
+
                 <div className="text-xs text-gray-600 mt-1" style={{ color: '#6b7280' }}>
                   {goal.description}
                 </div>
@@ -561,7 +677,7 @@ function QuickStats({ analytics }: { analytics: DashboardAnalytics }) {
         color="bg-green-500"
         subtitle={`${analytics.revenue.dealsCount} deals closed`}
       />
-      
+
       <MetricCard
         title="Active Leads"
         value={analytics.leads.total.toLocaleString()}
@@ -570,7 +686,7 @@ function QuickStats({ analytics }: { analytics: DashboardAnalytics }) {
         color="bg-blue-500"
         subtitle={`${analytics.leads.qualified} qualified`}
       />
-      
+
       <MetricCard
         title="Deal Win Rate"
         value={`${analytics.deals.winRate.toFixed(1)}%`}
@@ -579,7 +695,7 @@ function QuickStats({ analytics }: { analytics: DashboardAnalytics }) {
         color="bg-purple-500"
         subtitle={`${analytics.deals.won}/${analytics.deals.total} won`}
       />
-      
+
       <MetricCard
         title="Avg Deal Size"
         value={`₹${analytics.revenue.avgDealSize.toLocaleString()}`}
@@ -614,38 +730,42 @@ function RevenueChart({ data }: { data: RevenueChartData[] }) {
           {data.slice(0, 6).map((month, index) => {
             const percentage = maxRevenue > 0 ? (month.revenue / maxRevenue) * 100 : 0;
             const isHovered = hoveredIndex === index;
-            
+
             return (
-              <div 
-                key={month.month} 
+              <div
+                key={month.month}
                 className="space-y-2 p-2 rounded-lg transition-colors duration-200 hover:bg-gray-50 cursor-pointer"
                 onMouseEnter={() => setHoveredIndex(index)}
                 onMouseLeave={() => setHoveredIndex(null)}
               >
                 <div className="flex justify-between text-sm">
-                  <span className={`font-medium transition-colors ${isHovered ? 'text-green-600' : 'text-gray-600'}`}>
+                  <span
+                    className={`font-medium transition-colors ${isHovered ? 'text-green-600' : 'text-gray-600'}`}
+                  >
                     {month.monthName}
                   </span>
-                  <span className={`font-semibold transition-colors ${isHovered ? 'text-green-700' : 'text-gray-900'}`}>
+                  <span
+                    className={`font-semibold transition-colors ${isHovered ? 'text-green-700' : 'text-gray-900'}`}
+                  >
                     ₹{month.revenue.toLocaleString()}
                   </span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-                  <div 
+                  <div
                     className={`h-3 rounded-full transition-all duration-700 ${
                       isHovered ? 'bg-green-600 shadow-lg' : 'bg-green-500'
                     }`}
-                    style={{ 
+                    style={{
                       width: `${percentage}%`,
-                      transform: isHovered ? 'scale(1.02)' : 'scale(1)'
+                      transform: isHovered ? 'scale(1.02)' : 'scale(1)',
                     }}
                   />
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="text-gray-500">
-                    {month.deals} deals
-                  </span>
-                  <span className={`transition-colors ${isHovered ? 'text-green-600' : 'text-gray-400'}`}>
+                  <span className="text-gray-500">{month.deals} deals</span>
+                  <span
+                    className={`transition-colors ${isHovered ? 'text-green-600' : 'text-gray-400'}`}
+                  >
                     {percentage.toFixed(1)}% of max
                   </span>
                 </div>
@@ -663,7 +783,12 @@ function PipelineOverview({ data }: { data: PipelineData[] }) {
   const maxValue = Math.max(...data.map(stage => stage.value));
   const totalValue = data.reduce((sum, stage) => sum + stage.value, 0);
   const colors = ['bg-blue-500', 'bg-yellow-500', 'bg-orange-500', 'bg-green-500'];
-  const hoverColors = ['hover:bg-blue-600', 'hover:bg-yellow-600', 'hover:bg-orange-600', 'hover:bg-green-600'];
+  const hoverColors = [
+    'hover:bg-blue-600',
+    'hover:bg-yellow-600',
+    'hover:bg-orange-600',
+    'hover:bg-green-600',
+  ];
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   return (
@@ -674,9 +799,7 @@ function PipelineOverview({ data }: { data: PipelineData[] }) {
             <BarChart3 className="h-5 w-5 text-blue-500" />
             Sales Pipeline
           </div>
-          <div className="text-sm text-gray-500">
-            Total: ₹{totalValue.toLocaleString()}
-          </div>
+          <div className="text-sm text-gray-500">Total: ₹{totalValue.toLocaleString()}</div>
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -687,27 +810,31 @@ function PipelineOverview({ data }: { data: PipelineData[] }) {
             const color = colors[index % colors.length];
             const hoverColor = hoverColors[index % hoverColors.length];
             const isHovered = hoveredIndex === index;
-            
+
             return (
-              <div 
-                key={stage.stage} 
+              <div
+                key={stage.stage}
                 className="space-y-2 p-3 rounded-lg transition-colors duration-200 hover:bg-gray-50 cursor-pointer"
                 onMouseEnter={() => setHoveredIndex(index)}
                 onMouseLeave={() => setHoveredIndex(null)}
               >
                 <div className="flex justify-between text-sm">
-                  <span className={`font-medium transition-colors ${isHovered ? 'text-blue-600' : 'text-gray-700'}`}>
+                  <span
+                    className={`font-medium transition-colors ${isHovered ? 'text-blue-600' : 'text-gray-700'}`}
+                  >
                     {stage.stage}
                   </span>
                   <div className="text-right">
-                    <div className={`font-semibold transition-colors ${isHovered ? 'text-blue-700' : 'text-gray-900'}`}>
+                    <div
+                      className={`font-semibold transition-colors ${isHovered ? 'text-blue-700' : 'text-gray-900'}`}
+                    >
                       ₹{stage.value.toLocaleString()}
                     </div>
                     <div className="text-xs text-gray-500">{stage.count} deals</div>
                   </div>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
-                  <div 
+                  <div
                     className={`${color} h-4 rounded-full transition-all duration-700 ${hoverColor} ${
                       isHovered ? 'shadow-lg scale-y-110' : ''
                     }`}
@@ -715,10 +842,14 @@ function PipelineOverview({ data }: { data: PipelineData[] }) {
                   />
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className={`transition-colors ${isHovered ? 'text-blue-600' : 'text-gray-500'}`}>
+                  <span
+                    className={`transition-colors ${isHovered ? 'text-blue-600' : 'text-gray-500'}`}
+                  >
                     {valuePercentage.toFixed(1)}% of total pipeline
                   </span>
-                  <span className={`transition-colors ${isHovered ? 'text-blue-600' : 'text-gray-400'}`}>
+                  <span
+                    className={`transition-colors ${isHovered ? 'text-blue-600' : 'text-gray-400'}`}
+                  >
                     ₹{(stage.value / stage.count).toLocaleString()} avg deal
                   </span>
                 </div>
@@ -760,7 +891,10 @@ function RecentActivities({ activities }: { activities: DashboardAnalytics['rece
       <CardContent>
         <div className="space-y-4">
           {activities.map((activity, index) => (
-            <div key={`${activity.type}-${activity.id}-${index}`} className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg transition-colors">
+            <div
+              key={`${activity.type}-${activity.id}-${index}`}
+              className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg transition-colors"
+            >
               <div className="w-10 h-10 rounded-full bg-brand-blue/10 flex items-center justify-center">
                 {activity.type === 'lead' && <Target className="text-brand-blue" size={16} />}
                 {activity.type === 'deal' && <BarChart3 className="text-brand-blue" size={16} />}
@@ -769,7 +903,8 @@ function RecentActivities({ activities }: { activities: DashboardAnalytics['rece
               <div className="flex-1">
                 <div className="font-medium text-gray-900">{activity.title}</div>
                 <div className="text-sm text-gray-500">
-                  {activity.status} • {activity.createdBy} • {new Date(activity.createdAt).toLocaleDateString()}
+                  {activity.status} • {activity.createdBy} •{' '}
+                  {new Date(activity.createdAt).toLocaleDateString()}
                 </div>
               </div>
             </div>
@@ -789,7 +924,7 @@ export function UnifiedDashboard() {
     pipelineData: PipelineData[];
   }>({
     revenueData: [],
-    pipelineData: []
+    pipelineData: [],
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -805,11 +940,11 @@ export function UnifiedDashboard() {
       setConnectionError(false);
       setAuthError(false);
       setServerError(false);
-      
+
       const [analyticsData, revenueData, pipelineData] = await Promise.all([
         dashboardService.getDashboardAnalytics(timeRange),
         dashboardService.getRevenueChart(12),
-        dashboardService.getPipelineOverview()
+        dashboardService.getPipelineOverview(),
       ]);
 
       setAnalytics(analyticsData);
@@ -817,7 +952,7 @@ export function UnifiedDashboard() {
     } catch (err) {
       console.error('Error fetching dashboard data:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to load dashboard data';
-      
+
       // Check if it's an authentication error
       if (errorMessage.includes('401') || errorMessage.includes('Unauthorized')) {
         setAuthError(true);
@@ -826,10 +961,16 @@ export function UnifiedDashboard() {
       // Check if it's a server error
       else if (errorMessage.includes('500') || errorMessage.includes('Internal Server Error')) {
         setServerError(true);
-        setError('Server error occurred. The dashboard data might be temporarily unavailable. Please try refreshing.');
+        setError(
+          'Server error occurred. The dashboard data might be temporarily unavailable. Please try refreshing.'
+        );
       }
       // Check if it's a connection error
-      else if (errorMessage.includes('Failed to fetch') || errorMessage.includes('NetworkError') || errorMessage.includes('ERR_CONNECTION_REFUSED')) {
+      else if (
+        errorMessage.includes('Failed to fetch') ||
+        errorMessage.includes('NetworkError') ||
+        errorMessage.includes('ERR_CONNECTION_REFUSED')
+      ) {
         setConnectionError(true);
         setError('Unable to connect to server. Please check if the backend service is running.');
       } else {
@@ -869,16 +1010,23 @@ export function UnifiedDashboard() {
       <div className="bg-white rounded-lg p-8 text-center">
         <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
         <h3 className="text-lg font-medium text-gray-900 mb-2">
-          {authError ? 'Authentication Required' : serverError ? 'Server Error' : connectionError ? 'Connection Error' : 'Error Loading Dashboard'}
+          {authError
+            ? 'Authentication Required'
+            : serverError
+              ? 'Server Error'
+              : connectionError
+                ? 'Connection Error'
+                : 'Error Loading Dashboard'}
         </h3>
         <p className="text-gray-600 mb-4">{error}</p>
         {authError && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
             <p className="text-sm text-blue-800 mb-3">
-              <strong>Please log in:</strong> The dashboard requires authentication to display your data.
+              <strong>Please log in:</strong> The dashboard requires authentication to display your
+              data.
             </p>
-            <a 
-              href="/login" 
+            <a
+              href="/login"
               className="inline-flex items-center px-4 py-2 bg-brand-blue text-white rounded-lg hover:bg-brand-blue/90 transition-colors"
             >
               Go to Login Page
@@ -888,17 +1036,17 @@ export function UnifiedDashboard() {
         {serverError && (
           <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-4">
             <p className="text-sm text-orange-800">
-              <strong>Server Issue:</strong> The backend database queries might have issues. 
-              This is likely due to database schema mismatches or missing data.
-              Try rebuilding the containers or check server logs.
+              <strong>Server Issue:</strong> The backend database queries might have issues. This is
+              likely due to database schema mismatches or missing data. Try rebuilding the
+              containers or check server logs.
             </p>
           </div>
         )}
         {connectionError && (
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
             <p className="text-sm text-yellow-800">
-              <strong>Troubleshooting:</strong> The backend server might be starting up or not running. 
-              If running in Docker, try rebuilding the containers with the latest code.
+              <strong>Troubleshooting:</strong> The backend server might be starting up or not
+              running. If running in Docker, try rebuilding the containers with the latest code.
             </p>
           </div>
         )}
@@ -931,10 +1079,12 @@ export function UnifiedDashboard() {
             <ol className="flex items-center space-x-2 text-gray-500">
               <li>Home</li>
               <li className="before:content-['/'] before:mx-2">Dashboard</li>
-              <li className="before:content-['/'] before:mx-2 text-blue-600 font-medium">Analytics</li>
+              <li className="before:content-['/'] before:mx-2 text-blue-600 font-medium">
+                Analytics
+              </li>
             </ol>
           </nav>
-          
+
           {/* Time Range & Actions */}
           <div className="flex items-center gap-4">
             {/* Time Range Selector */}
@@ -942,7 +1092,7 @@ export function UnifiedDashboard() {
               {[
                 { label: '7D', days: 7 },
                 { label: '30D', days: 30 },
-                { label: '90D', days: 90 }
+                { label: '90D', days: 90 },
               ].map(({ label, days }) => (
                 <button
                   key={days}
@@ -957,7 +1107,7 @@ export function UnifiedDashboard() {
                 </button>
               ))}
             </div>
-            
+
             {/* Refresh Button */}
             <button
               onClick={handleRefresh}
@@ -969,14 +1119,14 @@ export function UnifiedDashboard() {
             </button>
           </div>
         </div>
-        
+
         {/* Welcome Message */}
         <div className="space-y-2">
           <h1 className="text-3xl font-bold text-gray-900 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
             Welcome back, {user?.name || 'User'}! 👋
           </h1>
           <p className="text-gray-600 text-lg">
-            Here's what's happening with your business today. 
+            Here's what's happening with your business today.
             <span className="ml-2 inline-flex items-center gap-1 text-sm bg-green-100 text-green-700 px-2 py-1 rounded-full">
               <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
               Live data
@@ -991,7 +1141,10 @@ export function UnifiedDashboard() {
       </div>
 
       {/* Action Cards Row with staggered animation */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 animate-slideInUp" style={{ animationDelay: '0.1s' }}>
+      <div
+        className="grid grid-cols-1 lg:grid-cols-4 gap-6 animate-slideInUp"
+        style={{ animationDelay: '0.1s' }}
+      >
         <QuickActions />
         <NotificationCenter />
         <PerformanceIndicators analytics={analytics} />
@@ -999,7 +1152,10 @@ export function UnifiedDashboard() {
       </div>
 
       {/* Charts Grid with staggered animation */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-slideInUp" style={{ animationDelay: '0.2s' }}>
+      <div
+        className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-slideInUp"
+        style={{ animationDelay: '0.2s' }}
+      >
         <RevenueChart data={chartData.revenueData} />
         <PipelineOverview data={chartData.pipelineData} />
       </div>

@@ -4,7 +4,11 @@ import { Card, CardHeader, CardTitle, CardContent } from '../components/common/C
 import { FormInput } from '../components/common/FormInput';
 import { Button } from '../components/common/Button';
 import { Toast } from '../components/common/Toast';
-import { updateQuotationConfig, getDefaultTemplateConfig, updateDefaultTemplateConfig } from '../services/configService';
+import {
+  updateQuotationConfig,
+  getDefaultTemplateConfig,
+  updateDefaultTemplateConfig,
+} from '../services/configService';
 import { useQuotationConfigStore } from '../store/quotationConfigStore';
 import { Select } from '../components/common/Select';
 import { getTemplates } from '../services/templateService';
@@ -14,10 +18,14 @@ const DefaultTemplateConfig = () => {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [saveStatus, setSaveStatus] = useState<{saving: boolean, message: string, error: boolean}>({
+  const [saveStatus, setSaveStatus] = useState<{
+    saving: boolean;
+    message: string;
+    error: boolean;
+  }>({
     saving: false,
     message: '',
-    error: false
+    error: false,
   });
 
   useEffect(() => {
@@ -28,16 +36,16 @@ const DefaultTemplateConfig = () => {
     try {
       setIsLoading(true);
       console.log('Loading templates and config...');
-      
+
       // Load all templates
       const allTemplates = await getTemplates();
       console.log('Loaded templates:', allTemplates);
       setTemplates(allTemplates);
-      
+
       // Get current default template config
       const defaultConfig = await getDefaultTemplateConfig();
       console.log('Default config:', defaultConfig);
-      
+
       if (defaultConfig && defaultConfig.defaultTemplateId) {
         setSelectedTemplateId(defaultConfig.defaultTemplateId);
       } else if (allTemplates.length > 0) {
@@ -48,8 +56,10 @@ const DefaultTemplateConfig = () => {
       console.error('Error loading templates and config:', error);
       setSaveStatus({
         saving: false,
-        message: 'Error loading templates and config: ' + (error instanceof Error ? error.message : String(error)),
-        error: true
+        message:
+          'Error loading templates and config: ' +
+          (error instanceof Error ? error.message : String(error)),
+        error: true,
       });
     } finally {
       setIsLoading(false);
@@ -61,7 +71,7 @@ const DefaultTemplateConfig = () => {
       setSaveStatus({
         saving: false,
         message: 'Please select a template first',
-        error: true
+        error: true,
       });
       return;
     }
@@ -70,22 +80,22 @@ const DefaultTemplateConfig = () => {
       setSaveStatus({
         saving: true,
         message: 'Saving...',
-        error: false
+        error: false,
       });
 
       await updateDefaultTemplateConfig(selectedTemplateId);
-      
+
       setSaveStatus({
         saving: false,
         message: 'Default template saved successfully',
-        error: false
+        error: false,
       });
-      
+
       setTimeout(() => {
         setSaveStatus({
           saving: false,
           message: '',
-          error: false
+          error: false,
         });
       }, 3000);
     } catch (error) {
@@ -93,7 +103,7 @@ const DefaultTemplateConfig = () => {
       setSaveStatus({
         saving: false,
         message: 'Error saving default template',
-        error: true
+        error: true,
       });
     }
   };
@@ -126,15 +136,21 @@ const DefaultTemplateConfig = () => {
                     { value: '', label: 'Select a template...' },
                     ...templates.map(template => ({
                       value: template.id,
-                      label: template.name
-                    }))
+                      label: template.name,
+                    })),
                   ]}
                 />
               </div>
               <Button
                 onClick={handleSaveDefaultTemplate}
                 disabled={isLoading || !selectedTemplateId || saveStatus.saving}
-                leftIcon={saveStatus.saving ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                leftIcon={
+                  saveStatus.saving ? (
+                    <RefreshCw className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4" />
+                  )
+                }
               >
                 Save Default
               </Button>
@@ -146,7 +162,8 @@ const DefaultTemplateConfig = () => {
             )}
             {templates.length === 0 && !isLoading && (
               <p className="mt-2 text-sm text-amber-600">
-                No templates found. Please create a template first in the Quotation Templates section.
+                No templates found. Please create a template first in the Quotation Templates
+                section.
               </p>
             )}
           </div>
@@ -159,9 +176,13 @@ const DefaultTemplateConfig = () => {
 export function QuotationConfig() {
   const { orderTypeLimits, fetchConfig, updateConfig } = useQuotationConfigStore();
   const [isSaving, setIsSaving] = useState(false);
-  const [toast, setToast] = useState<{ show: boolean; title: string; variant?: 'success' | 'error' }>({
+  const [toast, setToast] = useState<{
+    show: boolean;
+    title: string;
+    variant?: 'success' | 'error';
+  }>({
     show: false,
-    title: ''
+    title: '',
   });
 
   useEffect(() => {
@@ -175,7 +196,7 @@ export function QuotationConfig() {
   const handleSave = async () => {
     try {
       setIsSaving(true);
-      
+
       // Validate the configuration
       const orderTypes = ['micro', 'small', 'monthly', 'yearly'] as const;
       let isValid = true;
@@ -184,12 +205,18 @@ export function QuotationConfig() {
       for (const type of orderTypes) {
         const config = orderTypeLimits[type];
         if (config.minDays <= previousMax) {
-          showToast(`${type.charAt(0).toUpperCase() + type.slice(1)} minimum days must be greater than previous maximum`, 'error');
+          showToast(
+            `${type.charAt(0).toUpperCase() + type.slice(1)} minimum days must be greater than previous maximum`,
+            'error'
+          );
           isValid = false;
           break;
         }
         if (config.maxDays <= config.minDays) {
-          showToast(`${type.charAt(0).toUpperCase() + type.slice(1)} maximum days must be greater than minimum days`, 'error');
+          showToast(
+            `${type.charAt(0).toUpperCase() + type.slice(1)} maximum days must be greater than minimum days`,
+            'error'
+          );
           isValid = false;
           break;
         }
@@ -201,12 +228,12 @@ export function QuotationConfig() {
       }
 
       await updateQuotationConfig({
-        orderTypeLimits
+        orderTypeLimits,
       });
 
       // Update the store with new values
       updateConfig(orderTypeLimits);
-      
+
       showToast('Configuration saved successfully');
     } catch (error) {
       showToast('Error saving configuration', 'error');
@@ -225,21 +252,21 @@ export function QuotationConfig() {
       ...orderTypeLimits,
       [orderType]: {
         ...orderTypeLimits[orderType],
-        [field]: numValue
-      }
+        [field]: numValue,
+      },
     };
     updateConfig(newLimits);
   };
   return (
     <div className="container mx-auto py-8 px-4">
       <h1 className="text-2xl font-bold mb-6">Quotation Configuration</h1>
-      
+
       <DefaultTemplateConfig />
 
       <Card>
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {(['micro', 'small', 'monthly', 'yearly'] as const).map((type) => (
+            {(['micro', 'small', 'monthly', 'yearly'] as const).map(type => (
               <Card key={type}>
                 <CardHeader>
                   <CardTitle className="capitalize">{type} Order</CardTitle>
@@ -249,14 +276,14 @@ export function QuotationConfig() {
                     type="number"
                     label="Minimum Days"
                     value={orderTypeLimits[type].minDays}
-                    onChange={(e) => handleInputChange(type, 'minDays', e.target.value)}
+                    onChange={e => handleInputChange(type, 'minDays', e.target.value)}
                     min="1"
                   />
                   <FormInput
                     type="number"
                     label="Maximum Days"
                     value={orderTypeLimits[type].maxDays}
-                    onChange={(e) => handleInputChange(type, 'maxDays', e.target.value)}
+                    onChange={e => handleInputChange(type, 'maxDays', e.target.value)}
                     min={orderTypeLimits[type].minDays + 1}
                   />
                 </CardContent>

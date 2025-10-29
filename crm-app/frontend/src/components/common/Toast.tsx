@@ -76,20 +76,29 @@ function Toast({
       default:
         return null;
     }
-  };  return (
+  };
+  return (
     <AnimatePresence>
-      {isOpen && (        <motion.div          initial={{ opacity: 0, y: 50 }}
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 50 }}transition={{ duration: 0.3, type: "spring", stiffness: 300, damping: 25 }}
+          exit={{ opacity: 0, y: 50 }}
+          transition={{ duration: 0.3, type: 'spring', stiffness: 300, damping: 25 }}
           className="fixed bottom-6 sm:bottom-10 left-4 right-4 sm:left-auto sm:right-8 z-[9999] flex items-center justify-center pointer-events-none"
         >
-          <div className={`pointer-events-auto ${toastVariants({ variant, className })}`} {...props}>
+          <div
+            className={`pointer-events-auto ${toastVariants({ variant, className })}`}
+            {...props}
+          >
             <div className="flex items-start">
               {variant && <div className="flex-shrink-0">{getIcon()}</div>}
               <div className={`${variant ? 'ml-2 sm:ml-3' : ''} flex-1 pt-0.5`}>
                 <p className="text-sm font-medium">{title}</p>
                 {description && (
-                  <p className="mt-0.5 text-xs sm:text-sm text-gray-600 line-clamp-3">{description}</p>
+                  <p className="mt-0.5 text-xs sm:text-sm text-gray-600 line-clamp-3">
+                    {description}
+                  </p>
                 )}
               </div>
               <div className="ml-2 sm:ml-4 flex flex-shrink-0">
@@ -110,4 +119,4 @@ function Toast({
   );
 }
 
-export { Toast,  };
+export { Toast };

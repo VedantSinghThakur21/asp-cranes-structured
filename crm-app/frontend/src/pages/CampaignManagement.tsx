@@ -11,11 +11,17 @@ import {
   Trash2,
   Play,
   Pause,
-  BarChart3
+  BarChart3,
 } from 'lucide-react';
 
 export type CampaignStatus = 'draft' | 'active' | 'paused' | 'completed' | 'cancelled';
-export type CampaignType = 'email' | 'sms' | 'direct_mail' | 'social_media' | 'telemarketing' | 'webinar';
+export type CampaignType =
+  | 'email'
+  | 'sms'
+  | 'direct_mail'
+  | 'social_media'
+  | 'telemarketing'
+  | 'webinar';
 
 export interface Campaign {
   id: string;
@@ -86,7 +92,7 @@ export function CampaignManagement() {
         convertedContacts: 12,
         createdBy: 'Sales Manager',
         createdAt: '2024-05-15',
-        updatedAt: '2024-06-15'
+        updatedAt: '2024-06-15',
       },
       {
         id: '2',
@@ -107,7 +113,7 @@ export function CampaignManagement() {
         convertedContacts: 18,
         createdBy: 'Marketing Team',
         createdAt: '2024-03-20',
-        updatedAt: '2024-06-01'
+        updatedAt: '2024-06-01',
       },
       {
         id: '3',
@@ -128,8 +134,8 @@ export function CampaignManagement() {
         convertedContacts: 0,
         createdBy: 'Sales Director',
         createdAt: '2024-06-10',
-        updatedAt: '2024-06-10'
-      }
+        updatedAt: '2024-06-10',
+      },
     ];
 
     setTimeout(() => {
@@ -139,24 +145,31 @@ export function CampaignManagement() {
   }, []);
 
   const filteredCampaigns = campaigns.filter(campaign => {
-    const matchesSearch = campaign.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         campaign.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch =
+      campaign.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      campaign.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || campaign.status === statusFilter;
     const matchesType = typeFilter === 'all' || campaign.type === typeFilter;
-    
+
     return matchesSearch && matchesStatus && matchesType;
   });
 
   const getConversionRate = (campaign: Campaign) => {
-    return campaign.sentContacts > 0 ? (campaign.convertedContacts / campaign.sentContacts * 100).toFixed(1) : '0';
+    return campaign.sentContacts > 0
+      ? ((campaign.convertedContacts / campaign.sentContacts) * 100).toFixed(1)
+      : '0';
   };
 
   const getOpenRate = (campaign: Campaign) => {
-    return campaign.sentContacts > 0 ? (campaign.openedContacts / campaign.sentContacts * 100).toFixed(1) : '0';
+    return campaign.sentContacts > 0
+      ? ((campaign.openedContacts / campaign.sentContacts) * 100).toFixed(1)
+      : '0';
   };
 
   const getROI = (campaign: Campaign) => {
-    return campaign.budget > 0 ? (((campaign.actualRevenue - campaign.budget) / campaign.budget) * 100).toFixed(1) : '0';
+    return campaign.budget > 0
+      ? (((campaign.actualRevenue - campaign.budget) / campaign.budget) * 100).toFixed(1)
+      : '0';
   };
 
   if (loading) {
@@ -175,7 +188,7 @@ export function CampaignManagement() {
           <h1 className="text-2xl font-bold text-gray-900">Campaign Management</h1>
           <p className="text-gray-600">Manage marketing campaigns and track performance</p>
         </div>
-        
+
         <div className="flex flex-col sm:flex-row gap-3">
           <button
             onClick={() => setViewMode(viewMode === 'cards' ? 'list' : 'cards')}
@@ -184,10 +197,8 @@ export function CampaignManagement() {
             <BarChart3 size={18} />
             {viewMode === 'cards' ? 'List View' : 'Card View'}
           </button>
-          
-          <button
-            className="flex items-center gap-2 bg-brand-blue text-white px-4 py-2 rounded-lg hover:bg-brand-blue/90"
-          >
+
+          <button className="flex items-center gap-2 bg-brand-blue text-white px-4 py-2 rounded-lg hover:bg-brand-blue/90">
             <Plus size={18} />
             New Campaign
           </button>
@@ -198,12 +209,15 @@ export function CampaignManagement() {
       <div className="flex flex-col sm:flex-row gap-4 bg-white p-4 rounded-lg border border-gray-200">
         <div className="flex-1">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+            <Search
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+              size={18}
+            />
             <input
               type="text"
               placeholder="Search campaigns..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={e => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-blue focus:border-transparent"
             />
           </div>
@@ -211,7 +225,7 @@ export function CampaignManagement() {
 
         <select
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value as CampaignStatus | 'all')}
+          onChange={e => setStatusFilter(e.target.value as CampaignStatus | 'all')}
           className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-blue"
         >
           <option value="all">All Statuses</option>
@@ -224,12 +238,14 @@ export function CampaignManagement() {
 
         <select
           value={typeFilter}
-          onChange={(e) => setTypeFilter(e.target.value as CampaignType | 'all')}
+          onChange={e => setTypeFilter(e.target.value as CampaignType | 'all')}
           className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-blue"
         >
           <option value="all">All Types</option>
           {CAMPAIGN_TYPES.map(type => (
-            <option key={type.value} value={type.value}>{type.label}</option>
+            <option key={type.value} value={type.value}>
+              {type.label}
+            </option>
           ))}
         </select>
       </div>
@@ -238,13 +254,18 @@ export function CampaignManagement() {
       {viewMode === 'cards' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {filteredCampaigns.map(campaign => (
-            <div key={campaign.id} className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-all">
+            <div
+              key={campaign.id}
+              className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-all"
+            >
               <div className="flex justify-between items-start mb-4">
                 <div className="flex-1">
                   <h3 className="font-semibold text-lg text-gray-900 mb-1">{campaign.name}</h3>
                   <p className="text-gray-600 text-sm">{campaign.description}</p>
                 </div>
-                <span className={`text-xs px-2 py-1 rounded-full font-medium border ${STATUS_COLORS[campaign.status]}`}>
+                <span
+                  className={`text-xs px-2 py-1 rounded-full font-medium border ${STATUS_COLORS[campaign.status]}`}
+                >
                   {campaign.status.toUpperCase()}
                 </span>
               </div>
@@ -252,7 +273,9 @@ export function CampaignManagement() {
               <div className="space-y-3 mb-4">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">Type:</span>
-                  <span className="font-medium">{CAMPAIGN_TYPES.find(t => t.value === campaign.type)?.label}</span>
+                  <span className="font-medium">
+                    {CAMPAIGN_TYPES.find(t => t.value === campaign.type)?.label}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">Budget:</span>
@@ -260,11 +283,15 @@ export function CampaignManagement() {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">Revenue:</span>
-                  <span className="font-medium text-green-600">${campaign.actualRevenue.toLocaleString()}</span>
+                  <span className="font-medium text-green-600">
+                    ${campaign.actualRevenue.toLocaleString()}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">ROI:</span>
-                  <span className={`font-medium ${Number(getROI(campaign)) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  <span
+                    className={`font-medium ${Number(getROI(campaign)) >= 0 ? 'text-green-600' : 'text-red-600'}`}
+                  >
                     {getROI(campaign)}%
                   </span>
                 </div>
@@ -327,17 +354,25 @@ export function CampaignManagement() {
                       </div>
                     </td>
                     <td className="py-3 px-4">
-                      <span className="text-sm">{CAMPAIGN_TYPES.find(t => t.value === campaign.type)?.label}</span>
+                      <span className="text-sm">
+                        {CAMPAIGN_TYPES.find(t => t.value === campaign.type)?.label}
+                      </span>
                     </td>
                     <td className="py-3 px-4">
-                      <span className={`text-xs px-2 py-1 rounded-full font-medium border ${STATUS_COLORS[campaign.status]}`}>
+                      <span
+                        className={`text-xs px-2 py-1 rounded-full font-medium border ${STATUS_COLORS[campaign.status]}`}
+                      >
                         {campaign.status.toUpperCase()}
                       </span>
                     </td>
                     <td className="py-3 px-4 text-sm">${campaign.budget.toLocaleString()}</td>
-                    <td className="py-3 px-4 text-sm font-medium text-green-600">${campaign.actualRevenue.toLocaleString()}</td>
+                    <td className="py-3 px-4 text-sm font-medium text-green-600">
+                      ${campaign.actualRevenue.toLocaleString()}
+                    </td>
                     <td className="py-3 px-4">
-                      <span className={`text-sm font-medium ${Number(getROI(campaign)) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      <span
+                        className={`text-sm font-medium ${Number(getROI(campaign)) >= 0 ? 'text-green-600' : 'text-red-600'}`}
+                      >
                         {getROI(campaign)}%
                       </span>
                     </td>
@@ -377,10 +412,10 @@ export function CampaignManagement() {
         <div className="text-center py-12">
           <Target className="mx-auto h-12 w-12 text-gray-400 mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">No campaigns found</h3>
-          <p className="text-gray-600 mb-4">Get started by creating your first marketing campaign.</p>
-          <button
-            className="bg-brand-blue text-white px-4 py-2 rounded-lg hover:bg-brand-blue/90"
-          >
+          <p className="text-gray-600 mb-4">
+            Get started by creating your first marketing campaign.
+          </p>
+          <button className="bg-brand-blue text-white px-4 py-2 rounded-lg hover:bg-brand-blue/90">
             Create Campaign
           </button>
         </div>

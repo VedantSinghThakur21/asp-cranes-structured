@@ -26,7 +26,10 @@ export async function createTemplate(template: Partial<Template>): Promise<Templ
 }
 
 // Update an existing template via backend API
-export async function updateTemplate(templateId: string, updates: Partial<Template>): Promise<Template> {
+export async function updateTemplate(
+  templateId: string,
+  updates: Partial<Template>
+): Promise<Template> {
   const apiUrl = import.meta.env.VITE_API_URL || '/api';
   const response = await fetch(`${apiUrl}/templates/enhanced/${templateId}`, {
     method: 'PUT',
@@ -73,27 +76,27 @@ export async function getTemplateById(templateId: string): Promise<Template> {
 export async function getTemplates(): Promise<Template[]> {
   try {
     const apiUrl = import.meta.env.VITE_API_URL || '/api';
-    
+
     const response = await fetch(`${apiUrl}/templates/enhanced/list`, {
       method: 'GET',
       headers: getHeaders(),
       credentials: 'include',
     });
-    
+
     if (!response.ok) {
       console.error('Failed to fetch templates:', response.status, response.statusText);
       throw new Error(`Failed to fetch templates: ${response.status}`);
     }
-    
+
     const result = await response.json();
-    
+
     // Support both array and {data: array} responses
     const templates = Array.isArray(result)
       ? result
       : Array.isArray(result.data)
         ? result.data
         : [];
-    
+
     return templates;
   } catch (error) {
     console.error('Error in getTemplates:', error);
@@ -107,8 +110,8 @@ export interface Template {
   content: string; // Template content with {{placeholders}}
   styles?: string | object;
   elements?: any[]; // Drag-and-drop template elements
-  createdAt: string;  // ISO date string
-  updatedAt: string;  // ISO date string
+  createdAt: string; // ISO date string
+  updatedAt: string; // ISO date string
   createdBy?: string;
   isDefault: boolean;
 }

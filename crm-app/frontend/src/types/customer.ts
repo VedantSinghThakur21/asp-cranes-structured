@@ -17,4 +17,9 @@ export interface Customer {
   updatedAt: string;
 }
 
-export type CustomerType = 'construction' | 'property_developer' | 'manufacturing' | 'government' | 'other';
+export type CustomerType =
+  | 'construction'
+  | 'property_developer'
+  | 'manufacturing'
+  | 'government'
+  | 'other';

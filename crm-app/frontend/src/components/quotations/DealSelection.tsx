@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  ArrowLeft, 
-  Search, 
+import {
+  ArrowLeft,
+  Search,
   Filter,
   Building,
   Calendar,
@@ -10,7 +10,7 @@ import {
   CheckCircle,
   Clock,
   FileText,
-  AlertCircle
+  AlertCircle,
 } from 'lucide-react';
 
 interface Deal {
@@ -50,15 +50,15 @@ const DealSelection: React.FC<DealSelectionProps> = ({ onClose, onSelectDeal }) 
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await fetch('/api/deals?stages=qualification,proposal,negotiation');
-      
+
       if (!response.ok) {
         throw new Error(`Failed to fetch deals: ${response.statusText}`);
       }
-      
+
       const result = await response.json();
-      
+
       if (result.success && Array.isArray(result.data)) {
         setDeals(result.data);
       } else {
@@ -74,35 +74,50 @@ const DealSelection: React.FC<DealSelectionProps> = ({ onClose, onSelectDeal }) 
   };
 
   const filteredDeals = deals.filter(deal => {
-    const matchesSearch = deal.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         deal.customer_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         deal.description.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStage = stageFilter === 'all' || 
-                        (stageFilter === 'eligible' && ['qualification', 'proposal', 'negotiation'].includes(deal.stage));
-    
+    const matchesSearch =
+      deal.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      deal.customer_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      deal.description.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesStage =
+      stageFilter === 'all' ||
+      (stageFilter === 'eligible' &&
+        ['qualification', 'proposal', 'negotiation'].includes(deal.stage));
+
     return matchesSearch && matchesStage;
   });
 
   const getStageColor = (stage: string) => {
     switch (stage) {
-      case 'qualification': return 'bg-blue-100 text-blue-800';
-      case 'proposal': return 'bg-yellow-100 text-yellow-800';
-      case 'negotiation': return 'bg-orange-100 text-orange-800';
-      case 'won': return 'bg-green-100 text-green-800';
-      case 'lost': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'qualification':
+        return 'bg-blue-100 text-blue-800';
+      case 'proposal':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'negotiation':
+        return 'bg-orange-100 text-orange-800';
+      case 'won':
+        return 'bg-green-100 text-green-800';
+      case 'lost':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
   const getStageIcon = (stage: string) => {
     switch (stage) {
-      case 'qualification': return <Clock className="h-4 w-4" />;
-      case 'proposal': return <FileText className="h-4 w-4" />;
-      case 'negotiation': return <TrendingUp className="h-4 w-4" />;
-      case 'won': return <CheckCircle className="h-4 w-4" />;
-      case 'lost': return <AlertCircle className="h-4 w-4" />;
-      default: return <Clock className="h-4 w-4" />;
+      case 'qualification':
+        return <Clock className="h-4 w-4" />;
+      case 'proposal':
+        return <FileText className="h-4 w-4" />;
+      case 'negotiation':
+        return <TrendingUp className="h-4 w-4" />;
+      case 'won':
+        return <CheckCircle className="h-4 w-4" />;
+      case 'lost':
+        return <AlertCircle className="h-4 w-4" />;
+      default:
+        return <Clock className="h-4 w-4" />;
     }
   };
 
@@ -181,7 +196,9 @@ const DealSelection: React.FC<DealSelectionProps> = ({ onClose, onSelectDeal }) 
               </button>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">Select Deal for Quotation</h1>
-                <p className="text-gray-600">Choose a deal in Qualification, Proposal, or Negotiation stage</p>
+                <p className="text-gray-600">
+                  Choose a deal in Qualification, Proposal, or Negotiation stage
+                </p>
               </div>
             </div>
           </div>
@@ -198,17 +215,17 @@ const DealSelection: React.FC<DealSelectionProps> = ({ onClose, onSelectDeal }) 
                 type="text"
                 placeholder="Search deals..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={e => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             <Filter className="h-4 w-4 text-gray-400" />
             <select
               value={stageFilter}
-              onChange={(e) => setStageFilter(e.target.value)}
+              onChange={e => setStageFilter(e.target.value)}
               className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="eligible">Eligible Stages</option>
@@ -226,7 +243,8 @@ const DealSelection: React.FC<DealSelectionProps> = ({ onClose, onSelectDeal }) 
         <div className="flex items-center space-x-2 text-blue-800">
           <AlertCircle className="h-4 w-4" />
           <p className="text-sm">
-            Only deals in <strong>Qualification</strong>, <strong>Proposal</strong>, or <strong>Negotiation</strong> stages are eligible for quotation creation.
+            Only deals in <strong>Qualification</strong>, <strong>Proposal</strong>, or{' '}
+            <strong>Negotiation</strong> stages are eligible for quotation creation.
           </p>
         </div>
       </div>
@@ -238,7 +256,9 @@ const DealSelection: React.FC<DealSelectionProps> = ({ onClose, onSelectDeal }) 
             <Building className="h-12 w-12 text-gray-300 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No Eligible Deals Found</h3>
             <p className="text-gray-600 mb-4">
-              {searchTerm ? 'Try adjusting your search terms.' : 'No deals are currently in the eligible stages for quotation creation.'}
+              {searchTerm
+                ? 'Try adjusting your search terms.'
+                : 'No deals are currently in the eligible stages for quotation creation.'}
             </p>
             <button
               onClick={onClose}
@@ -249,7 +269,7 @@ const DealSelection: React.FC<DealSelectionProps> = ({ onClose, onSelectDeal }) 
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-            {filteredDeals.map((deal) => (
+            {filteredDeals.map(deal => (
               <div
                 key={deal.id}
                 className="bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow cursor-pointer"
@@ -261,12 +281,14 @@ const DealSelection: React.FC<DealSelectionProps> = ({ onClose, onSelectDeal }) 
                       <h3 className="text-lg font-semibold text-gray-900 mb-2">{deal.title}</h3>
                       <p className="text-sm text-gray-600 line-clamp-2">{deal.description}</p>
                     </div>
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStageColor(deal.stage)}`}>
+                    <span
+                      className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStageColor(deal.stage)}`}
+                    >
                       {getStageIcon(deal.stage)}
                       <span className="ml-1 capitalize">{deal.stage}</span>
                     </span>
                   </div>
-                  
+
                   <div className="space-y-3">
                     <div className="flex items-center justify-between text-sm">
                       <div className="flex items-center text-gray-600">
@@ -278,7 +300,7 @@ const DealSelection: React.FC<DealSelectionProps> = ({ onClose, onSelectDeal }) 
                         <span>₹{deal.value.toLocaleString('en-IN')}</span>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center justify-between text-sm">
                       <div className="flex items-center text-gray-600">
                         <TrendingUp className="h-4 w-4 mr-2" />
@@ -290,10 +312,10 @@ const DealSelection: React.FC<DealSelectionProps> = ({ onClose, onSelectDeal }) 
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="mt-4 pt-4 border-t border-gray-200">
                     <button
-                      onClick={(e) => {
+                      onClick={e => {
                         e.stopPropagation();
                         onSelectDeal(deal);
                       }}

@@ -19,7 +19,7 @@ export const authenticateToken = (req, res, next) => {
   // Check for development environment and enable bypass
   const isDevelopment = process.env.NODE_ENV !== 'production';
   const isLocalhost = req.hostname === 'localhost' || req.hostname === '127.0.0.1';
-  
+
   // Skip authentication check if bypass header is present (for testing purposes)
   if (
     req.headers['x-bypass-auth'] === 'development-only-123' ||

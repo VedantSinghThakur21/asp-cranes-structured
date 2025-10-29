@@ -4,13 +4,13 @@
  */
 
 import { create } from 'zustand';
-import { 
-  getQuotationConfig, 
-  getResourceRatesConfig, 
+import {
+  getQuotationConfig,
+  getResourceRatesConfig,
   getAdditionalParamsConfig,
   updateQuotationConfig,
   updateResourceRatesConfig,
-  updateAdditionalParamsConfig
+  updateAdditionalParamsConfig,
 } from '../services/configService';
 
 interface QuotationConfig {
@@ -65,24 +65,24 @@ interface ConfigState {
   quotationConfig: QuotationConfig | null;
   resourceRatesConfig: ResourceRatesConfig | null;
   additionalParamsConfig: AdditionalParamsConfig | null;
-  
+
   // Loading states
   isLoading: boolean;
   errors: Record<string, string>;
-  
+
   // Last fetch timestamps for cache invalidation
   lastFetchTimes: Record<string, number>;
-  
+
   // Actions
   fetchAllConfigs: () => Promise<void>;
   fetchQuotationConfig: () => Promise<void>;
   fetchResourceRatesConfig: () => Promise<void>;
   fetchAdditionalParamsConfig: () => Promise<void>;
-  
+
   updateQuotationConfig: (config: QuotationConfig['orderTypeLimits']) => Promise<void>;
   updateResourceRatesConfig: (config: Partial<ResourceRatesConfig>) => Promise<void>;
   updateAdditionalParamsConfig: (config: Partial<AdditionalParamsConfig>) => Promise<void>;
-  
+
   // Utility methods
   invalidateConfig: (configType: string) => void;
   isConfigStale: (configType: string, maxAgeMs?: number) => boolean;
@@ -91,20 +91,27 @@ interface ConfigState {
 
 // Default configurations
 // Fallbacks for first load or error only
-const DEFAULT_QUOTATION_CONFIG: QuotationConfig = { orderTypeLimits: { micro: { minDays: 1, maxDays: 10 }, small: { minDays: 11, maxDays: 25 }, monthly: { minDays: 26, maxDays: 365 }, yearly: { minDays: 366, maxDays: 3650 } } };
+const DEFAULT_QUOTATION_CONFIG: QuotationConfig = {
+  orderTypeLimits: {
+    micro: { minDays: 1, maxDays: 10 },
+    small: { minDays: 11, maxDays: 25 },
+    monthly: { minDays: 26, maxDays: 365 },
+    yearly: { minDays: 366, maxDays: 3650 },
+  },
+};
 // No default resource rates - must be configured in database
-const DEFAULT_ADDITIONAL_PARAMS: AdditionalParamsConfig = { 
-  riggerAmount: 40000, 
-  helperAmount: 12000, 
-  incidentalOptions: [ 
-    { value: "incident1", label: "Incident 1 - ₹5,000", amount: 5000 }, 
-    { value: "incident2", label: "Incident 2 - ₹10,000", amount: 10000 }, 
-    { value: "incident3", label: "Incident 3 - ₹15,000", amount: 15000 } 
-  ], 
-  usageFactors: { normal: 0, medium: 20, heavy: 50 }, 
-  riskFactors: { low: 0, medium: 10, high: 20 }, 
-  shiftFactors: { single: 1.0, double: 1.8 }, 
-  dayNightFactors: { day: 1.0, night: 1.3 }
+const DEFAULT_ADDITIONAL_PARAMS: AdditionalParamsConfig = {
+  riggerAmount: 40000,
+  helperAmount: 12000,
+  incidentalOptions: [
+    { value: 'incident1', label: 'Incident 1 - ₹5,000', amount: 5000 },
+    { value: 'incident2', label: 'Incident 2 - ₹10,000', amount: 10000 },
+    { value: 'incident3', label: 'Incident 3 - ₹15,000', amount: 15000 },
+  ],
+  usageFactors: { normal: 0, medium: 20, heavy: 50 },
+  riskFactors: { low: 0, medium: 10, high: 20 },
+  shiftFactors: { single: 1.0, double: 1.8 },
+  dayNightFactors: { day: 1.0, night: 1.3 },
 };
 
 const CONFIG_CACHE_TIME = 5 * 60 * 1000; // 5 minutes
@@ -130,14 +137,14 @@ export const useConfigStore = create<ConfigState>((set, get) => {
     // Fetch all configurations
     fetchAllConfigs: async () => {
       const { fetchQuotationConfig, fetchResourceRatesConfig, fetchAdditionalParamsConfig } = get();
-      
+
       set({ isLoading: true, errors: {} });
-      
+
       try {
         await Promise.all([
           fetchQuotationConfig(),
           fetchResourceRatesConfig(),
-          fetchAdditionalParamsConfig()
+          fetchAdditionalParamsConfig(),
         ]);
       } catch (error) {
         console.error('Error fetching configurations:', error);
@@ -153,13 +160,13 @@ export const useConfigStore = create<ConfigState>((set, get) => {
         set(state => ({
           quotationConfig: config || DEFAULT_QUOTATION_CONFIG,
           lastFetchTimes: { ...state.lastFetchTimes, quotation: Date.now() },
-          errors: { ...state.errors, quotation: '' }
+          errors: { ...state.errors, quotation: '' },
         }));
       } catch (error) {
         console.error('Error fetching quotation config:', error);
         set(state => ({
           quotationConfig: DEFAULT_QUOTATION_CONFIG,
-          errors: { ...state.errors, quotation: 'Failed to fetch quotation configuration' }
+          errors: { ...state.errors, quotation: 'Failed to fetch quotation configuration' },
         }));
       }
     },
@@ -174,13 +181,16 @@ export const useConfigStore = create<ConfigState>((set, get) => {
         set(state => ({
           resourceRatesConfig: config,
           lastFetchTimes: { ...state.lastFetchTimes, resourceRates: Date.now() },
-          errors: { ...state.errors, resourceRates: '' }
+          errors: { ...state.errors, resourceRates: '' },
         }));
       } catch (error) {
         console.error('Error fetching resource rates config:', error);
         set(state => ({
           resourceRatesConfig: null,
-          errors: { ...state.errors, resourceRates: 'Resource rates must be configured in database first' }
+          errors: {
+            ...state.errors,
+            resourceRates: 'Resource rates must be configured in database first',
+          },
         }));
       }
     },
@@ -193,13 +203,16 @@ export const useConfigStore = create<ConfigState>((set, get) => {
         set(state => ({
           additionalParamsConfig: { ...DEFAULT_ADDITIONAL_PARAMS, ...config },
           lastFetchTimes: { ...state.lastFetchTimes, additionalParams: Date.now() },
-          errors: { ...state.errors, additionalParams: '' }
+          errors: { ...state.errors, additionalParams: '' },
         }));
       } catch (error) {
         console.error('Error fetching additional params config:', error);
         set(state => ({
           additionalParamsConfig: DEFAULT_ADDITIONAL_PARAMS,
-          errors: { ...state.errors, additionalParams: 'Failed to fetch additional parameters configuration' }
+          errors: {
+            ...state.errors,
+            additionalParams: 'Failed to fetch additional parameters configuration',
+          },
         }));
       }
     },
@@ -211,15 +224,15 @@ export const useConfigStore = create<ConfigState>((set, get) => {
         set(state => ({
           quotationConfig: updatedConfig,
           lastFetchTimes: { ...state.lastFetchTimes, quotation: Date.now() },
-          errors: { ...state.errors, quotation: '' }
+          errors: { ...state.errors, quotation: '' },
         }));
-        
+
         // Notify other components that quotation config changed
         notifyConfigChange('quotation');
       } catch (error) {
         console.error('Error updating quotation config:', error);
         set(state => ({
-          errors: { ...state.errors, quotation: 'Failed to update quotation configuration' }
+          errors: { ...state.errors, quotation: 'Failed to update quotation configuration' },
         }));
         throw error;
       }
@@ -232,15 +245,18 @@ export const useConfigStore = create<ConfigState>((set, get) => {
         set(state => ({
           resourceRatesConfig: updatedConfig,
           lastFetchTimes: { ...state.lastFetchTimes, resourceRates: Date.now() },
-          errors: { ...state.errors, resourceRates: '' }
+          errors: { ...state.errors, resourceRates: '' },
         }));
-        
+
         // Notify other components that resource rates changed
         notifyConfigChange('resourceRates');
       } catch (error) {
         console.error('Error updating resource rates config:', error);
         set(state => ({
-          errors: { ...state.errors, resourceRates: 'Failed to update resource rates configuration' }
+          errors: {
+            ...state.errors,
+            resourceRates: 'Failed to update resource rates configuration',
+          },
         }));
         throw error;
       }
@@ -253,15 +269,18 @@ export const useConfigStore = create<ConfigState>((set, get) => {
         set(state => ({
           additionalParamsConfig: { ...DEFAULT_ADDITIONAL_PARAMS, ...updatedConfig },
           lastFetchTimes: { ...state.lastFetchTimes, additionalParams: Date.now() },
-          errors: { ...state.errors, additionalParams: '' }
+          errors: { ...state.errors, additionalParams: '' },
         }));
-        
+
         // Notify other components that additional params changed
         notifyConfigChange('additionalParams');
       } catch (error) {
         console.error('Error updating additional params config:', error);
         set(state => ({
-          errors: { ...state.errors, additionalParams: 'Failed to update additional parameters configuration' }
+          errors: {
+            ...state.errors,
+            additionalParams: 'Failed to update additional parameters configuration',
+          },
         }));
         throw error;
       }
@@ -287,19 +306,19 @@ export const useConfigStore = create<ConfigState>((set, get) => {
     // Subscribe to configuration changes
     subscribeToConfigChanges: (callback: (configType: string) => void) => {
       configChangeListeners.push(callback);
-      
+
       // Return unsubscribe function
       return () => {
         configChangeListeners = configChangeListeners.filter(cb => cb !== callback);
       };
-    }
+    },
   };
 });
 
 // Helper hook for components that need fresh configuration data
 export const useConfigWithRefresh = () => {
   const store = useConfigStore();
-  
+
   const ensureFreshConfig = async (configType: string) => {
     if (store.isConfigStale(configType)) {
       switch (configType) {
@@ -320,7 +339,7 @@ export const useConfigWithRefresh = () => {
 
   return {
     ...store,
-    ensureFreshConfig
+    ensureFreshConfig,
   };
 };
 
@@ -337,7 +356,7 @@ export const useQuotationConfig = () => {
     fetchConfig,
     updateConfig,
     isLoading,
-    error
+    error,
   };
 };
 
@@ -353,7 +372,7 @@ export const useResourceRatesConfig = () => {
     fetchConfig,
     updateConfig,
     isLoading,
-    error
+    error,
   };
 };
 
@@ -369,6 +388,6 @@ export const useAdditionalParamsConfig = () => {
     fetchConfig,
     updateConfig,
     isLoading,
-    error
+    error,
   };
 };

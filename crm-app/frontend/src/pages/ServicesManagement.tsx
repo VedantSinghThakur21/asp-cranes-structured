@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Plus, 
-  Search, 
-  Edit2, 
-  Trash2, 
+import {
+  Plus,
+  Search,
+  Edit2,
+  Trash2,
   Tag,
   Clock,
   CheckCircle2,
   XCircle,
-  IndianRupee
+  IndianRupee,
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/common/Card';
 import { Button } from '../components/common/Button';
@@ -19,7 +19,14 @@ import { Modal } from '../components/common/Modal';
 import { Toast } from '../components/common/Toast';
 import { useAuthStore } from '../store/authStore';
 import { formatCurrency } from '../utils/formatters';
-import { getServices, createService, updateService, deleteService, toggleServiceStatus, Service } from '../services/serviceManagementService';
+import {
+  getServices,
+  createService,
+  updateService,
+  deleteService,
+  toggleServiceStatus,
+  Service,
+} from '../services/serviceManagementService';
 
 const SERVICE_TYPES = [
   { value: 'lifting', label: 'Lifting Service' },
@@ -52,7 +59,7 @@ export function ServicesManagement() {
     description?: string;
     variant?: 'success' | 'error' | 'warning';
   }>({ show: false, title: '' });
-  
+
   const showToast = (
     title: string,
     variant: 'success' | 'error' | 'warning' = 'success',
@@ -84,7 +91,7 @@ export function ServicesManagement() {
         setIsLoading(false);
       }
     };
-    
+
     fetchServices();
   }, []);
 
@@ -96,9 +103,10 @@ export function ServicesManagement() {
     let filtered = [...services];
 
     if (searchTerm) {
-      filtered = filtered.filter(service => 
-        service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        service.description.toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = filtered.filter(
+        service =>
+          service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          service.description.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -107,7 +115,7 @@ export function ServicesManagement() {
     }
 
     if (statusFilter !== 'all') {
-      filtered = filtered.filter(service => 
+      filtered = filtered.filter(service =>
         statusFilter === 'active' ? service.isActive : !service.isActive
       );
     }
@@ -134,10 +142,8 @@ export function ServicesManagement() {
 
       if (selectedService) {
         const updatedService = await updateService(selectedService.id, serviceData);
-        setServices(prev => 
-          prev.map(service => 
-            service.id === selectedService.id ? updatedService : service
-          )
+        setServices(prev =>
+          prev.map(service => (service.id === selectedService.id ? updatedService : service))
         );
         showToast('Service updated successfully', 'success');
       } else {
@@ -157,7 +163,8 @@ export function ServicesManagement() {
 
     try {
       await deleteService(selectedService.id);
-      setServices(prev => prev.filter(service => service.id !== selectedService.id));      setIsDeleteModalOpen(false);
+      setServices(prev => prev.filter(service => service.id !== selectedService.id));
+      setIsDeleteModalOpen(false);
       setSelectedService(null);
       showToast('Service deleted successfully', 'success');
     } catch (error) {
@@ -165,7 +172,7 @@ export function ServicesManagement() {
       showToast('Error deleting service', 'error');
     }
   };
-  
+
   const resetForm = () => {
     setFormData({
       name: '',
@@ -177,21 +184,12 @@ export function ServicesManagement() {
     });
     setSelectedService(null);
   };
-  
+
   const handleStatusToggle = async (service: Service) => {
     try {
       const updatedService = await toggleServiceStatus(service.id);
-      setServices(prev =>
-        prev.map(s =>
-          s.id === service.id
-            ? updatedService
-            : s
-        )
-      );
-      showToast(
-        `Service ${!service.isActive ? 'activated' : 'deactivated'}`,
-        'success'
-      );
+      setServices(prev => prev.map(s => (s.id === service.id ? updatedService : s)));
+      showToast(`Service ${!service.isActive ? 'activated' : 'deactivated'}`, 'success');
     } catch (error) {
       console.error('Error toggling service status:', error);
       showToast('Error updating service status', 'error');
@@ -216,17 +214,14 @@ export function ServicesManagement() {
             <FormInput
               placeholder="Search services..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={e => setSearchTerm(e.target.value)}
               className="pl-10"
             />
           </div>
 
           <div className="flex gap-4">
             <Select
-              options={[
-                { value: 'all', label: 'All Types' },
-                ...SERVICE_TYPES,
-              ]}
+              options={[{ value: 'all', label: 'All Types' }, ...SERVICE_TYPES]}
               value={typeFilter}
               onChange={setTypeFilter}
               className="w-40"
@@ -239,7 +234,7 @@ export function ServicesManagement() {
                 { value: 'inactive', label: 'Inactive' },
               ]}
               value={statusFilter}
-              onChange={(value) => setStatusFilter(value as 'all' | 'active' | 'inactive')}
+              onChange={value => setStatusFilter(value as 'all' | 'active' | 'inactive')}
               className="w-40"
             />
           </div>
@@ -259,7 +254,8 @@ export function ServicesManagement() {
       <Card>
         <CardHeader>
           <CardTitle>Services Catalog</CardTitle>
-        </CardHeader>        <CardContent>
+        </CardHeader>{' '}
+        <CardContent>
           {isLoading ? (
             <div className="text-center py-4">Loading services...</div>
           ) : filteredServices.length === 0 ? (
@@ -268,7 +264,7 @@ export function ServicesManagement() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredServices.map((service) => (
+              {filteredServices.map(service => (
                 <Card key={service.id} variant="bordered" className="h-full">
                   <CardContent className="p-4">
                     <div className="flex justify-between items-start">
@@ -296,7 +292,7 @@ export function ServicesManagement() {
 
                     <div className="mt-4">
                       <p className="text-sm text-gray-600">{service.description}</p>
-                      
+
                       <div className="mt-3 flex items-center gap-4">
                         <div className="flex items-center gap-1 text-primary-600">
                           <IndianRupee className="h-4 w-4" />
@@ -361,7 +357,9 @@ export function ServicesManagement() {
           <FormInput
             label="Service Name"
             value={formData.name}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setFormData(prev => ({ ...prev, name: e.target.value }))
+            }
             required
           />
 
@@ -369,7 +367,7 @@ export function ServicesManagement() {
             label="Service Type"
             options={SERVICE_TYPES}
             value={formData.type}
-            onChange={(value) => setFormData(prev => ({ ...prev, type: value }))}
+            onChange={value => setFormData(prev => ({ ...prev, type: value }))}
             required
           />
 
@@ -380,7 +378,9 @@ export function ServicesManagement() {
               min="0"
               step="0.01"
               value={formData.baseRate}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData(prev => ({ ...prev, baseRate: e.target.value }))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setFormData(prev => ({ ...prev, baseRate: e.target.value }))
+              }
               required
             />
 
@@ -388,7 +388,7 @@ export function ServicesManagement() {
               label="Rate Unit"
               options={UNIT_OPTIONS}
               value={formData.unit}
-              onChange={(value) => setFormData(prev => ({ ...prev, unit: value as Service['unit'] }))}
+              onChange={value => setFormData(prev => ({ ...prev, unit: value as Service['unit'] }))}
               required
             />
           </div>
@@ -396,7 +396,9 @@ export function ServicesManagement() {
           <TextArea
             label="Description"
             value={formData.description}
-            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+              setFormData(prev => ({ ...prev, description: e.target.value }))
+            }
             rows={3}
           />
 
@@ -405,7 +407,9 @@ export function ServicesManagement() {
               type="checkbox"
               id="servicesMgmt-isActive"
               checked={formData.isActive}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData(prev => ({ ...prev, isActive: e.target.checked }))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setFormData(prev => ({ ...prev, isActive: e.target.checked }))
+              }
               className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
             />
             <label htmlFor="isActive" className="text-sm text-gray-700">
@@ -424,9 +428,7 @@ export function ServicesManagement() {
             >
               Cancel
             </Button>
-            <Button type="submit">
-              {selectedService ? 'Update Service' : 'Add Service'}
-            </Button>
+            <Button type="submit">{selectedService ? 'Update Service' : 'Add Service'}</Button>
           </div>
         </form>
       </Modal>
@@ -456,10 +458,7 @@ export function ServicesManagement() {
             >
               Cancel
             </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDelete}
-            >
+            <Button variant="destructive" onClick={handleDelete}>
               Delete
             </Button>
           </div>

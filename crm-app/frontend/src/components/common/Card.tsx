@@ -46,54 +46,59 @@ interface CardProps
   loading?: boolean;
 }
 
-const Card = memo(React.forwardRef<HTMLDivElement, CardProps>(
-  ({ 
-    className = '', 
-    variant, 
-    padding, 
-    size, 
-    as: Component = 'div', 
-    children, 
-    hover = true,
-    loading = false,
-    ...props 
-  }, ref) => {
-    const baseClasses = cardVariants({ variant, padding, size });
-    const hoverClasses = hover ? 'hover:shadow-lg hover:shadow-brand-blue/5 hover:border-brand-blue/20 hover:-translate-y-0.5' : '';
-    const loadingClasses = loading ? 'animate-pulse' : '';
+const Card = memo(
+  React.forwardRef<HTMLDivElement, CardProps>(
+    (
+      {
+        className = '',
+        variant,
+        padding,
+        size,
+        as: Component = 'div',
+        children,
+        hover = true,
+        loading = false,
+        ...props
+      },
+      ref
+    ) => {
+      const baseClasses = cardVariants({ variant, padding, size });
+      const hoverClasses = hover
+        ? 'hover:shadow-lg hover:shadow-brand-blue/5 hover:border-brand-blue/20 hover:-translate-y-0.5'
+        : '';
+      const loadingClasses = loading ? 'animate-pulse' : '';
 
-    return (
-      <Component
-        className={`${baseClasses} ${hoverClasses} ${loadingClasses} ${className}`}
-        ref={ref}
-        role={Component === 'div' ? 'article' : undefined}
-        {...props}
-      >
-        {loading && (
-          <div className="absolute inset-0 bg-white/60 backdrop-blur-sm rounded-xl flex items-center justify-center">
-            <div className="w-6 h-6 border-2 border-brand-blue border-t-transparent rounded-full animate-spin"></div>
-          </div>
-        )}
-        {children}
-      </Component>
-    );
-  }
-));
+      return (
+        <Component
+          className={`${baseClasses} ${hoverClasses} ${loadingClasses} ${className}`}
+          ref={ref}
+          role={Component === 'div' ? 'article' : undefined}
+          {...props}
+        >
+          {loading && (
+            <div className="absolute inset-0 bg-white/60 backdrop-blur-sm rounded-xl flex items-center justify-center">
+              <div className="w-6 h-6 border-2 border-brand-blue border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          )}
+          {children}
+        </Component>
+      );
+    }
+  )
+);
 
 Card.displayName = 'Card';
 
 // Enhanced CardHeader with better typography
-const CardHeader = memo(React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className = '', children, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={`pb-4 border-b border-gray-200/60 ${className}`}
-      {...props}
-    >
-      {children}
-    </div>
+const CardHeader = memo(
+  React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+    ({ className = '', children, ...props }, ref) => (
+      <div ref={ref} className={`pb-4 border-b border-gray-200/60 ${className}`} {...props}>
+        {children}
+      </div>
+    )
   )
-));
+);
 
 CardHeader.displayName = 'CardHeader';
 
@@ -103,67 +108,65 @@ interface CardTitleProps extends React.ComponentPropsWithoutRef<'h2'> {
   level?: 1 | 2 | 3 | 4 | 5 | 6;
 }
 
-const CardTitle = memo(React.forwardRef<HTMLHeadingElement, CardTitleProps>(
-  ({ className = '', gradient = false, level = 2, children, ...props }, ref) => {
-    const Component = `h${level}` as any;
-    const gradientClasses = gradient ? 'bg-gradient-to-r from-brand-blue to-brand-blue/80 bg-clip-text text-transparent' : '';
-    
-    return (
-      <Component
-        ref={ref}
-        className={`text-lg font-semibold text-gray-900 leading-tight ${gradientClasses} ${className}`}
-        {...props}
-      >
-        {children}
-      </Component>
-    );
-  }
-));
+const CardTitle = memo(
+  React.forwardRef<HTMLHeadingElement, CardTitleProps>(
+    ({ className = '', gradient = false, level = 2, children, ...props }, ref) => {
+      const Component = `h${level}` as any;
+      const gradientClasses = gradient
+        ? 'bg-gradient-to-r from-brand-blue to-brand-blue/80 bg-clip-text text-transparent'
+        : '';
+
+      return (
+        <Component
+          ref={ref}
+          className={`text-lg font-semibold text-gray-900 leading-tight ${gradientClasses} ${className}`}
+          {...props}
+        >
+          {children}
+        </Component>
+      );
+    }
+  )
+);
 
 CardTitle.displayName = 'CardTitle';
 
 // Enhanced CardDescription with better contrast
-const CardDescription = memo(React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
-  ({ className = '', children, ...props }, ref) => (
-    <p
-      ref={ref}
-      className={`text-sm text-gray-600 leading-relaxed ${className}`}
-      {...props}
-    >
-      {children}
-    </p>
+const CardDescription = memo(
+  React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
+    ({ className = '', children, ...props }, ref) => (
+      <p ref={ref} className={`text-sm text-gray-600 leading-relaxed ${className}`} {...props}>
+        {children}
+      </p>
+    )
   )
-));
+);
 
 CardDescription.displayName = 'CardDescription';
 
 // Enhanced CardContent with better spacing
-const CardContent = memo(React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className = '', children, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={`pt-4 ${className}`}
-      {...props}
-    >
-      {children}
-    </div>
+const CardContent = memo(
+  React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+    ({ className = '', children, ...props }, ref) => (
+      <div ref={ref} className={`pt-4 ${className}`} {...props}>
+        {children}
+      </div>
+    )
   )
-));
+);
 
 CardContent.displayName = 'CardContent';
 
 // Enhanced CardFooter with border and spacing
-const CardFooter = memo(React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className = '', children, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={`pt-4 mt-4 border-t border-gray-200/60 ${className}`}
-      {...props}
-    >
-      {children}
-    </div>
+const CardFooter = memo(
+  React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+    ({ className = '', children, ...props }, ref) => (
+      <div ref={ref} className={`pt-4 mt-4 border-t border-gray-200/60 ${className}`} {...props}>
+        {children}
+      </div>
+    )
   )
-));
+);
 
 CardFooter.displayName = 'CardFooter';
 

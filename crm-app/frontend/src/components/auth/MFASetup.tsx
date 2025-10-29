@@ -35,7 +35,7 @@ export const MFASetup: React.FC<MFASetupProps> = ({ onSetupComplete, onCancel })
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await authApiService.post('/auth/mfa/setup', {});
       setSetupData(response);
       setStep('setup');
@@ -58,11 +58,11 @@ export const MFASetup: React.FC<MFASetupProps> = ({ onSetupComplete, onCancel })
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await authApiService.post('/auth/mfa/verify-setup', {
-        token: verificationCode
+        token: verificationCode,
       });
-      
+
       setBackupCodes(response.backupCodes);
       setStep('complete');
     } catch (error) {
@@ -134,11 +134,7 @@ export const MFASetup: React.FC<MFASetupProps> = ({ onSetupComplete, onCancel })
           <div className="text-center">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Scan QR Code</h3>
             <div className="bg-white p-4 rounded-lg border-2 border-gray-200 inline-block">
-              <img 
-                src={setupData.qrCodeUrl} 
-                alt="MFA QR Code" 
-                className="w-48 h-48"
-              />
+              <img src={setupData.qrCodeUrl} alt="MFA QR Code" className="w-48 h-48" />
             </div>
           </div>
 
@@ -156,7 +152,11 @@ export const MFASetup: React.FC<MFASetupProps> = ({ onSetupComplete, onCancel })
                 className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
                 title="Copy manual entry key"
               >
-                {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                {copied ? (
+                  <Check className="h-4 w-4 text-green-500" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
               </button>
             </div>
           </div>
@@ -196,7 +196,7 @@ export const MFASetup: React.FC<MFASetupProps> = ({ onSetupComplete, onCancel })
               <input
                 type="text"
                 value={verificationCode}
-                onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                onChange={e => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                 placeholder="000000"
                 className="w-full p-3 border border-gray-300 rounded-lg text-center text-lg font-mono"
                 maxLength={6}
@@ -228,7 +228,9 @@ export const MFASetup: React.FC<MFASetupProps> = ({ onSetupComplete, onCancel })
           <div className="text-center">
             <Check className="h-12 w-12 text-green-600 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-gray-900 mb-2">MFA Enabled Successfully!</h3>
-            <p className="text-gray-600">Your account is now protected with two-factor authentication</p>
+            <p className="text-gray-600">
+              Your account is now protected with two-factor authentication
+            </p>
           </div>
 
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
@@ -237,7 +239,8 @@ export const MFASetup: React.FC<MFASetupProps> = ({ onSetupComplete, onCancel })
               <div>
                 <h4 className="font-medium text-yellow-900 mb-2">Save Your Backup Codes</h4>
                 <p className="text-sm text-yellow-800 mb-3">
-                  Store these backup codes securely. You can use them to access your account if you lose your authenticator device.
+                  Store these backup codes securely. You can use them to access your account if you
+                  lose your authenticator device.
                 </p>
                 <div className="bg-white p-3 rounded border">
                   <div className="flex items-center justify-between mb-2">
@@ -275,10 +278,7 @@ export const MFASetup: React.FC<MFASetupProps> = ({ onSetupComplete, onCancel })
 
       {(step === 'setup' || step === 'verify') && (
         <div className="mt-6 text-center">
-          <button
-            onClick={onCancel}
-            className="text-gray-500 hover:text-gray-700 text-sm"
-          >
+          <button onClick={onCancel} className="text-gray-500 hover:text-gray-700 text-sm">
             Cancel Setup
           </button>
         </div>

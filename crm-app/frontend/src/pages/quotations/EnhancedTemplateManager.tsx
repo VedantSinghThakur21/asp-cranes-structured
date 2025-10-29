@@ -39,22 +39,25 @@ const EnhancedTemplateManager = () => {
       const token = localStorage.getItem('jwt-token');
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
-        'X-Bypass-Auth': 'development-only-123'
+        'X-Bypass-Auth': 'development-only-123',
       };
-      
+
       // Add auth header if token exists
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
       }
-      
+
       const response = await fetch('/api/templates/enhanced/list', {
-        headers
+        headers,
       });
 
       const result = await response.json();
       if (result.success) {
         setTemplates(result.data);
-        console.log('✅ Templates loaded successfully', result.authenticated ? '(authenticated)' : '(demo mode)');
+        console.log(
+          '✅ Templates loaded successfully',
+          result.authenticated ? '(authenticated)' : '(demo mode)'
+        );
       } else {
         console.error('Failed to load templates:', result.message);
       }
@@ -95,8 +98,8 @@ const EnhancedTemplateManager = () => {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('jwt-token')}`,
-          'X-Bypass-Auth': 'development-only-123'
-        }
+          'X-Bypass-Auth': 'development-only-123',
+        },
       });
 
       const result = await response.json();
@@ -117,12 +120,12 @@ const EnhancedTemplateManager = () => {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('jwt-token')}`,
-          'X-Bypass-Auth': 'development-only-123'
+          'X-Bypass-Auth': 'development-only-123',
         },
         body: JSON.stringify({
           templateId: template.id,
-          newName: `${template.name} (Copy)`
-        })
+          newName: `${template.name} (Copy)`,
+        }),
       });
 
       const result = await response.json();
@@ -144,10 +147,10 @@ const EnhancedTemplateManager = () => {
 
   const getThemeColor = (theme: string) => {
     const themeColors: Record<string, string> = {
-      'MODERN': '#2563eb',
-      'CLASSIC': '#1f2937',
-      'PROFESSIONAL': '#0f172a',
-      'CREATIVE': '#7c3aed'
+      MODERN: '#2563eb',
+      CLASSIC: '#1f2937',
+      PROFESSIONAL: '#0f172a',
+      CREATIVE: '#7c3aed',
     };
     return themeColors[theme] || '#6b7280';
   };
@@ -191,25 +194,26 @@ const EnhancedTemplateManager = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {templates.map((template) => (
+          {templates.map(template => (
             <div
               key={template.id}
               className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow"
             >
               {/* Template Preview */}
-              <div 
+              <div
                 className="h-32 bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center border-b"
                 style={{
-                  background: `linear-gradient(135deg, ${getThemeColor(template.theme)}15, ${getThemeColor(template.theme)}05)`
+                  background: `linear-gradient(135deg, ${getThemeColor(template.theme)}15, ${getThemeColor(template.theme)}05)`,
                 }}
               >
                 <div className="text-center">
-                  <Palette 
+                  <Palette
                     className="w-8 h-8 mx-auto mb-2 text-gray-400"
                     style={{ color: getThemeColor(template.theme) }}
                   />
                   <span className="text-sm text-gray-600 font-medium">
-                    {template.theme?.charAt(0) + template.theme?.slice(1).toLowerCase() || 'Modern'} Theme
+                    {template.theme?.charAt(0) + template.theme?.slice(1).toLowerCase() || 'Modern'}{' '}
+                    Theme
                   </span>
                 </div>
               </div>
@@ -304,7 +308,8 @@ const EnhancedTemplateManager = () => {
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Delete Template</h3>
             <p className="text-gray-600 mb-6">
-              Are you sure you want to delete "{templateToDelete.name}"? This action cannot be undone.
+              Are you sure you want to delete "{templateToDelete.name}"? This action cannot be
+              undone.
             </p>
             <div className="flex items-center justify-end space-x-3">
               <button

@@ -24,7 +24,7 @@ router.post('/setup', authenticateToken, async (req, res) => {
     if (user.mfa_enabled) {
       return res.status(400).json({
         error: 'MFA_ALREADY_ENABLED',
-        message: 'MFA is already enabled for this account'
+        message: 'MFA is already enabled for this account',
       });
     }
 
@@ -32,7 +32,7 @@ router.post('/setup', authenticateToken, async (req, res) => {
     const secret = speakeasy.generateSecret({
       name: `ASP Cranes CRM (${userEmail})`,
       issuer: 'ASP Cranes',
-      length: 32
+      length: 32,
     });
 
     // Generate QR code
@@ -49,15 +49,14 @@ router.post('/setup', authenticateToken, async (req, res) => {
       instructions: [
         '1. Install an authenticator app (Google Authenticator, Authy, etc.)',
         '2. Scan the QR code or manually enter the key',
-        '3. Enter the 6-digit code from your app to verify setup'
-      ]
+        '3. Enter the 6-digit code from your app to verify setup',
+      ],
     });
-
   } catch (error) {
     console.error('MFA setup error:', error);
     res.status(500).json({
       error: 'MFA_SETUP_ERROR',
-      message: 'Error setting up MFA'
+      message: 'Error setting up MFA',
     });
   }
 });
@@ -73,7 +72,7 @@ router.post('/verify-setup', authenticateToken, async (req, res) => {
     if (!token || token.length !== 6) {
       return res.status(400).json({
         error: 'INVALID_TOKEN_FORMAT',
-        message: 'Please provide a 6-digit verification code'
+        message: 'Please provide a 6-digit verification code',
       });
     }
 
@@ -82,7 +81,7 @@ router.post('/verify-setup', authenticateToken, async (req, res) => {
     if (!tempSecret) {
       return res.status(400).json({
         error: 'NO_PENDING_SETUP',
-        message: 'No pending MFA setup found. Please start setup process again.'
+        message: 'No pending MFA setup found. Please start setup process again.',
       });
     }
 
@@ -91,13 +90,13 @@ router.post('/verify-setup', authenticateToken, async (req, res) => {
       secret: tempSecret,
       encoding: 'base32',
       token,
-      window: 2 // Allow 2 time windows (±60 seconds)
+      window: 2, // Allow 2 time windows (±60 seconds)
     });
 
     if (!verified) {
       return res.status(400).json({
         error: 'INVALID_VERIFICATION_CODE',
-        message: 'Invalid verification code. Please try again.'
+        message: 'Invalid verification code. Please try again.',
       });
     }
 
@@ -106,23 +105,23 @@ router.post('/verify-setup', authenticateToken, async (req, res) => {
     await mfaRepository.deleteTempMFASecret(userId);
 
     // Generate backup codes
-    const backupCodes = Array.from({ length: 10 }, () => 
+    const backupCodes = Array.from({ length: 10 }, () =>
       Math.random().toString(36).substring(2, 10).toUpperCase()
     );
-    
+
     await mfaRepository.storeBackupCodes(userId, backupCodes);
 
     res.status(200).json({
       message: 'MFA enabled successfully',
       backupCodes,
-      warning: 'Store these backup codes securely. They can be used if you lose access to your authenticator app.'
+      warning:
+        'Store these backup codes securely. They can be used if you lose access to your authenticator app.',
     });
-
   } catch (error) {
     console.error('MFA verification error:', error);
     res.status(500).json({
       error: 'MFA_VERIFICATION_ERROR',
-      message: 'Error verifying MFA setup'
+      message: 'Error verifying MFA setup',
     });
   }
 });
@@ -137,22 +136,21 @@ router.post('/verify-login', async (req, res) => {
     if (!email || !password || !mfaToken) {
       return res.status(400).json({
         error: 'MISSING_CREDENTIALS',
-        message: 'Email, password, and MFA token are required'
+        message: 'Email, password, and MFA token are required',
       });
     }
 
     // This would be called from the main login flow
     // Implementation details would be integrated into the main auth flow
-    
-    res.status(200).json({
-      message: 'MFA verification endpoint - integrate with main login flow'
-    });
 
+    res.status(200).json({
+      message: 'MFA verification endpoint - integrate with main login flow',
+    });
   } catch (error) {
     console.error('MFA login verification error:', error);
     res.status(500).json({
       error: 'MFA_LOGIN_ERROR',
-      message: 'Error verifying MFA during login'
+      message: 'Error verifying MFA during login',
     });
   }
 });
@@ -168,7 +166,7 @@ router.post('/disable', authenticateToken, async (req, res) => {
     if (!password || !mfaToken) {
       return res.status(400).json({
         error: 'MISSING_CREDENTIALS',
-        message: 'Password and MFA token are required to disable MFA'
+        message: 'Password and MFA token are required to disable MFA',
       });
     }
 
@@ -176,11 +174,11 @@ router.post('/disable', authenticateToken, async (req, res) => {
     const user = await mfaRepository.findUserById(userId);
     const bcrypt = await import('bcrypt');
     const isPasswordValid = await bcrypt.compare(password, user.password_hash);
-    
+
     if (!isPasswordValid) {
       return res.status(401).json({
         error: 'INVALID_PASSWORD',
-        message: 'Invalid password'
+        message: 'Invalid password',
       });
     }
 
@@ -189,7 +187,7 @@ router.post('/disable', authenticateToken, async (req, res) => {
     if (!mfaSecret) {
       return res.status(400).json({
         error: 'MFA_NOT_ENABLED',
-        message: 'MFA is not enabled for this account'
+        message: 'MFA is not enabled for this account',
       });
     }
 
@@ -197,13 +195,13 @@ router.post('/disable', authenticateToken, async (req, res) => {
       secret: mfaSecret,
       encoding: 'base32',
       token: mfaToken,
-      window: 2
+      window: 2,
     });
 
     if (!verified) {
       return res.status(400).json({
         error: 'INVALID_MFA_TOKEN',
-        message: 'Invalid MFA token'
+        message: 'Invalid MFA token',
       });
     }
 
@@ -211,14 +209,13 @@ router.post('/disable', authenticateToken, async (req, res) => {
     await mfaRepository.disableMFA(userId);
 
     res.status(200).json({
-      message: 'MFA disabled successfully'
+      message: 'MFA disabled successfully',
     });
-
   } catch (error) {
     console.error('MFA disable error:', error);
     res.status(500).json({
       error: 'MFA_DISABLE_ERROR',
-      message: 'Error disabling MFA'
+      message: 'Error disabling MFA',
     });
   }
 });
@@ -233,14 +230,13 @@ router.get('/status', authenticateToken, async (req, res) => {
 
     res.status(200).json({
       mfaEnabled: !!user.mfa_enabled,
-      hasBackupCodes: user.mfa_enabled ? await mfaRepository.hasBackupCodes(userId) : false
+      hasBackupCodes: user.mfa_enabled ? await mfaRepository.hasBackupCodes(userId) : false,
     });
-
   } catch (error) {
     console.error('MFA status error:', error);
     res.status(500).json({
       error: 'MFA_STATUS_ERROR',
-      message: 'Error getting MFA status'
+      message: 'Error getting MFA status',
     });
   }
 });

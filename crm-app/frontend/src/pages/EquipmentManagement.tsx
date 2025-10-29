@@ -10,7 +10,12 @@ import { Toast } from '../components/common/Toast';
 import { Badge } from '../components/common/Badge';
 import { useAuthStore } from '../store/authStore';
 import { Equipment, CraneCategory, BaseRates } from '../types/equipment';
-import { getEquipment, createEquipment, updateEquipment, deleteEquipment } from '../services/api/equipmentService';
+import {
+  getEquipment,
+  createEquipment,
+  updateEquipment,
+  deleteEquipment,
+} from '../services/api/equipmentService';
 import { formatCurrency } from '../utils/formatters';
 
 // Helper function to normalize equipment data
@@ -62,8 +67,6 @@ const ORDER_TYPES = [
   { value: 'yearly', label: 'Yearly' },
 ] as const;
 
-
-
 export function EquipmentManagement() {
   const { user } = useAuthStore();
   const [equipment, setEquipment] = useState<Equipment[]>([]);
@@ -81,7 +84,7 @@ export function EquipmentManagement() {
     description?: string;
     variant?: 'success' | 'error' | 'warning';
   }>({ show: false, title: '' });
-  const today = new Date().toISOString().split("T")[0];
+  const today = new Date().toISOString().split('T')[0];
   const [formData, setFormData] = useState({
     name: '',
     category: 'mobile_crane' as CraneCategory,
@@ -107,18 +110,19 @@ export function EquipmentManagement() {
 
   useEffect(() => {
     filterEquipment();
-  }, [equipment, searchTerm, statusFilter, categoryFilter]);  const fetchEquipment = async () => {
+  }, [equipment, searchTerm, statusFilter, categoryFilter]);
+  const fetchEquipment = async () => {
     try {
       let data = await getEquipment();
-      
+
       // Normalize each equipment to ensure all required fields exist
       data = data.map(normalizeEquipment);
-      
+
       setEquipment(data);
-      
+
       // Only use real API data, no mock checks
       console.log('Successfully connected to equipment API');
-      
+
       setIsLoading(false);
     } catch (error) {
       console.error('Error fetching equipment:', error);
@@ -132,7 +136,7 @@ export function EquipmentManagement() {
     let filtered = [...equipment];
 
     if (searchTerm) {
-      filtered = filtered.filter(item => 
+      filtered = filtered.filter(item =>
         item.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
@@ -149,26 +153,39 @@ export function EquipmentManagement() {
   };
 
   const validateForm = () => {
-    if (!formData.name || !formData.manufacturingDate || !formData.registrationDate || 
-        !formData.maxLiftingCapacity || !formData.unladenWeight || !formData.runningCostPerKm ||
-        !formData.baseRates.micro || !formData.baseRates.small || 
-        !formData.baseRates.monthly || !formData.baseRates.yearly) {
+    if (
+      !formData.name ||
+      !formData.manufacturingDate ||
+      !formData.registrationDate ||
+      !formData.maxLiftingCapacity ||
+      !formData.unladenWeight ||
+      !formData.runningCostPerKm ||
+      !formData.baseRates.micro ||
+      !formData.baseRates.small ||
+      !formData.baseRates.monthly ||
+      !formData.baseRates.yearly
+    ) {
       showToast('Please fill in all required fields', 'error');
       return false;
     }
 
     // Validate date formats (YYYY-MM)
-      const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
     if (!dateRegex.test(formData.manufacturingDate) || !dateRegex.test(formData.registrationDate)) {
       showToast('Please enter valid dates in YYYY-MM format', 'error');
       return false;
     }
 
     // Validate numeric fields
-    if (isNaN(Number(formData.maxLiftingCapacity)) || isNaN(Number(formData.unladenWeight)) ||
-        isNaN(Number(formData.runningCostPerKm)) ||
-        isNaN(Number(formData.baseRates.micro)) || isNaN(Number(formData.baseRates.small)) ||
-        isNaN(Number(formData.baseRates.monthly)) || isNaN(Number(formData.baseRates.yearly))) {
+    if (
+      isNaN(Number(formData.maxLiftingCapacity)) ||
+      isNaN(Number(formData.unladenWeight)) ||
+      isNaN(Number(formData.runningCostPerKm)) ||
+      isNaN(Number(formData.baseRates.micro)) ||
+      isNaN(Number(formData.baseRates.small)) ||
+      isNaN(Number(formData.baseRates.monthly)) ||
+      isNaN(Number(formData.baseRates.yearly))
+    ) {
       showToast('Please enter valid numbers for numeric fields', 'error');
       return false;
     }
@@ -187,7 +204,9 @@ export function EquipmentManagement() {
       const equipmentData = {
         ...formData,
         // Generate an equipment ID if creating new equipment
-        equipmentId: selectedEquipment?.equipmentId || `EQ${String(Math.floor(1000 + Math.random() * 9000)).padStart(4, '0')}`,
+        equipmentId:
+          selectedEquipment?.equipmentId ||
+          `EQ${String(Math.floor(1000 + Math.random() * 9000)).padStart(4, '0')}`,
         maxLiftingCapacity: Number(formData.maxLiftingCapacity),
         unladenWeight: Number(formData.unladenWeight),
         baseRates: {
@@ -199,42 +218,40 @@ export function EquipmentManagement() {
         runningCost: Number(formData.runningCostPerKm),
         runningCostPerKm: Number(formData.runningCostPerKm),
       };
-      
+
       console.log('Form submission data:', equipmentData);
-      
+
       if (selectedEquipment) {
         console.log(`Updating equipment ${selectedEquipment.id}`, equipmentData);
-        
+
         let updatedEquipment = await updateEquipment(selectedEquipment.id, equipmentData);
-        
+
         if (updatedEquipment) {
           console.log('Update successful:', updatedEquipment);
-          
+
           // Normalize data to ensure all required fields exist
           updatedEquipment = normalizeEquipment(updatedEquipment);
-            // Update the equipment state with the returned data from API
+          // Update the equipment state with the returned data from API
           // TypeScript non-null assertion since we already checked updatedEquipment exists
-          setEquipment(prev => 
-            prev.map(item => 
-              item.id === selectedEquipment.id ? updatedEquipment! : item
-            )
+          setEquipment(prev =>
+            prev.map(item => (item.id === selectedEquipment.id ? updatedEquipment! : item))
           );
-          
+
           showToast('Equipment updated successfully', 'success');
         } else {
           showToast('Failed to update equipment', 'error');
         }
       } else {
         console.log('Creating new equipment', equipmentData);
-        
+
         let newEquipment = await createEquipment(equipmentData);
-        
+
         // Normalize data to ensure all required fields exist
         newEquipment = normalizeEquipment(newEquipment);
         console.log('Creation successful:', newEquipment);
-        
+
         setEquipment(prev => [...prev, newEquipment]);
-        
+
         showToast('Equipment added successfully', 'success');
       }
 
@@ -287,10 +304,7 @@ export function EquipmentManagement() {
     setSelectedEquipment(null);
   };
 
-  const showToast = (
-    title: string,
-    variant: 'success' | 'error' | 'warning' = 'success'
-  ) => {
+  const showToast = (title: string, variant: 'success' | 'error' | 'warning' = 'success') => {
     setToast({ show: true, title, variant });
     setTimeout(() => setToast({ show: false, title: '' }), 3000);
   };
@@ -306,7 +320,7 @@ export function EquipmentManagement() {
     <div className="p-6 space-y-6">
       {/* Display mock data warning */}
       {/* Removed mock data warning */}
-      
+
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="flex flex-col sm:flex-row gap-4 flex-1">
           <div className="relative flex-1">
@@ -314,7 +328,7 @@ export function EquipmentManagement() {
             <FormInput
               placeholder="Search equipment..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={e => setSearchTerm(e.target.value)}
               className="pl-10"
             />
           </div>
@@ -322,20 +336,14 @@ export function EquipmentManagement() {
           <div className="flex flex-col sm:flex-row gap-4">
             <Select
               value={categoryFilter}
-              onChange={(value) => setCategoryFilter(value as 'all' | CraneCategory)}
-              options={[
-                { value: 'all', label: 'All Categories' },
-                ...CATEGORY_OPTIONS,
-              ]}
+              onChange={value => setCategoryFilter(value as 'all' | CraneCategory)}
+              options={[{ value: 'all', label: 'All Categories' }, ...CATEGORY_OPTIONS]}
               className="w-full sm:w-48"
             />
             <Select
               value={statusFilter}
-              onChange={(value) => setStatusFilter(value as 'all' | Equipment['status'])}
-              options={[
-                { value: 'all', label: 'All Status' },
-                ...STATUS_OPTIONS,
-              ]}
+              onChange={value => setStatusFilter(value as 'all' | Equipment['status'])}
+              options={[{ value: 'all', label: 'All Status' }, ...STATUS_OPTIONS]}
               className="w-full sm:w-48"
             />
           </div>
@@ -388,7 +396,7 @@ export function EquipmentManagement() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredEquipment.map((item) => (
+                  {filteredEquipment.map(item => (
                     <tr key={item.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4">
                         <div>
@@ -406,9 +414,11 @@ export function EquipmentManagement() {
                           </Badge>
                           <Badge
                             variant={
-                              item.status === 'available' ? 'success' :
-                              item.status === 'in_use' ? 'warning' :
-                              'error'
+                              item.status === 'available'
+                                ? 'success'
+                                : item.status === 'in_use'
+                                  ? 'warning'
+                                  : 'error'
                             }
                             className="w-full justify-center"
                           >
@@ -418,52 +428,60 @@ export function EquipmentManagement() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-sm space-y-2">
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                          <span className="text-gray-900">
-                            Mfg: {item.manufacturingDate || 'N/A'}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Weight className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                          <span className="text-gray-900">
-                            {item.maxLiftingCapacity ? `${item.maxLiftingCapacity} tons max lift` : 'N/A'}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Truck className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                          <span className="text-gray-900">
-                            {item.unladenWeight ? `${item.unladenWeight} tons unladen` : 'N/A'}
-                          </span>
-                        </div>
-                        {item.registrationDate && (
                           <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4 text-gray-400 flex-shrink-0" />
                             <span className="text-gray-900">
-                              Reg: {item.registrationDate}
+                              Mfg: {item.manufacturingDate || 'N/A'}
                             </span>
                           </div>
-                        )}
-
+                          <div className="flex items-center gap-2">
+                            <Weight className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                            <span className="text-gray-900">
+                              {item.maxLiftingCapacity
+                                ? `${item.maxLiftingCapacity} tons max lift`
+                                : 'N/A'}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Truck className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                            <span className="text-gray-900">
+                              {item.unladenWeight ? `${item.unladenWeight} tons unladen` : 'N/A'}
+                            </span>
+                          </div>
+                          {item.registrationDate && (
+                            <div className="flex items-center gap-2">
+                              <Calendar className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                              <span className="text-gray-900">Reg: {item.registrationDate}</span>
+                            </div>
+                          )}
                         </div>
                       </td>
                       <td className="px-6 py-4 min-w-[300px]">
-                        <div className="text-sm">                          <div className="bg-gray-50 rounded-lg p-4">
+                        <div className="text-sm">
+                          {' '}
+                          <div className="bg-gray-50 rounded-lg p-4">
                             <div className="font-medium text-gray-900 mb-3">Base Rates</div>
                             <div className="space-y-2.5">
                               {ORDER_TYPES.map(type => (
-                                <div key={type.value} className="grid grid-cols-[100px,1fr] items-baseline">
+                                <div
+                                  key={type.value}
+                                  className="grid grid-cols-[100px,1fr] items-baseline"
+                                >
                                   <span className="text-gray-600">{type.label}</span>
                                   <div className="flex items-baseline gap-1.5">
                                     <span className="text-gray-400 text-sm">₹</span>
                                     <span className="text-gray-900 font-medium">
                                       {item.baseRates && item.baseRates[type.value] !== undefined
                                         ? formatCurrency(item.baseRates[type.value])
-                                        : "N/A"}
+                                        : 'N/A'}
                                     </span>
                                     <span className="text-gray-500 text-sm">
                                       {type.value === 'monthly' || type.value === 'yearly' ? (
-                                        <div>per<br />month</div>
+                                        <div>
+                                          per
+                                          <br />
+                                          month
+                                        </div>
                                       ) : (
                                         'per hour'
                                       )}
@@ -472,15 +490,16 @@ export function EquipmentManagement() {
                                 </div>
                               ))}
                             </div>
-                          </div>                            <div className="mt-3 flex items-center gap-2 text-gray-600">
+                          </div>{' '}
+                          <div className="mt-3 flex items-center gap-2 text-gray-600">
                             <Truck className="h-4 w-4" />
                             <span>Running:</span>
                             <div className="flex items-baseline gap-1">
                               <span className="text-gray-400">₹</span>
                               <span className="text-gray-900">
-                                {item.runningCostPerKm !== undefined 
+                                {item.runningCostPerKm !== undefined
                                   ? formatCurrency(item.runningCostPerKm)
-                                  : "N/A"}
+                                  : 'N/A'}
                               </span>
                               <span className="text-gray-500">/km</span>
                             </div>
@@ -493,20 +512,42 @@ export function EquipmentManagement() {
                             variant="ghost"
                             size="sm"
                             onClick={() => {
-                              setSelectedEquipment(item);                              setFormData({
+                              setSelectedEquipment(item);
+                              setFormData({
                                 name: item.name || '',
                                 category: item.category || 'mobile_crane',
                                 manufacturingDate: item.manufacturingDate || '',
                                 registrationDate: item.registrationDate || '',
-                                maxLiftingCapacity: item.maxLiftingCapacity !== undefined ? String(item.maxLiftingCapacity) : '',
-                                unladenWeight: item.unladenWeight !== undefined ? String(item.unladenWeight) : '',
+                                maxLiftingCapacity:
+                                  item.maxLiftingCapacity !== undefined
+                                    ? String(item.maxLiftingCapacity)
+                                    : '',
+                                unladenWeight:
+                                  item.unladenWeight !== undefined
+                                    ? String(item.unladenWeight)
+                                    : '',
                                 baseRates: {
-                                  micro: item.baseRates && item.baseRates.micro !== undefined ? String(item.baseRates.micro) : '',
-                                  small: item.baseRates && item.baseRates.small !== undefined ? String(item.baseRates.small) : '',
-                                  monthly: item.baseRates && item.baseRates.monthly !== undefined ? String(item.baseRates.monthly) : '',
-                                  yearly: item.baseRates && item.baseRates.yearly !== undefined ? String(item.baseRates.yearly) : '',
+                                  micro:
+                                    item.baseRates && item.baseRates.micro !== undefined
+                                      ? String(item.baseRates.micro)
+                                      : '',
+                                  small:
+                                    item.baseRates && item.baseRates.small !== undefined
+                                      ? String(item.baseRates.small)
+                                      : '',
+                                  monthly:
+                                    item.baseRates && item.baseRates.monthly !== undefined
+                                      ? String(item.baseRates.monthly)
+                                      : '',
+                                  yearly:
+                                    item.baseRates && item.baseRates.yearly !== undefined
+                                      ? String(item.baseRates.yearly)
+                                      : '',
                                 },
-                                runningCostPerKm: item.runningCostPerKm !== undefined ? String(item.runningCostPerKm) : '',
+                                runningCostPerKm:
+                                  item.runningCostPerKm !== undefined
+                                    ? String(item.runningCostPerKm)
+                                    : '',
                                 description: item.description || '',
                                 status: item.status || 'available',
                               });
@@ -551,7 +592,7 @@ export function EquipmentManagement() {
             <FormInput
               label="Name"
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={e => setFormData({ ...formData, name: e.target.value })}
               required
             />
 
@@ -559,14 +600,14 @@ export function EquipmentManagement() {
               label="Max Lifting Capacity (tons)"
               type="number"
               value={formData.maxLiftingCapacity}
-              onChange={(e) => setFormData({ ...formData, maxLiftingCapacity: e.target.value })}
+              onChange={e => setFormData({ ...formData, maxLiftingCapacity: e.target.value })}
               required
             />
 
             <Select
               label="Category"
               value={formData.category}
-              onChange={(value) => setFormData({ ...formData, category: value as CraneCategory })}
+              onChange={value => setFormData({ ...formData, category: value as CraneCategory })}
               options={CATEGORY_OPTIONS}
               className="w-full"
             />
@@ -575,16 +616,16 @@ export function EquipmentManagement() {
               label="Unladen Weight (tons)"
               type="number"
               value={formData.unladenWeight}
-              onChange={(e) => setFormData({ ...formData, unladenWeight: e.target.value })}
+              onChange={e => setFormData({ ...formData, unladenWeight: e.target.value })}
               required
             />
-           
+
             <FormInput
               label="Manufacturing Date"
               type="date"
               max={today}
               value={formData.manufacturingDate}
-              onChange={(e) => setFormData({ ...formData, manufacturingDate: e.target.value })}
+              onChange={e => setFormData({ ...formData, manufacturingDate: e.target.value })}
               required
             />
 
@@ -592,23 +633,23 @@ export function EquipmentManagement() {
               label="Running Cost (₹/km)"
               type="number"
               value={formData.runningCostPerKm}
-              onChange={(e) => setFormData({ ...formData, runningCostPerKm: e.target.value })}
+              onChange={e => setFormData({ ...formData, runningCostPerKm: e.target.value })}
               required
             />
 
-             <FormInput
+            <FormInput
               label="Registration Date"
               type="date"
-              max={today}   
+              max={today}
               value={formData.registrationDate}
-              onChange={(e) => setFormData({ ...formData, registrationDate: e.target.value })}
+              onChange={e => setFormData({ ...formData, registrationDate: e.target.value })}
               required
-             />
+            />
 
             <Select
               label="Status"
               value={formData.status}
-              onChange={(value) => setFormData({ ...formData, status: value as Equipment['status'] })}
+              onChange={value => setFormData({ ...formData, status: value as Equipment['status'] })}
               options={STATUS_OPTIONS}
               className="w-full"
             />
@@ -621,7 +662,7 @@ export function EquipmentManagement() {
                 label="Micro Rate (₹ per hour)"
                 type="number"
                 value={formData.baseRates.micro}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({
                     ...formData,
                     baseRates: {
@@ -637,7 +678,7 @@ export function EquipmentManagement() {
                 label="Small Rate (₹ per hour)"
                 type="number"
                 value={formData.baseRates.small}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({
                     ...formData,
                     baseRates: {
@@ -653,7 +694,7 @@ export function EquipmentManagement() {
                 label="Monthly Rate (₹ per month)"
                 type="number"
                 value={formData.baseRates.monthly}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({
                     ...formData,
                     baseRates: {
@@ -669,7 +710,7 @@ export function EquipmentManagement() {
                 label="Yearly Rate (₹ per month)"
                 type="number"
                 value={formData.baseRates.yearly}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({
                     ...formData,
                     baseRates: {
@@ -686,7 +727,7 @@ export function EquipmentManagement() {
           <TextArea
             label="Description"
             value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            onChange={e => setFormData({ ...formData, description: e.target.value })}
             rows={3}
           />
 
@@ -717,7 +758,9 @@ export function EquipmentManagement() {
         }}
       >
         <div className="space-y-4">
-          <p className="text-gray-700">Are you sure you want to delete this equipment? This action cannot be undone.</p>
+          <p className="text-gray-700">
+            Are you sure you want to delete this equipment? This action cannot be undone.
+          </p>
           <div className="flex justify-end gap-3">
             <Button
               variant="outline"

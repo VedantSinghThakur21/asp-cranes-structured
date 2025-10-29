@@ -1,6 +1,6 @@
 /**
  * Customer API Service
- * 
+ *
  * Browser-side implementation that uses API requests instead of direct database access.
  * This service will be used by the frontend to interact with the backend API.
  */
@@ -40,7 +40,9 @@ export const getCustomerById = async (id: string): Promise<Customer | null> => {
 /**
  * Create a new customer via the API
  */
-export const createCustomer = async (customerData: Omit<Customer, 'id' | 'createdAt' | 'updatedAt'>): Promise<Customer> => {
+export const createCustomer = async (
+  customerData: Omit<Customer, 'id' | 'createdAt' | 'updatedAt'>
+): Promise<Customer> => {
   try {
     console.log('Creating customer via API:', customerData);
     const response = await api.post<Customer>('/customers', customerData);
@@ -55,7 +57,10 @@ export const createCustomer = async (customerData: Omit<Customer, 'id' | 'create
 /**
  * Update a customer via the API
  */
-export const updateCustomer = async (id: string, customerData: Partial<Customer>): Promise<Customer | null> => {
+export const updateCustomer = async (
+  id: string,
+  customerData: Partial<Customer>
+): Promise<Customer | null> => {
   try {
     const response = await api.put<Customer>(`/customers/${id}`, customerData);
     return response;
@@ -107,7 +112,10 @@ export const createContact = async (contactData: Omit<Contact, 'id'>): Promise<C
 /**
  * Update a contact via the API
  */
-export const updateContact = async (id: string, contactData: Partial<Contact>): Promise<Contact | null> => {
+export const updateContact = async (
+  id: string,
+  contactData: Partial<Contact>
+): Promise<Contact | null> => {
   try {
     const response = await api.put<Contact>(`/contacts/${id}`, contactData);
     return response;

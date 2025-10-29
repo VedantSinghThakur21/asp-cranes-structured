@@ -40,7 +40,7 @@ export function DealDetails() {
       fetchDeal();
     }
   }, [id]);
-  
+
   useEffect(() => {
     if (deal?.leadId) {
       fetchDealEquipment(deal.leadId);
@@ -63,13 +63,13 @@ export function DealDetails() {
       setIsLoading(false);
     }
   };
-  
+
   const fetchDealEquipment = async (leadId: string) => {
     try {
       setLoadingEquipment(true);
       const quotationList = await getQuotationsForLead(leadId);
       setQuotations(quotationList);
-      
+
       // Extract and flatten all equipment from quotations
       const allEquipment: SelectedMachine[] = [];
       quotationList.forEach((quotation: Quotation) => {
@@ -90,16 +90,16 @@ export function DealDetails() {
             baseRates: quotation.selectedEquipment.baseRates,
             baseRate: quotation.selectedEquipment.baseRates[quotation.orderType],
             runningCostPerKm: quotation.runningCostPerKm,
-            quantity: 1
+            quantity: 1,
           };
-          
+
           // Avoid duplicates
           if (!allEquipment.some(equip => equip.id === legacyEquipment.id)) {
             allEquipment.push(legacyEquipment);
           }
         }
       });
-      
+
       setEquipmentList(allEquipment);
     } catch (error) {
       console.error('Error fetching deal equipment:', error);
@@ -145,11 +145,7 @@ export function DealDetails() {
   }
 
   if (!deal) {
-    return (
-      <div className="text-center py-8 text-gray-500">
-        Deal not found.
-      </div>
-    );
+    return <div className="text-center py-8 text-gray-500">Deal not found.</div>;
   }
 
   return (
@@ -166,9 +162,7 @@ export function DealDetails() {
             <ArrowLeft size={16} className="sm:mr-2" />
             <span className="hidden sm:inline">Back to Deals</span>
           </Button>
-          <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">
-            Deal Details
-          </h1>
+          <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">Deal Details</h1>
         </div>
       </div>
 
@@ -186,18 +180,20 @@ export function DealDetails() {
               <Button
                 className="text-xs"
                 size="sm"
-                onClick={() => navigate('/quotation-creation', {
-                  state: {
-                    selectedDeal: deal,
-                    deal: deal,
-                    dealId: deal.id,
-                    customerName: deal.customer?.name || '',
-                    customerEmail: deal.customer?.email || '',
-                    customerPhone: deal.customer?.phone || '',
-                    customerCompany: deal.customer?.company || '',
-                    customerAddress: deal.customer?.address || ''
-                  }
-                })}
+                onClick={() =>
+                  navigate('/quotation-creation', {
+                    state: {
+                      selectedDeal: deal,
+                      deal: deal,
+                      dealId: deal.id,
+                      customerName: deal.customer?.name || '',
+                      customerEmail: deal.customer?.email || '',
+                      customerPhone: deal.customer?.phone || '',
+                      customerCompany: deal.customer?.company || '',
+                      customerAddress: deal.customer?.address || '',
+                    },
+                  })
+                }
                 variant="accent"
               >
                 Create Quotation
@@ -234,7 +230,7 @@ export function DealDetails() {
                   <div className="mt-1">
                     <Select
                       value={deal.stage}
-                      onChange={(value) => handleStageChange(value as Deal['stage'])}
+                      onChange={value => handleStageChange(value as Deal['stage'])}
                       options={STAGE_OPTIONS}
                       className="w-full sm:w-[200px] text-sm"
                     />
@@ -249,7 +245,9 @@ export function DealDetails() {
                 </div>
 
                 <div>
-                  <div className="text-xs sm:text-sm font-medium text-gray-500">Expected Close Date</div>
+                  <div className="text-xs sm:text-sm font-medium text-gray-500">
+                    Expected Close Date
+                  </div>
                   <div className="mt-1 text-sm sm:text-base text-gray-900">
                     {new Date(deal.expectedCloseDate).toLocaleDateString()}
                   </div>
@@ -274,9 +272,7 @@ export function DealDetails() {
               <CardTitle>Notes</CardTitle>
             </CardHeader>
             <CardContent className="px-4 pb-4 sm:px-6 sm:pb-6">
-              <p className="text-sm text-gray-600">
-                {deal.notes || 'No notes available.'}
-              </p>
+              <p className="text-sm text-gray-600">{deal.notes || 'No notes available.'}</p>
             </CardContent>
           </Card>
         </div>
@@ -292,7 +288,9 @@ export function DealDetails() {
                 <User className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 flex-shrink-0" />
                 <div>
                   <div className="font-medium text-sm sm:text-base">{deal.customer.name}</div>
-                  <div className="text-xs sm:text-sm text-gray-500">{deal.customer.designation}</div>
+                  <div className="text-xs sm:text-sm text-gray-500">
+                    {deal.customer.designation}
+                  </div>
                 </div>
               </div>
 
@@ -316,11 +314,12 @@ export function DealDetails() {
                 <div className="text-sm text-gray-600">{deal.customer.address}</div>
               </div>
             </CardContent>
-          </Card>          {/* Equipment Information Card */}
+          </Card>{' '}
+          {/* Equipment Information Card */}
           <Card className="mb-4">
             <CardHeader className="p-4 sm:p-6">
               <CardTitle className="flex items-center">
-                <Package className="h-5 w-5 mr-2 text-primary-600" /> 
+                <Package className="h-5 w-5 mr-2 text-primary-600" />
                 Equipment Information
               </CardTitle>
             </CardHeader>
@@ -331,7 +330,7 @@ export function DealDetails() {
                 </div>
               ) : equipmentList.length > 0 ? (
                 <div className="space-y-2">
-                  {equipmentList.map((equipment) => (
+                  {equipmentList.map(equipment => (
                     <div key={equipment.id} className="p-3 border rounded-md bg-gray-50">
                       <div className="flex justify-between items-start">
                         <div>
@@ -350,11 +349,12 @@ export function DealDetails() {
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-gray-500">No equipment information available for this deal.</p>
+                <p className="text-sm text-gray-500">
+                  No equipment information available for this deal.
+                </p>
               )}
             </CardContent>
           </Card>
-          
           {/* Actions Card - Hidden on mobile (shown at top instead) */}
           <Card className="hidden sm:block">
             <CardHeader className="p-4 sm:p-6">
@@ -363,18 +363,20 @@ export function DealDetails() {
             <CardContent className="px-4 pb-4 sm:px-6 sm:pb-6 space-y-4">
               <Button
                 className="w-full"
-                onClick={() => navigate('/quotation-creation', {
-                  state: {
-                    selectedDeal: deal,
-                    deal: deal,
-                    dealId: deal.id,
-                    customerName: deal.customer?.name || '',
-                    customerEmail: deal.customer?.email || '',
-                    customerPhone: deal.customer?.phone || '',
-                    customerCompany: deal.customer?.company || '',
-                    customerAddress: deal.customer?.address || ''
-                  }
-                })}
+                onClick={() =>
+                  navigate('/quotation-creation', {
+                    state: {
+                      selectedDeal: deal,
+                      deal: deal,
+                      dealId: deal.id,
+                      customerName: deal.customer?.name || '',
+                      customerEmail: deal.customer?.email || '',
+                      customerPhone: deal.customer?.phone || '',
+                      customerCompany: deal.customer?.company || '',
+                      customerAddress: deal.customer?.address || '',
+                    },
+                  })
+                }
                 variant="accent"
               >
                 Create Quotation

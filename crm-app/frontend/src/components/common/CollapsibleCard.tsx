@@ -11,13 +11,13 @@ export interface CollapsibleCardProps {
   onToggle?: (isExpanded: boolean) => void;
 }
 
-export function CollapsibleCard({ 
-  children, 
-  title, 
+export function CollapsibleCard({
+  children,
+  title,
   defaultExpanded = false,
   icon,
   className = '',
-  onToggle
+  onToggle,
 }: CollapsibleCardProps) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
@@ -29,23 +29,23 @@ export function CollapsibleCard({
 
   return (
     <Card className={`shadow-sm hover:shadow-md transition-all duration-200 ${className}`}>
-      <CardHeader 
-        className="cursor-pointer hover:bg-gray-50 transition-colors duration-200 p-3 sm:p-4 md:p-5" 
+      <CardHeader
+        className="cursor-pointer hover:bg-gray-50 transition-colors duration-200 p-3 sm:p-4 md:p-5"
         onClick={handleToggle}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             {icon && <div className="text-gray-500 flex-shrink-0">{icon}</div>}
-            <CardTitle className="text-base sm:text-lg font-medium">
-              {title}
-            </CardTitle>
+            <CardTitle className="text-base sm:text-lg font-medium">{title}</CardTitle>
           </div>
-          <div className={`transform transition-transform duration-200 flex-shrink-0 ${isExpanded ? 'rotate-180' : ''}`}>
+          <div
+            className={`transform transition-transform duration-200 flex-shrink-0 ${isExpanded ? 'rotate-180' : ''}`}
+          >
             <ChevronDown className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
           </div>
         </div>
       </CardHeader>
-      <div 
+      <div
         className={`transition-all duration-300 overflow-hidden ${
           isExpanded ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
         }`}
@@ -54,9 +54,7 @@ export function CollapsibleCard({
           transform: 'translateZ(0)',
         }}
       >
-        <CardContent className="p-3 sm:p-4 pt-0 sm:pt-0">
-          {children}
-        </CardContent>
+        <CardContent className="p-3 sm:p-4 pt-0 sm:pt-0">{children}</CardContent>
       </div>
     </Card>
   );

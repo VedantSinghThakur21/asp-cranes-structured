@@ -1,17 +1,17 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { 
-  Calendar, 
-  Clipboard, 
-  Cog, 
-  CreditCard, 
+import {
+  Calendar,
+  Clipboard,
+  Cog,
+  CreditCard,
   FileText,
-  Home, 
+  Home,
   Image,
-  MessageSquare, 
-  Settings, 
+  MessageSquare,
+  Settings,
   Users,
-  Building2, 
+  Building2,
   Handshake,
   LogOut,
   Menu,
@@ -19,7 +19,7 @@ import {
   CheckSquare,
   Megaphone,
   FileImage,
-  Users2
+  Users2,
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -158,7 +158,12 @@ const navItems: NavItem[] = [
   },
 ];
 
-export function Sidebar({ isMobileOpen = false, onMobileClose, isCollapsed: controlledCollapsed, onCollapseToggle }: SidebarProps) {
+export function Sidebar({
+  isMobileOpen = false,
+  onMobileClose,
+  isCollapsed: controlledCollapsed,
+  onCollapseToggle,
+}: SidebarProps) {
   const { user } = useAuthStore();
   const location = useLocation();
   const [internalCollapsed, setInternalCollapsed] = useState(false);
@@ -196,7 +201,7 @@ export function Sidebar({ isMobileOpen = false, onMobileClose, isCollapsed: cont
     if (isControlled && onCollapseToggle) {
       onCollapseToggle(!isCollapsed);
     } else {
-      setInternalCollapsed((prev) => !prev);
+      setInternalCollapsed(prev => !prev);
     }
   };
 
@@ -213,12 +218,12 @@ export function Sidebar({ isMobileOpen = false, onMobileClose, isCollapsed: cont
             onClick={onMobileClose}
             aria-hidden="true"
           />
-          <motion.aside 
+          <motion.aside
             className="fixed inset-y-0 left-0 z-50 w-72 max-w-[85%] bg-gradient-to-b from-brand-blue to-brand-blue/95 shadow-2xl overflow-y-auto lg:hidden"
-            initial={{ x: "-100%" }}
+            initial={{ x: '-100%' }}
             animate={{ x: 0 }}
-            exit={{ x: "-100%" }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
+            exit={{ x: '-100%' }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
             role="navigation"
             aria-label="Mobile navigation"
           >
@@ -231,7 +236,7 @@ export function Sidebar({ isMobileOpen = false, onMobileClose, isCollapsed: cont
 
   // Enhanced desktop sidebar with modern styling
   const desktopSidebar = (
-    <aside 
+    <aside
       className={`hidden lg:flex flex-col fixed inset-y-0 left-0 z-30 transition-all duration-300 ease-in-out ${
         isCollapsed ? 'w-16' : 'w-72'
       } bg-gradient-to-b from-brand-blue to-brand-blue/95 shadow-xl`}
@@ -262,22 +267,18 @@ export function Sidebar({ isMobileOpen = false, onMobileClose, isCollapsed: cont
           >
             <Menu className="h-6 w-6 text-white" />
           </button>
-          <Link 
-            to="/dashboard" 
-            className="flex items-center group"
-            aria-label="Go to dashboard"
-          >
-            <img               
-              src={aspLogo} 
-              alt="ASP Cranes" 
+          <Link to="/dashboard" className="flex items-center group" aria-label="Go to dashboard">
+            <img
+              src={aspLogo}
+              alt="ASP Cranes"
               className={`object-contain transition-all duration-300 group-hover:scale-105 ${collapsed ? 'h-8 w-8' : 'h-10 w-auto'}`}
-              onError={(e) => {
+              onError={e => {
                 e.currentTarget.src = logoFallback;
                 e.currentTarget.onerror = null;
               }}
             />
             {!collapsed && (
-              <motion.span 
+              <motion.span
                 className="ml-3 text-xl font-bold bg-gradient-to-r from-white to-brand-gold bg-clip-text text-transparent"
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -290,19 +291,23 @@ export function Sidebar({ isMobileOpen = false, onMobileClose, isCollapsed: cont
         </div>
 
         {/* Navigation - Made scrollable without visible scrollbar */}
-        <nav className="flex-1 py-6 overflow-y-auto hide-scrollbar" role="navigation" style={{
-          scrollbarWidth: 'none', /* Firefox */
-          msOverflowStyle: 'none', /* Internet Explorer 10+ */
-        }}>
+        <nav
+          className="flex-1 py-6 overflow-y-auto hide-scrollbar"
+          role="navigation"
+          style={{
+            scrollbarWidth: 'none' /* Firefox */,
+            msOverflowStyle: 'none' /* Internet Explorer 10+ */,
+          }}
+        >
           <style>{`
             .hide-scrollbar::-webkit-scrollbar {
               display: none; /* Safari and Chrome */
             }
           `}</style>
           <ul className="space-y-1 px-3" role="list">
-            {filteredNavItems.map((item) => {
+            {filteredNavItems.map(item => {
               const active = isActive(item.href, item.end);
-              
+
               return (
                 <li key={item.href} role="listitem">
                   <Link
@@ -317,16 +322,16 @@ export function Sidebar({ isMobileOpen = false, onMobileClose, isCollapsed: cont
                     onClick={onMobileClose}
                     aria-current={active ? 'page' : undefined}
                   >
-                    <span 
+                    <span
                       className={`flex-shrink-0 transition-transform group-hover:scale-110 ${
                         active ? 'text-brand-blue' : ''
                       }`}
                     >
                       {item.icon}
                     </span>
-                    
+
                     {!collapsed && (
-                      <motion.span 
+                      <motion.span
                         className="ml-3 text-sm font-medium"
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
@@ -335,7 +340,7 @@ export function Sidebar({ isMobileOpen = false, onMobileClose, isCollapsed: cont
                         {item.label}
                       </motion.span>
                     )}
-                    
+
                     {/* Tooltip for collapsed state */}
                     {collapsed && (
                       <div className="absolute left-full ml-3 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transform translate-x-2 group-hover:translate-x-0 transition-all z-50 whitespace-nowrap">
@@ -355,27 +360,28 @@ export function Sidebar({ isMobileOpen = false, onMobileClose, isCollapsed: cont
           <div className={`flex items-center ${collapsed ? 'justify-center' : 'space-x-3'}`}>
             <div className="flex-shrink-0">
               <img
-                src={user?.avatar || 'https://images.pexels.com/photos/4126743/pexels-photo-4126743.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'}
+                src={
+                  user?.avatar ||
+                  'https://images.pexels.com/photos/4126743/pexels-photo-4126743.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'
+                }
                 alt={user?.name || 'User'}
                 className="h-10 w-10 rounded-full object-cover border-2 border-brand-gold/50 hover:border-brand-gold transition-colors"
               />
             </div>
-            
+
             {!collapsed && user && (
-              <motion.div 
+              <motion.div
                 className="flex-1 min-w-0"
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.1 }}
               >
-                <p className="text-sm font-semibold text-white truncate">
-                  {user.name || 'User'}
-                </p>
+                <p className="text-sm font-semibold text-white truncate">{user.name || 'User'}</p>
                 <p className="text-xs text-white/70 truncate capitalize">
                   {user.role ? user.role.replace('_', ' ') : 'User'}
                 </p>
-                
-                <button 
+
+                <button
                   onClick={() => {
                     if (onMobileClose) onMobileClose();
                     const logoutEvent = new CustomEvent('sidebar-logout');

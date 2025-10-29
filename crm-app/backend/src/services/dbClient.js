@@ -15,7 +15,7 @@ const dbConfig = {
   database: process.env.PGDATABASE || 'asp_crm',
   user: process.env.PGUSER || 'postgres',
   password: process.env.PGPASSWORD || 'crmdb@21',
-  ssl: process.env.PGSSL === 'true' ? { rejectUnauthorized: false } : false
+  ssl: process.env.PGSSL === 'true' ? { rejectUnauthorized: false } : false,
 };
 
 // Initialize pg-promise with options and plugins
@@ -32,7 +32,9 @@ const db = pgp(dbConfig);
 db.connect()
   .then(obj => {
     console.log('Database connection successful');
-    console.log(`Connected to: ${dbConfig.host}:${dbConfig.port}/${dbConfig.database} as ${dbConfig.user}`);
+    console.log(
+      `Connected to: ${dbConfig.host}:${dbConfig.port}/${dbConfig.database} as ${dbConfig.user}`
+    );
     obj.done(); // release the connection
   })
   .catch(error => {

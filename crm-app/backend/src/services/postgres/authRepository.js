@@ -1,4 +1,4 @@
-export const findUsersByRole = async (role) => {
+export const findUsersByRole = async role => {
   try {
     console.log(`🔍 Looking for users with role: ${role}`);
     const users = await db.any(
@@ -16,7 +16,7 @@ export const findUsersByRole = async (role) => {
 import { db } from '../../lib/dbClient.js';
 import bcrypt from 'bcrypt';
 
-export const findUserByEmail = async (email) => {
+export const findUserByEmail = async email => {
   try {
     console.log(`🔍 Looking for user with email: ${email}`);
     const user = await db.oneOrNone('SELECT * FROM users WHERE email = $1', [email]);
@@ -40,7 +40,7 @@ export const validatePassword = async (password, hashedPassword) => {
   }
 };
 
-export const createUser = async (userData) => {
+export const createUser = async userData => {
   try {
     console.log(`🆕 Creating new user: ${userData.email}`);
     const hashedPassword = await bcrypt.hash(userData.password, 10);
@@ -94,7 +94,7 @@ export const updateUser = async (id, userData) => {
   }
 };
 
-export const deleteUser = async (id) => {
+export const deleteUser = async id => {
   try {
     console.log(`🗑️ Deleting user: ${id}`);
     await db.none('DELETE FROM users WHERE id = $1', [id]);
@@ -108,7 +108,9 @@ export const deleteUser = async (id) => {
 export const getAllUsers = async () => {
   try {
     console.log('📋 Fetching all users...');
-    const users = await db.any('SELECT id, email, name, role, created_at, updated_at FROM users ORDER BY created_at DESC');
+    const users = await db.any(
+      'SELECT id, email, name, role, created_at, updated_at FROM users ORDER BY created_at DESC'
+    );
     console.log(`✅ Found ${users.length} users`);
     return users;
   } catch (error) {
@@ -117,10 +119,13 @@ export const getAllUsers = async () => {
   }
 };
 
-export const findUserById = async (id) => {
+export const findUserById = async id => {
   try {
     console.log(`🔍 Looking for user with ID: ${id}`);
-    const user = await db.oneOrNone('SELECT id, email, name, role, created_at, updated_at FROM users WHERE id = $1', [id]);
+    const user = await db.oneOrNone(
+      'SELECT id, email, name, role, created_at, updated_at FROM users WHERE id = $1',
+      [id]
+    );
     console.log(`📝 User found: ${user ? 'Yes' : 'No'}`);
     return user;
   } catch (error) {

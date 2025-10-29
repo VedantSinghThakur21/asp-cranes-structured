@@ -25,10 +25,10 @@ const defaultLimits: OrderTypeLimits = {
   micro: { minDays: 1, maxDays: 10 },
   small: { minDays: 11, maxDays: 25 },
   monthly: { minDays: 26, maxDays: 30 },
-  yearly: { minDays: 31, maxDays: 366 }
+  yearly: { minDays: 31, maxDays: 366 },
 };
 
-export const useQuotationConfigStore = create<QuotationConfigState>((set) => ({
+export const useQuotationConfigStore = create<QuotationConfigState>(set => ({
   orderTypeLimits: defaultLimits,
   isLoading: false,
   error: null,
@@ -36,7 +36,7 @@ export const useQuotationConfigStore = create<QuotationConfigState>((set) => ({
     try {
       set({ isLoading: true, error: null });
       const config = await getQuotationConfig();
-      
+
       if (config && config.orderTypeLimits) {
         set({ orderTypeLimits: config.orderTypeLimits });
       } else {
@@ -56,13 +56,13 @@ export const useQuotationConfigStore = create<QuotationConfigState>((set) => ({
       set({ isLoading: true, error: null });
       // Update the store immediately for better UX
       set({ orderTypeLimits: config });
-      
+
       // Update in database
       await updateQuotationConfig({ orderTypeLimits: config });
     } catch (error) {
       console.error('Error updating quotation config:', error);
       set({ error: 'Failed to update quotation configuration' });
-      
+
       // Revert to original config on error
       const currentConfig = await getQuotationConfig();
       if (currentConfig?.orderTypeLimits) {
@@ -71,5 +71,5 @@ export const useQuotationConfigStore = create<QuotationConfigState>((set) => ({
     } finally {
       set({ isLoading: false });
     }
-  }
-})); 
+  },
+}));

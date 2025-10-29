@@ -1,6 +1,6 @@
 /**
  * Template Mock Repository
- * 
+ *
  * This file provides mock data for the TemplateRepository when running in browser mode
  * to prevent errors with database access from the frontend.
  */
@@ -90,7 +90,7 @@ export const mockTemplates: Template[] = [
     content: getDefaultTemplateContent(),
     isDefault: true,
     createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    updatedAt: new Date().toISOString(),
   },
   {
     id: 'template-2',
@@ -99,7 +99,7 @@ export const mockTemplates: Template[] = [
     content: getDefaultTemplateContent(),
     isDefault: false,
     createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    updatedAt: new Date().toISOString(),
   },
   {
     id: 'template-3',
@@ -108,8 +108,8 @@ export const mockTemplates: Template[] = [
     content: getDefaultTemplateContent(),
     isDefault: false,
     createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  }
+    updatedAt: new Date().toISOString(),
+  },
 ];
 
 // Template API calls
@@ -125,34 +125,36 @@ export const getTemplateById = async (id: string): Promise<Template | null> => {
   return mockTemplates.find(template => template.id === id) || null;
 };
 
-export const createTemplate = async (template: Omit<Template, 'id' | 'createdAt' | 'updatedAt'>): Promise<Template> => {
+export const createTemplate = async (
+  template: Omit<Template, 'id' | 'createdAt' | 'updatedAt'>
+): Promise<Template> => {
   // Simulate network delay
   await new Promise(resolve => setTimeout(resolve, 500));
-  
+
   const now = new Date().toISOString();
   const newTemplate: Template = {
     ...template,
     id: `template-${Math.floor(Math.random() * 1000)}`,
     createdAt: now,
-    updatedAt: now
+    updatedAt: now,
   };
-  
+
   return newTemplate;
 };
 
 export const updateTemplate = async (id: string, updates: Partial<Template>): Promise<Template> => {
   // Simulate network delay
   await new Promise(resolve => setTimeout(resolve, 400));
-  
+
   const template = mockTemplates.find(t => t.id === id);
   if (!template) {
     throw new Error(`Template with ID ${id} not found`);
   }
-  
+
   return {
     ...template,
     ...updates,
-    updatedAt: new Date().toISOString()
+    updatedAt: new Date().toISOString(),
   };
 };
 

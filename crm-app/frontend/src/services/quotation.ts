@@ -1,6 +1,9 @@
 import { getHeaders } from './apiHeaders';
 // Update an existing quotation via backend API
-export async function updateQuotation(quotationId: string, updates: Partial<Quotation>): Promise<Quotation> {
+export async function updateQuotation(
+  quotationId: string,
+  updates: Partial<Quotation>
+): Promise<Quotation> {
   const apiUrl = import.meta.env.VITE_API_URL || '/api';
   const response = await fetch(`${apiUrl}/quotations/${quotationId}`, {
     method: 'PUT', // Changed from PATCH to PUT to match backend route
@@ -103,7 +106,8 @@ export interface QuotationInputs {
   usage: 'normal' | 'medium' | 'heavy';
   riskFactor: 'low' | 'medium' | 'high';
   extraCharge: number;
-  incidentalCharges: string[];  otherFactorsCharge: number;
+  incidentalCharges: string[];
+  otherFactorsCharge: number;
   billing: 'gst' | 'non_gst';
   includeGst: boolean;
   shift: 'single' | 'double';
@@ -138,8 +142,8 @@ export interface SelectedMachine {
 export interface Quotation extends QuotationInputs {
   id: string;
   quotationNumber?: string; // Add human-readable quotation number like ASP-Q-001
-  dealId?: string;  // Add dealId to support quotations from deals
-  leadId?: string;  // Make leadId optional since we might have quotations from deals instead
+  dealId?: string; // Add dealId to support quotations from deals
+  leadId?: string; // Make leadId optional since we might have quotations from deals instead
   customerId: string;
   customerName: string;
   customerContact: CustomerContact;
@@ -147,7 +151,8 @@ export interface Quotation extends QuotationInputs {
   totalRent: number;
   totalCost?: number; // Add totalCost field
   totalAmount?: number; // Alias for totalCost
-  calculations?: { // Add calculations object
+  calculations?: {
+    // Add calculations object
     baseRate: number;
     totalHours: number;
     workingCost: number;

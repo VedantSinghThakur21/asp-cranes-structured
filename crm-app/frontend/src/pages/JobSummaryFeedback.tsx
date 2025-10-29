@@ -1,15 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { 
-  Calendar,
-  Clock,
-  Download,
-  MapPin,
-  Send,
-  Truck,
-  User,
-  CheckCircle2
-} from 'lucide-react';
+import { Calendar, Clock, Download, MapPin, Send, Truck, User, CheckCircle2 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { TextArea } from '../components/common/TextArea';
@@ -87,7 +78,7 @@ export function JobSummaryFeedback() {
       // Mock feedback data
       setFeedback({
         rating: 4.5,
-        comments: "Great service, very professional team. Equipment arrived on time.",
+        comments: 'Great service, very professional team. Equipment arrived on time.',
         submittedAt: new Date().toISOString(),
       });
     } catch (error) {
@@ -100,11 +91,7 @@ export function JobSummaryFeedback() {
 
   const handleSafetyCheckToggle = (checkId: string) => {
     setSafetyChecks(prev =>
-      prev.map(check =>
-        check.id === checkId
-          ? { ...check, checked: !check.checked }
-          : check
-      )
+      prev.map(check => (check.id === checkId ? { ...check, checked: !check.checked } : check))
     );
   };
 
@@ -137,15 +124,18 @@ export function JobSummaryFeedback() {
     showToast('Summary downloaded successfully', 'success');
   };
 
-  const showToast = (
-    title: string,
-    variant: 'success' | 'error' | 'warning' = 'success'
-  ) => {
+  const showToast = (title: string, variant: 'success' | 'error' | 'warning' = 'success') => {
     setToast({ show: true, title, variant });
     setTimeout(() => setToast({ show: false, title: '' }), 3000);
   };
 
-  if (!user || (user.role !== 'admin' && user.role !== 'operations_manager' && user.role !== 'sales_agent' && user.role !== 'support')) {
+  if (
+    !user ||
+    (user.role !== 'admin' &&
+      user.role !== 'operations_manager' &&
+      user.role !== 'sales_agent' &&
+      user.role !== 'support')
+  ) {
     return (
       <div className="p-4 text-center text-gray-500">
         You don't have permission to access this page.
@@ -176,11 +166,7 @@ export function JobSummaryFeedback() {
           <h1 className="text-2xl font-bold">Job Summary & Feedback</h1>
           <p className="text-gray-500 mt-1">Job #{id}</p>
         </div>
-        <Button
-          variant="outline"
-          leftIcon={<Download size={16} />}
-          onClick={handleDownloadSummary}
-        >
+        <Button variant="outline" leftIcon={<Download size={16} />} onClick={handleDownloadSummary}>
           Download Summary
         </Button>
       </div>
@@ -234,7 +220,8 @@ export function JobSummaryFeedback() {
                   <div className="flex items-center gap-2">
                     <Clock className="h-5 w-5 text-gray-400" />
                     <span>
-                      {new Date(job.scheduledStartDate).toLocaleTimeString()} - {new Date(job.scheduledEndDate).toLocaleTimeString()}
+                      {new Date(job.scheduledStartDate).toLocaleTimeString()} -{' '}
+                      {new Date(job.scheduledEndDate).toLocaleTimeString()}
                     </span>
                   </div>
                 </div>
@@ -261,22 +248,15 @@ export function JobSummaryFeedback() {
         <CardContent>
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {safetyChecks.map((check) => (
-                <div
-                  key={check.id}
-                  className="flex items-start gap-3"
-                >
+              {safetyChecks.map(check => (
+                <div key={check.id} className="flex items-start gap-3">
                   <button
                     className={`flex-shrink-0 w-5 h-5 mt-0.5 rounded-full border-2 transition-colors ${
-                      check.checked
-                        ? 'border-success-500 bg-success-500'
-                        : 'border-gray-300'
+                      check.checked ? 'border-success-500 bg-success-500' : 'border-gray-300'
                     }`}
                     onClick={() => handleSafetyCheckToggle(check.id)}
                   >
-                    {check.checked && (
-                      <CheckCircle2 className="text-white h-4 w-4" />
-                    )}
+                    {check.checked && <CheckCircle2 className="text-white h-4 w-4" />}
                   </button>
                   <span className="text-gray-700">{check.label}</span>
                 </div>
@@ -286,7 +266,7 @@ export function JobSummaryFeedback() {
             <TextArea
               label="Safety Notes"
               value={safetyNotes}
-              onChange={(e) => setSafetyNotes(e.target.value)}
+              onChange={e => setSafetyNotes(e.target.value)}
               placeholder="Enter any additional safety observations..."
               rows={4}
             />
@@ -313,13 +293,11 @@ export function JobSummaryFeedback() {
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <div className="flex">
-                  {[1, 2, 3, 4, 5].map((star) => (
+                  {[1, 2, 3, 4, 5].map(star => (
                     <svg
                       key={star}
                       className={`h-5 w-5 ${
-                        star <= feedback.rating
-                          ? 'text-warning-400'
-                          : 'text-gray-300'
+                        star <= feedback.rating ? 'text-warning-400' : 'text-gray-300'
                       }`}
                       fill="currentColor"
                       viewBox="0 0 20 20"
@@ -338,9 +316,7 @@ export function JobSummaryFeedback() {
               </p>
             </div>
           ) : (
-            <p className="text-gray-500 text-center py-4">
-              No feedback received yet
-            </p>
+            <p className="text-gray-500 text-center py-4">No feedback received yet</p>
           )}
         </CardContent>
       </Card>
@@ -357,7 +333,7 @@ export function JobSummaryFeedback() {
                 type="checkbox"
                 id="jobFeedback-requestDiscount"
                 checked={isDiscountRequested}
-                onChange={(e) => setIsDiscountRequested(e.target.checked)}
+                onChange={e => setIsDiscountRequested(e.target.checked)}
                 className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
               />
               <label htmlFor="requestDiscount" className="text-sm text-gray-700">
@@ -370,7 +346,7 @@ export function JobSummaryFeedback() {
                 <TextArea
                   label="Reason for Discount"
                   value={discountReason}
-                  onChange={(e) => setDiscountReason(e.target.value)}
+                  onChange={e => setDiscountReason(e.target.value)}
                   placeholder="Explain why a discount is being requested..."
                   rows={3}
                 />
@@ -380,7 +356,7 @@ export function JobSummaryFeedback() {
                     type="number"
                     label="Discount Percentage"
                     value={discountPercentage}
-                    onChange={(e) => setDiscountPercentage(e.target.value)}
+                    onChange={e => setDiscountPercentage(e.target.value)}
                     min="0"
                     max="100"
                     placeholder="Enter %"
@@ -388,9 +364,7 @@ export function JobSummaryFeedback() {
                 </div>
 
                 <div className="flex justify-end">
-                  <Button onClick={handleDiscountRequest}>
-                    Submit for Approval
-                  </Button>
+                  <Button onClick={handleDiscountRequest}>Submit for Approval</Button>
                 </div>
               </div>
             )}

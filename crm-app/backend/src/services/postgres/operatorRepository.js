@@ -13,7 +13,7 @@ export const getOperators = async () => {
   }
 };
 
-export const getOperatorById = async (id) => {
+export const getOperatorById = async id => {
   try {
     console.log(`🔍 Fetching operator by ID: ${id}`);
     const operator = await db.oneOrNone('SELECT * FROM operators WHERE id = $1', [id]);
@@ -25,7 +25,7 @@ export const getOperatorById = async (id) => {
   }
 };
 
-export const createOperator = async (operatorData) => {
+export const createOperator = async operatorData => {
   try {
     console.log('🆕 Creating new operator...');
     const result = await db.one(
@@ -37,7 +37,7 @@ export const createOperator = async (operatorData) => {
         operatorData.phone,
         operatorData.specialization,
         operatorData.certifications ? JSON.stringify(operatorData.certifications) : null,
-        operatorData.availability || 'available'
+        operatorData.availability || 'available',
       ]
     );
     console.log(`✅ Operator created successfully: ${result.id}`);
@@ -93,7 +93,7 @@ export const updateOperator = async (id, operatorData) => {
   }
 };
 
-export const deleteOperator = async (id) => {
+export const deleteOperator = async id => {
   try {
     console.log(`🗑️ Deleting operator: ${id}`);
     await db.none('DELETE FROM operators WHERE id = $1', [id]);

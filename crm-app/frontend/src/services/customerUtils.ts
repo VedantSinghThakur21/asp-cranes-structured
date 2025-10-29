@@ -7,26 +7,33 @@
  * Extract customer information from a lead object
  * Provides fallback values to ensure customer data is always available
  */
-export const extractCustomerFromLead = (lead: any): { 
-  customerName: string; 
-  companyName: string; 
-  email: string; 
-  phone: string; 
+export const extractCustomerFromLead = (
+  lead: any
+): {
+  customerName: string;
+  companyName: string;
+  email: string;
+  phone: string;
 } => {
   if (!lead) {
     return {
       customerName: 'Unknown Customer',
       companyName: 'Unknown Company',
       email: '',
-      phone: ''
+      phone: '',
     };
   }
 
   return {
     customerName: lead.customerName || lead.customer_name || 'Unknown Customer',
-    companyName: lead.companyName || lead.company_name || lead.customerName || lead.customer_name || 'Unknown Company',
+    companyName:
+      lead.companyName ||
+      lead.company_name ||
+      lead.customerName ||
+      lead.customer_name ||
+      'Unknown Company',
     email: lead.email || '',
-    phone: lead.phone || ''
+    phone: lead.phone || '',
   };
 };
 
@@ -34,7 +41,9 @@ export const extractCustomerFromLead = (lead: any): {
  * Extract customer information from a deal object
  * Handles various response formats and provides consistent fallbacks
  */
-export const extractCustomerFromDeal = (deal: any): {
+export const extractCustomerFromDeal = (
+  deal: any
+): {
   customerName: string;
   companyName: string;
   email: string;
@@ -45,7 +54,7 @@ export const extractCustomerFromDeal = (deal: any): {
       customerName: 'Unknown Customer',
       companyName: 'Unknown Company',
       email: '',
-      phone: ''
+      phone: '',
     };
   }
 
@@ -53,18 +62,27 @@ export const extractCustomerFromDeal = (deal: any): {
   if (deal.customer && typeof deal.customer === 'object') {
     return {
       customerName: deal.customer.name || deal.customer.customerName || 'Unknown Customer',
-      companyName: deal.customer.companyName || deal.customer.company_name || deal.customer.name || 'Unknown Company',
+      companyName:
+        deal.customer.companyName ||
+        deal.customer.company_name ||
+        deal.customer.name ||
+        'Unknown Company',
       email: deal.customer.email || '',
-      phone: deal.customer.phone || ''
+      phone: deal.customer.phone || '',
     };
   }
 
   // Handle flat structure
   return {
     customerName: deal.customerName || deal.customer_name || 'Unknown Customer',
-    companyName: deal.companyName || deal.company_name || deal.customerName || deal.customer_name || 'Unknown Company',
+    companyName:
+      deal.companyName ||
+      deal.company_name ||
+      deal.customerName ||
+      deal.customer_name ||
+      'Unknown Company',
     email: deal.customerEmail || deal.customer_email || deal.email || '',
-    phone: deal.customerPhone || deal.customer_phone || deal.phone || ''
+    phone: deal.customerPhone || deal.customer_phone || deal.phone || '',
   };
 };
 
@@ -72,15 +90,23 @@ export const extractCustomerFromDeal = (deal: any): {
  * Normalize customer data for display
  * Ensures consistent formatting and handles edge cases
  */
-export const normalizeCustomerData = (customer: any): {
+export const normalizeCustomerData = (
+  customer: any
+): {
   displayName: string;
   displayCompany: string;
   displayEmail: string;
   displayPhone: string;
   fullDisplay: string;
 } => {
-  const name = customer?.name || customer?.customerName || customer?.customer_name || 'Unknown Customer';
-  const company = customer?.companyName || customer?.company_name || customer?.contactName || customer?.contact_name || name;
+  const name =
+    customer?.name || customer?.customerName || customer?.customer_name || 'Unknown Customer';
+  const company =
+    customer?.companyName ||
+    customer?.company_name ||
+    customer?.contactName ||
+    customer?.contact_name ||
+    name;
   const email = customer?.email || '';
   const phone = customer?.phone || '';
 
@@ -89,7 +115,7 @@ export const normalizeCustomerData = (customer: any): {
     displayCompany: company !== name ? company : '',
     displayEmail: email,
     displayPhone: phone,
-    fullDisplay: company !== name ? `${name} (${company})` : name
+    fullDisplay: company !== name ? `${name} (${company})` : name,
   };
 };
 
@@ -141,10 +167,10 @@ export const extractDataFromApiResponse = <T>(response: any): T[] => {
  */
 export const hasValidCustomerInfo = (item: any): boolean => {
   if (!item) return false;
-  
-  const customerName = item.customerName || item.customer_name || 
-                      (item.customer && item.customer.name);
-  
+
+  const customerName =
+    item.customerName || item.customer_name || (item.customer && item.customer.name);
+
   return Boolean(customerName && customerName.trim() !== '' && customerName !== 'Unknown Customer');
 };
 
@@ -154,12 +180,12 @@ export const hasValidCustomerInfo = (item: any): boolean => {
  */
 export const getCustomerIdentifier = (item: any): string => {
   if (!item) return 'No item';
-  
-  const name = item.customerName || item.customer_name || 
-               (item.customer && item.customer.name) || 'Unknown';
+
+  const name =
+    item.customerName || item.customer_name || (item.customer && item.customer.name) || 'Unknown';
   const email = item.email || (item.customer && item.customer.email) || '';
   const id = item.customerId || item.customer_id || item.id || '';
-  
+
   return `${name}${email ? ` (${email})` : ''}${id ? ` [${id}]` : ''}`;
 };
 
@@ -169,5 +195,5 @@ export default {
   normalizeCustomerData,
   extractDataFromApiResponse,
   hasValidCustomerInfo,
-  getCustomerIdentifier
+  getCustomerIdentifier,
 };

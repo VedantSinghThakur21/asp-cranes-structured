@@ -1,10 +1,12 @@
 // Get equipment by category
-export const getEquipmentByCategory = async (category) => {
+export const getEquipmentByCategory = async category => {
   try {
     console.log(`📋 Fetching equipment by category: ${category}`);
-    const equipment = await db.any('SELECT * FROM equipment WHERE category = $1 ORDER BY name', [category]);
+    const equipment = await db.any('SELECT * FROM equipment WHERE category = $1 ORDER BY name', [
+      category,
+    ]);
     console.log(`✅ Found ${equipment.length} equipment items for category ${category}`);
-    
+
     // Transform the data to match frontend expectations
     const transformedEquipment = equipment.map(item => ({
       id: item.id,
@@ -19,15 +21,15 @@ export const getEquipmentByCategory = async (category) => {
         micro: parseFloat(item.base_rate_micro) || 0,
         small: parseFloat(item.base_rate_small) || 0,
         monthly: parseFloat(item.base_rate_monthly) || 0,
-        yearly: parseFloat(item.base_rate_yearly) || 0
+        yearly: parseFloat(item.base_rate_yearly) || 0,
       },
       runningCostPerKm: parseFloat(item.running_cost_per_km) || 0,
       description: item.description,
       status: item.status,
       createdAt: item.created_at,
-      updatedAt: item.updated_at
+      updatedAt: item.updated_at,
     }));
-    
+
     console.log(`🔄 Transformed equipment data:`, transformedEquipment[0]);
     return transformedEquipment;
   } catch (error) {
@@ -43,7 +45,7 @@ export const getAllEquipment = async () => {
     console.log('📋 Fetching all equipment...');
     const equipment = await db.any('SELECT * FROM equipment ORDER BY name');
     console.log(`✅ Found ${equipment.length} equipment items`);
-    
+
     // Transform the data to match frontend expectations
     const transformedEquipment = equipment.map(item => ({
       id: item.id,
@@ -58,15 +60,15 @@ export const getAllEquipment = async () => {
         micro: parseFloat(item.base_rate_micro) || 0,
         small: parseFloat(item.base_rate_small) || 0,
         monthly: parseFloat(item.base_rate_monthly) || 0,
-        yearly: parseFloat(item.base_rate_yearly) || 0
+        yearly: parseFloat(item.base_rate_yearly) || 0,
       },
       runningCostPerKm: parseFloat(item.running_cost_per_km) || 0,
       description: item.description,
       status: item.status,
       createdAt: item.created_at,
-      updatedAt: item.updated_at
+      updatedAt: item.updated_at,
     }));
-    
+
     return transformedEquipment;
   } catch (error) {
     console.error('❌ Error fetching equipment:', error);
@@ -74,14 +76,14 @@ export const getAllEquipment = async () => {
   }
 };
 
-export const getEquipmentById = async (id) => {
+export const getEquipmentById = async id => {
   try {
     console.log(`🔍 Fetching equipment by ID: ${id}`);
     const equipment = await db.oneOrNone('SELECT * FROM equipment WHERE id = $1', [id]);
     console.log(`📝 Equipment found: ${equipment ? 'Yes' : 'No'}`);
-    
+
     if (!equipment) return null;
-    
+
     // Transform the data to match frontend expectations
     const transformedEquipment = {
       id: equipment.id,
@@ -96,15 +98,15 @@ export const getEquipmentById = async (id) => {
         micro: parseFloat(equipment.base_rate_micro) || 0,
         small: parseFloat(equipment.base_rate_small) || 0,
         monthly: parseFloat(equipment.base_rate_monthly) || 0,
-        yearly: parseFloat(equipment.base_rate_yearly) || 0
+        yearly: parseFloat(equipment.base_rate_yearly) || 0,
       },
       runningCostPerKm: parseFloat(equipment.running_cost_per_km) || 0,
       description: equipment.description,
       status: equipment.status,
       createdAt: equipment.created_at,
-      updatedAt: equipment.updated_at
+      updatedAt: equipment.updated_at,
     };
-    
+
     return transformedEquipment;
   } catch (error) {
     console.error('❌ Error fetching equipment by ID:', error);
@@ -112,7 +114,7 @@ export const getEquipmentById = async (id) => {
   }
 };
 
-export const createEquipment = async (equipmentData) => {
+export const createEquipment = async equipmentData => {
   try {
     console.log('🆕 Creating new equipment...');
     const result = await db.one(
@@ -136,7 +138,7 @@ export const createEquipment = async (equipmentData) => {
         equipmentData.baseRates?.yearly,
         equipmentData.runningCostPerKm,
         equipmentData.description,
-        equipmentData.status || 'available'
+        equipmentData.status || 'available',
       ]
     );
     console.log(`✅ Equipment created successfully: ${result.id}`);
@@ -224,7 +226,7 @@ export const updateEquipment = async (id, equipmentData) => {
   }
 };
 
-export const deleteEquipment = async (id) => {
+export const deleteEquipment = async id => {
   try {
     console.log(`🗑️ Deleting equipment: ${id}`);
     await db.none('DELETE FROM equipment WHERE id = $1', [id]);

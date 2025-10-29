@@ -15,7 +15,7 @@ import {
   Filter,
   Download,
   Upload,
-  MessageSquare
+  MessageSquare,
 } from 'lucide-react';
 
 export type ContactType = 'prospect' | 'customer' | 'partner' | 'vendor' | 'other';
@@ -118,7 +118,7 @@ export function ContactManagement() {
           city: 'Chicago',
           state: 'IL',
           zipCode: '60601',
-          country: 'USA'
+          country: 'USA',
         },
         website: 'www.constructcorp.com',
         linkedIn: 'linkedin.com/in/johnsmith',
@@ -135,7 +135,7 @@ export function ContactManagement() {
         createdBy: 'sales1',
         createdByName: 'Sarah Johnson',
         createdAt: '2024-01-15',
-        updatedAt: '2024-06-10'
+        updatedAt: '2024-06-10',
       },
       {
         id: '2',
@@ -152,7 +152,7 @@ export function ContactManagement() {
           city: 'Houston',
           state: 'TX',
           zipCode: '77001',
-          country: 'USA'
+          country: 'USA',
         },
         tags: ['industrial', 'heavy-lift', 'potential-high-value'],
         notes: 'Interested in heavy lifting equipment for new facility. Budget approved for Q3.',
@@ -166,7 +166,7 @@ export function ContactManagement() {
         createdBy: 'sales2',
         createdByName: 'Mike Chen',
         createdAt: '2024-05-20',
-        updatedAt: '2024-06-05'
+        updatedAt: '2024-06-05',
       },
       {
         id: '3',
@@ -183,10 +183,11 @@ export function ContactManagement() {
           city: 'Los Angeles',
           state: 'CA',
           zipCode: '90001',
-          country: 'USA'
+          country: 'USA',
         },
         tags: ['engineering', 'technical-contact', 'west-coast'],
-        notes: 'Technical expert who influences equipment selection. Focus on specifications and safety.',
+        notes:
+          'Technical expert who influences equipment selection. Focus on specifications and safety.',
         leadSource: 'Referral',
         assignedTo: 'sales1',
         assignedToName: 'Sarah Johnson',
@@ -198,7 +199,7 @@ export function ContactManagement() {
         createdBy: 'sales1',
         createdByName: 'Sarah Johnson',
         createdAt: '2024-02-10',
-        updatedAt: '2024-06-08'
+        updatedAt: '2024-06-08',
       },
       {
         id: '4',
@@ -215,7 +216,7 @@ export function ContactManagement() {
           city: 'Denver',
           state: 'CO',
           zipCode: '80201',
-          country: 'USA'
+          country: 'USA',
         },
         tags: ['partner', 'procurement', 'bulk-orders'],
         notes: 'Strategic partner for equipment procurement. Volume discount agreements in place.',
@@ -230,8 +231,8 @@ export function ContactManagement() {
         createdBy: 'admin',
         createdByName: 'Admin User',
         createdAt: '2024-01-05',
-        updatedAt: '2024-06-12'
-      }
+        updatedAt: '2024-06-12',
+      },
     ];
 
     const mockActivities: ContactActivity[] = [
@@ -243,7 +244,7 @@ export function ContactManagement() {
         description: 'Discussed requirements for upcoming warehouse project',
         date: '2024-06-10',
         createdBy: 'sales1',
-        createdByName: 'Sarah Johnson'
+        createdByName: 'Sarah Johnson',
       },
       {
         id: '2',
@@ -253,8 +254,8 @@ export function ContactManagement() {
         description: 'Sent detailed proposal for industrial lifting requirements',
         date: '2024-06-05',
         createdBy: 'sales2',
-        createdByName: 'Mike Chen'
-      }
+        createdByName: 'Mike Chen',
+      },
     ];
 
     setTimeout(() => {
@@ -266,14 +267,15 @@ export function ContactManagement() {
 
   const filteredContacts = contacts.filter(contact => {
     const fullName = `${contact.firstName} ${contact.lastName}`.toLowerCase();
-    const matchesSearch = fullName.includes(searchTerm.toLowerCase()) ||
-                         contact.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         contact.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         contact.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesSearch =
+      fullName.includes(searchTerm.toLowerCase()) ||
+      contact.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      contact.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      contact.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesType = typeFilter === 'all' || contact.contactType === typeFilter;
     const matchesStatus = statusFilter === 'all' || contact.status === statusFilter;
     const matchesStarred = !showStarredOnly || contact.isStarred;
-    
+
     return matchesSearch && matchesType && matchesStatus && matchesStarred;
   });
 
@@ -297,7 +299,7 @@ export function ContactManagement() {
           <h1 className="text-2xl font-bold text-gray-900">Contact Management</h1>
           <p className="text-gray-600">Manage your business contacts and relationships</p>
         </div>
-        
+
         <div className="flex flex-col sm:flex-row gap-3">
           <button
             onClick={() => setViewMode(viewMode === 'cards' ? 'list' : 'cards')}
@@ -306,7 +308,7 @@ export function ContactManagement() {
             <Filter size={18} />
             {viewMode === 'cards' ? 'List View' : 'Card View'}
           </button>
-          
+
           <div className="flex gap-2">
             <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
               <Upload size={18} />
@@ -317,7 +319,7 @@ export function ContactManagement() {
               Export
             </button>
           </div>
-          
+
           <button className="flex items-center gap-2 bg-brand-blue text-white px-4 py-2 rounded-lg hover:bg-brand-blue/90">
             <Plus size={18} />
             New Contact
@@ -329,12 +331,15 @@ export function ContactManagement() {
       <div className="flex flex-col sm:flex-row gap-4 bg-white p-4 rounded-lg border border-gray-200">
         <div className="flex-1">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+            <Search
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+              size={18}
+            />
             <input
               type="text"
               placeholder="Search contacts..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={e => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-blue focus:border-transparent"
             />
           </div>
@@ -342,18 +347,20 @@ export function ContactManagement() {
 
         <select
           value={typeFilter}
-          onChange={(e) => setTypeFilter(e.target.value as ContactType | 'all')}
+          onChange={e => setTypeFilter(e.target.value as ContactType | 'all')}
           className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-blue"
         >
           <option value="all">All Types</option>
           {CONTACT_TYPES.map(type => (
-            <option key={type.value} value={type.value}>{type.label}</option>
+            <option key={type.value} value={type.value}>
+              {type.label}
+            </option>
           ))}
         </select>
 
         <select
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value as ContactStatus | 'all')}
+          onChange={e => setStatusFilter(e.target.value as ContactStatus | 'all')}
           className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-blue"
         >
           <option value="all">All Statuses</option>
@@ -366,8 +373,8 @@ export function ContactManagement() {
         <button
           onClick={() => setShowStarredOnly(!showStarredOnly)}
           className={`flex items-center gap-2 px-3 py-2 border rounded-lg ${
-            showStarredOnly 
-              ? 'bg-yellow-50 text-yellow-700 border-yellow-200' 
+            showStarredOnly
+              ? 'bg-yellow-50 text-yellow-700 border-yellow-200'
               : 'border-gray-300 hover:bg-gray-50'
           }`}
         >
@@ -382,7 +389,10 @@ export function ContactManagement() {
           {filteredContacts.map(contact => {
             const contactType = CONTACT_TYPES.find(t => t.value === contact.contactType);
             return (
-              <div key={contact.id} className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-all">
+              <div
+                key={contact.id}
+                className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-all"
+              >
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-full bg-brand-blue/10 flex items-center justify-center">
@@ -398,15 +408,22 @@ export function ContactManagement() {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => {
-                        setContacts(contacts.map(c => 
-                          c.id === contact.id ? { ...c, isStarred: !c.isStarred } : c
-                        ));
+                        setContacts(
+                          contacts.map(c =>
+                            c.id === contact.id ? { ...c, isStarred: !c.isStarred } : c
+                          )
+                        );
                       }}
                       className="text-gray-400 hover:text-yellow-500"
                     >
-                      <Star size={16} className={contact.isStarred ? 'fill-current text-yellow-500' : ''} />
+                      <Star
+                        size={16}
+                        className={contact.isStarred ? 'fill-current text-yellow-500' : ''}
+                      />
                     </button>
-                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${contactType?.color}`}>
+                    <span
+                      className={`text-xs px-2 py-1 rounded-full font-medium ${contactType?.color}`}
+                    >
                       {contactType?.label}
                     </span>
                   </div>
@@ -427,13 +444,18 @@ export function ContactManagement() {
                   </div>
                   <div className="flex items-center gap-2 text-sm text-gray-600">
                     <MapPin size={14} />
-                    <span>{contact.address.city}, {contact.address.state}</span>
+                    <span>
+                      {contact.address.city}, {contact.address.state}
+                    </span>
                   </div>
                 </div>
 
                 <div className="flex flex-wrap gap-1 mb-4">
                   {contact.tags.slice(0, 3).map(tag => (
-                    <span key={tag} className="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded-full">
+                    <span
+                      key={tag}
+                      className="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded-full"
+                    >
                       {tag}
                     </span>
                   ))}
@@ -450,7 +472,7 @@ export function ContactManagement() {
                 </div>
 
                 <div className="flex gap-2 pt-3 border-t">
-                  <button 
+                  <button
                     onClick={() => setSelectedContact(contact)}
                     className="flex-1 flex items-center justify-center gap-1 py-2 px-3 text-xs bg-blue-50 text-blue-700 rounded hover:bg-blue-100"
                   >
@@ -508,21 +530,29 @@ export function ContactManagement() {
                       </td>
                       <td className="py-3 px-4 text-sm">{contact.company}</td>
                       <td className="py-3 px-4">
-                        <span className={`text-xs px-2 py-1 rounded-full font-medium ${contactType?.color}`}>
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full font-medium ${contactType?.color}`}
+                        >
                           {contactType?.label}
                         </span>
                       </td>
                       <td className="py-3 px-4">
-                        <span className={`text-xs px-2 py-1 rounded-full font-medium border ${STATUS_COLORS[contact.status]}`}>
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full font-medium border ${STATUS_COLORS[contact.status]}`}
+                        >
                           {contact.status.toUpperCase()}
                         </span>
                       </td>
                       <td className="py-3 px-4 text-sm">{contact.phone}</td>
-                      <td className="py-3 px-4 text-sm">{contact.address.city}, {contact.address.state}</td>
-                      <td className="py-3 px-4 text-sm font-medium">₹{contact.totalRevenue.toLocaleString()}</td>
+                      <td className="py-3 px-4 text-sm">
+                        {contact.address.city}, {contact.address.state}
+                      </td>
+                      <td className="py-3 px-4 text-sm font-medium">
+                        ₹{contact.totalRevenue.toLocaleString()}
+                      </td>
                       <td className="py-3 px-4 text-right">
                         <div className="flex items-center justify-end gap-1">
-                          <button 
+                          <button
                             onClick={() => setSelectedContact(contact)}
                             className="p-1 text-gray-400 hover:text-blue-600 rounded"
                           >
@@ -573,7 +603,9 @@ export function ContactManagement() {
                     <h2 className="text-2xl font-bold text-gray-900">
                       {selectedContact.firstName} {selectedContact.lastName}
                     </h2>
-                    <p className="text-gray-600">{selectedContact.title} at {selectedContact.company}</p>
+                    <p className="text-gray-600">
+                      {selectedContact.title} at {selectedContact.company}
+                    </p>
                   </div>
                 </div>
                 <button
@@ -584,7 +616,7 @@ export function ContactManagement() {
                 </button>
               </div>
             </div>
-            
+
             <div className="p-6">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 space-y-6">
@@ -616,18 +648,30 @@ export function ContactManagement() {
                     <h3 className="text-lg font-medium text-gray-900 mb-4">Recent Activities</h3>
                     <div className="space-y-3">
                       {getContactActivities(selectedContact.id).map(activity => (
-                        <div key={activity.id} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
+                        <div
+                          key={activity.id}
+                          className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg"
+                        >
                           <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                            {activity.type === 'call' && <Phone size={14} className="text-blue-600" />}
-                            {activity.type === 'email' && <Mail size={14} className="text-blue-600" />}
-                            {activity.type === 'meeting' && <Calendar size={14} className="text-blue-600" />}
-                            {activity.type === 'note' && <MessageSquare size={14} className="text-blue-600" />}
+                            {activity.type === 'call' && (
+                              <Phone size={14} className="text-blue-600" />
+                            )}
+                            {activity.type === 'email' && (
+                              <Mail size={14} className="text-blue-600" />
+                            )}
+                            {activity.type === 'meeting' && (
+                              <Calendar size={14} className="text-blue-600" />
+                            )}
+                            {activity.type === 'note' && (
+                              <MessageSquare size={14} className="text-blue-600" />
+                            )}
                           </div>
                           <div className="flex-1">
                             <div className="font-medium text-gray-900">{activity.subject}</div>
                             <div className="text-sm text-gray-600 mb-1">{activity.description}</div>
                             <div className="text-xs text-gray-500">
-                              {new Date(activity.date).toLocaleDateString()} by {activity.createdByName}
+                              {new Date(activity.date).toLocaleDateString()} by{' '}
+                              {activity.createdByName}
                             </div>
                           </div>
                         </div>
@@ -668,7 +712,10 @@ export function ContactManagement() {
                     <h3 className="text-lg font-medium text-gray-900 mb-4">Tags</h3>
                     <div className="flex flex-wrap gap-2">
                       {selectedContact.tags.map(tag => (
-                        <span key={tag} className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">
+                        <span
+                          key={tag}
+                          className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full"
+                        >
                           {tag}
                         </span>
                       ))}

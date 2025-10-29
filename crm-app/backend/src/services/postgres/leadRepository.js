@@ -21,7 +21,7 @@ export const getLeads = async () => {
       createdAt: row.created_at,
       updatedAt: row.updated_at,
       files: row.files ? JSON.parse(row.files) : [],
-      notes: row.notes
+      notes: row.notes,
     }));
     console.log(`✅ Found ${formattedLeads.length} leads`);
     return formattedLeads;
@@ -31,7 +31,7 @@ export const getLeads = async () => {
   }
 };
 
-export const getLeadById = async (id) => {
+export const getLeadById = async id => {
   try {
     console.log(`🔍 Fetching lead by ID: ${id}`);
     const lead = await db.oneOrNone('SELECT * FROM leads WHERE id = $1', [id]);
@@ -39,7 +39,7 @@ export const getLeadById = async (id) => {
       console.log('📝 Lead not found');
       return null;
     }
-    
+
     const formattedLead = {
       id: lead.id,
       customerName: lead.customer_name,
@@ -56,7 +56,7 @@ export const getLeadById = async (id) => {
       createdAt: lead.created_at,
       updatedAt: lead.updated_at,
       files: lead.files ? JSON.parse(lead.files) : [],
-      notes: lead.notes
+      notes: lead.notes,
     };
     console.log('✅ Lead found and formatted');
     return formattedLead;
@@ -66,7 +66,7 @@ export const getLeadById = async (id) => {
   }
 };
 
-export const createLead = async (leadData) => {
+export const createLead = async leadData => {
   try {
     if (!leadData.serviceNeeded) {
       throw new Error('serviceNeeded is required');
@@ -88,7 +88,7 @@ export const createLead = async (leadData) => {
         leadData.source,
         leadData.assignedTo,
         leadData.files ? JSON.stringify(leadData.files) : null,
-        leadData.notes || ''
+        leadData.notes || '',
       ]
     );
     console.log(`✅ Lead created successfully: ${result.id}`);
@@ -108,7 +108,7 @@ export const createLead = async (leadData) => {
       createdAt: result.created_at,
       updatedAt: result.updated_at,
       files: result.files ? JSON.parse(result.files) : [],
-      notes: result.notes
+      notes: result.notes,
     };
   } catch (error) {
     console.error('❌ Error creating lead:', error);
@@ -182,7 +182,7 @@ export const updateLead = async (id, leadData) => {
     const query = `UPDATE leads SET ${updates.join(', ')} WHERE id = $${paramIndex} RETURNING *`;
     const result = await db.one(query, values);
     console.log(`✅ Lead updated successfully: ${result.id}`);
-    
+
     return {
       id: result.id,
       customerName: result.customer_name,
@@ -199,7 +199,7 @@ export const updateLead = async (id, leadData) => {
       createdAt: result.created_at,
       updatedAt: result.updated_at,
       files: result.files ? JSON.parse(result.files) : [],
-      notes: result.notes
+      notes: result.notes,
     };
   } catch (error) {
     console.error('❌ Error updating lead:', error);
@@ -207,7 +207,7 @@ export const updateLead = async (id, leadData) => {
   }
 };
 
-export const deleteLead = async (id) => {
+export const deleteLead = async id => {
   try {
     console.log(`🗑️ Deleting lead: ${id}`);
     await db.none('DELETE FROM leads WHERE id = $1', [id]);
@@ -226,7 +226,7 @@ export const updateLeadStatus = async (id, status) => {
       [status, id]
     );
     console.log(`✅ Lead status updated successfully: ${result.id}`);
-    
+
     return {
       id: result.id,
       customerName: result.customer_name,
@@ -243,7 +243,7 @@ export const updateLeadStatus = async (id, status) => {
       createdAt: result.created_at,
       updatedAt: result.updated_at,
       files: result.files ? JSON.parse(result.files) : [],
-      notes: result.notes
+      notes: result.notes,
     };
   } catch (error) {
     console.error('❌ Error updating lead status:', error);

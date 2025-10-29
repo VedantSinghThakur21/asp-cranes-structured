@@ -10,7 +10,6 @@ import { EnhancedTemplateBuilder } from '../services/EnhancedTemplateBuilder.mjs
 
 const router = express.Router();
 
-
 // Helper function to generate quotation number from ID
 function generateQuotationNumber(quotationId) {
   // Extract number from quotation ID (quot_XXXXXXXX format)
@@ -18,17 +17,16 @@ function generateQuotationNumber(quotationId) {
   if (idParts.length >= 2) {
     // Use the UUID part to generate a consistent number
     const hashCode = idParts[1].split('').reduce((a, b) => {
-      a = ((a << 5) - a) + b.charCodeAt(0);
+      a = (a << 5) - a + b.charCodeAt(0);
       return a & a;
     }, 0);
-    const num = Math.abs(hashCode) % 9999 + 1; // Ensure it's between 1-9999
+    const num = (Math.abs(hashCode) % 9999) + 1; // Ensure it's between 1-9999
     return `ASP-Q-${num.toString().padStart(3, '0')}`;
   }
-  
+
   // Fallback: use full ID
   return `ASP-Q-${quotationId.substring(5, 8).toUpperCase()}`;
 }
-
 
 /**
  * GET /api/quotations/:id/preview - Generate quotation preview
@@ -38,14 +36,14 @@ router.get('/:id/preview', async (req, res) => {
   try {
     const { id: quotationId } = req.params;
     const { templateId, format = 'html' } = req.query;
-    
+
     console.log('👁️ [Preview] Generating preview for quotation:', quotationId);
     console.log('👁️ [Preview] Template ID:', templateId || 'default');
-    
+
     if (!quotationId) {
       return res.status(400).json({
         success: false,
-        error: 'Quotation ID is required'
+        error: 'Quotation ID is required',
       });
     }
 
@@ -54,19 +52,19 @@ router.get('/:id/preview', async (req, res) => {
     if (!quotationData) {
       return res.status(404).json({
         success: false,
-        error: 'Quotation not found'
+        error: 'Quotation not found',
       });
     }
 
     // Step 2: Get or create template
     let template;
     const templateBuilder = new EnhancedTemplateBuilder();
-    
+
     if (templateId) {
       // Use specific template
       try {
         console.log('🎨 [Preview] Loading specific template:', templateId);
-        
+
         // Check if template exists first
         const client = await pool.connect();
         let templateExists = false;
@@ -84,31 +82,41 @@ router.get('/:id/preview', async (req, res) => {
         } finally {
           client.release();
         }
-        
+
         if (!templateExists) {
           throw new Error(`Template with ID '${templateId}' does not exist in database`);
         }
-        
+
         await templateBuilder.loadTemplate(templateId);
         template = templateBuilder.template;
-        console.log('📋 [Preview] Successfully loaded template:', template.name, 'ID:', template.id);
+        console.log(
+          '📋 [Preview] Successfully loaded template:',
+          template.name,
+          'ID:',
+          template.id
+        );
         console.log('🔍 [Preview] Template elements:', template.elements?.length, 'elements');
         console.log('🔍 [Preview] Template description:', template.description);
-        
+
         // Verify the loaded template matches what was requested
         if (template.id !== templateId) {
-          console.error('❌ [Preview] MISMATCH! Requested:', templateId, 'but loaded:', template.id);
+          console.error(
+            '❌ [Preview] MISMATCH! Requested:',
+            templateId,
+            'but loaded:',
+            template.id
+          );
           throw new Error(`Template ID mismatch: requested ${templateId}, got ${template.id}`);
         }
       } catch (error) {
         console.error('❌ [Preview] Failed to load template:', templateId);
         console.error('❌ [Preview] Error details:', error.message);
-        
+
         return res.status(404).json({
           success: false,
           error: 'Template not found',
           message: `Template '${templateId}' could not be loaded: ${error.message}`,
-          templateId: templateId
+          templateId: templateId,
         });
       }
     } else {
@@ -123,7 +131,7 @@ router.get('/:id/preview', async (req, res) => {
       hasCompany: !!previewData.company,
       hasClient: !!previewData.client,
       hasQuotation: !!previewData.quotation,
-      itemsCount: previewData.items?.length || 0
+      itemsCount: previewData.items?.length || 0,
     });
     const html = templateBuilder.generatePreviewHTML(previewData);
     const debugInfo = `<!-- TEMPLATE_DEBUG: ID=${template.id} NAME="${template.name}" DESCRIPTION="${template.description || 'No description'}" ELEMENTS=${template.elements?.length || 0} THEME=${template.theme || 'MODERN'} GENERATED=${new Date().toISOString()} REQUESTED_ID=${templateId || 'default'} -->`;
@@ -139,26 +147,25 @@ router.get('/:id/preview', async (req, res) => {
             name: template.name,
             description: template.description,
             elementCount: template.elements?.length || 0,
-            generatedAt: new Date().toISOString()
+            generatedAt: new Date().toISOString(),
           },
           activeTemplateId: template.id,
-            quotation: quotationData,
-            totals: previewData.totals || {},
-            tax: previewData.tax || { rate: previewData?.quotation?.taxRate || 18 }
-        }
+          quotation: quotationData,
+          totals: previewData.totals || {},
+          tax: previewData.tax || { rate: previewData?.quotation?.taxRate || 18 },
+        },
       });
     }
 
     // Return HTML for iframe preview
     res.setHeader('Content-Type', 'text/html');
     res.send(augmentedHtml);
-
   } catch (error) {
     console.error('❌ [Preview] Preview generation failed:', error);
     res.status(500).json({
       success: false,
       error: 'Preview generation failed',
-      message: error.message
+      message: error.message,
     });
   }
 });
@@ -172,14 +179,14 @@ router.get('/:id/preview/iframe', async (req, res) => {
   try {
     const { id: quotationId } = req.params;
     const { templateId } = req.query;
-    
+
     // Minimal headers for iframe embedding - avoid browser security warnings
     res.setHeader('X-Frame-Options', 'SAMEORIGIN');
     res.setHeader('Content-Security-Policy', "frame-ancestors 'self'");
-    
+
     console.log('🖼️ [Preview] Generating iframe preview for quotation:', quotationId);
     console.log('🖼️ [Preview] Bypassing auth for iframe request');
-    
+
     const quotationData = await getQuotationWithDetails(quotationId);
     if (!quotationData) {
       return res.status(404).send(`
@@ -193,16 +200,16 @@ router.get('/:id/preview/iframe', async (req, res) => {
     console.log('✅ [Preview] Quotation data retrieved:', {
       id: quotationData.id,
       customerName: quotationData.customer_name,
-      machineType: quotationData.machine_type
+      machineType: quotationData.machine_type,
     });
 
     const templateBuilder = new EnhancedTemplateBuilder();
     let template;
-    
+
     if (templateId) {
       try {
         console.log('🎨 [Preview] Loading specific template for iframe:', templateId);
-        
+
         // First check if template exists in database
         const client = await pool.connect();
         let templateExists = false;
@@ -220,34 +227,50 @@ router.get('/:id/preview/iframe', async (req, res) => {
         } finally {
           client.release();
         }
-        
+
         if (!templateExists) {
           throw new Error(`Template with ID '${templateId}' does not exist in database`);
         }
-        
+
         await templateBuilder.loadTemplate(templateId);
         template = templateBuilder.template;
-        console.log('📋 [Preview] Successfully loaded template:', template.name, 'ID:', template.id);
+        console.log(
+          '📋 [Preview] Successfully loaded template:',
+          template.name,
+          'ID:',
+          template.id
+        );
         console.log('🔍 [Preview] Template elements:', template.elements?.length, 'elements');
-        console.log('🔍 [Preview] Template elements types:', template.elements?.map(e => e.type));
+        console.log(
+          '🔍 [Preview] Template elements types:',
+          template.elements?.map(e => e.type)
+        );
         console.log('🔍 [Preview] Template description:', template.description);
         console.log('🔍 [Preview] Template theme:', template.theme);
-        
+
         // Verify the loaded template matches what was requested
         if (template.id !== templateId) {
-          console.error('❌ [Preview] MISMATCH! Requested:', templateId, 'but loaded:', template.id);
+          console.error(
+            '❌ [Preview] MISMATCH! Requested:',
+            templateId,
+            'but loaded:',
+            template.id
+          );
           throw new Error(`Template ID mismatch: requested ${templateId}, got ${template.id}`);
         }
-        
+
         // Log first few elements for debugging
         if (template.elements && template.elements.length > 0) {
-          console.log('🔍 [Preview] First element sample:', JSON.stringify(template.elements[0], null, 2));
+          console.log(
+            '🔍 [Preview] First element sample:',
+            JSON.stringify(template.elements[0], null, 2)
+          );
         }
       } catch (error) {
         console.error('❌ [Preview] Failed to load template:', templateId);
         console.error('❌ [Preview] Error details:', error.message);
         console.error('❌ [Preview] Error stack:', error.stack);
-        
+
         // Return error instead of fallback to avoid confusion
         return res.status(404).send(`
           <div style="padding: 40px; text-align: center; font-family: Arial, sans-serif;">
@@ -270,22 +293,24 @@ router.get('/:id/preview/iframe', async (req, res) => {
       hasCompany: !!previewData.company,
       hasClient: !!previewData.client,
       hasQuotation: !!previewData.quotation,
-      itemsCount: previewData.items?.length || 0
+      itemsCount: previewData.items?.length || 0,
     });
-    
+
     const html = templateBuilder.generatePreviewHTML(previewData);
     const meta = templateBuilder.template?.__meta || {};
     const debugInfo = `<!-- TEMPLATE_DEBUG: ID=${template.id} NAME="${template.name}" DESCRIPTION="${template.description || 'No description'}" ELEMENTS=${template.elements?.length || 0} THEME=${template.theme || 'MODERN'} GENERATED=${new Date().toISOString()} REQUESTED_ID=${templateId || 'default'} DEGRADED=${meta.degraded ? 'true' : 'false'} -->`;
     let augmentedHtml = debugInfo + '\n' + html;
     if (meta.degraded) {
-      augmentedHtml = `<!-- DEGRADED_TEMPLATE columns=${(meta.degradedColumns||[]).map(c=>c.column).join(',')} -->\n` + augmentedHtml;
+      augmentedHtml =
+        `<!-- DEGRADED_TEMPLATE columns=${(meta.degradedColumns || []).map(c => c.column).join(',')} -->\n` +
+        augmentedHtml;
     }
     console.log('✅ [Preview] HTML generated for iframe, length:', html.length);
     console.log('🔍 [Preview] Debug info added to HTML:', debugInfo);
 
     // Generate weak ETag that includes quotation number to prevent wrong cache hits
     const etagSeed = `${template.id || 'default'}:${template.updated_at || template.updatedAt || 'na'}:${meta.degraded ? 'D' : 'OK'}:${previewData.quotation?.number || 'nonum'}`;
-    const etag = 'W/"' + Buffer.from(etagSeed).toString('base64').substring(0,32) + '"';
+    const etag = 'W/"' + Buffer.from(etagSeed).toString('base64').substring(0, 32) + '"';
     res.setHeader('ETag', etag);
     res.setHeader('Content-Type', 'text/html');
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
@@ -297,7 +322,6 @@ router.get('/:id/preview/iframe', async (req, res) => {
     }
 
     res.send(augmentedHtml);
-
   } catch (error) {
     console.error('❌ [Preview] Iframe preview failed:', error);
     console.error('❌ [Preview] Error stack:', error.stack);
@@ -336,7 +360,7 @@ async function getCompanyInformation() {
         ORDER BY updated_at DESC 
         LIMIT 1
       `);
-      
+
       if (result.rows.length > 0) {
         const company = result.rows[0];
         console.log('✅ [Helper] Company info fetched from database');
@@ -347,7 +371,7 @@ async function getCompanyInformation() {
           email: company.email || 'sales@aspcranes.com',
           website: company.website || 'www.aspcranes.com',
           gstNumber: company.gst_number || '',
-          letterheadUrl: company.letterhead_url || null
+          letterheadUrl: company.letterhead_url || null,
         };
       }
     } finally {
@@ -356,7 +380,7 @@ async function getCompanyInformation() {
   } catch (error) {
     console.warn('⚠️ [Helper] Could not fetch company info from database:', error.message);
   }
-  
+
   // Fallback to default values
   console.log('📋 [Helper] Using fallback company information');
   return {
@@ -366,7 +390,7 @@ async function getCompanyInformation() {
     email: 'sales@aspcranes.com',
     website: 'www.aspcranes.com',
     gstNumber: '',
-    letterheadUrl: null
+    letterheadUrl: null,
   };
 }
 
@@ -376,7 +400,7 @@ async function getCompanyInformation() {
 async function getQuotationWithDetails(quotationId) {
   try {
     console.log('🔍 [Helper] Fetching quotation:', quotationId);
-    
+
     const query = `
       SELECT 
         q.id,
@@ -416,15 +440,15 @@ async function getQuotationWithDetails(quotationId) {
       LEFT JOIN customers c ON q.customer_id = c.id
       WHERE q.id = $1
     `;
-    
+
     const result = await pool.query(query, [quotationId]);
-    
+
     if (!result.rows || result.rows.length === 0) {
       return null;
     }
 
     const row = result.rows[0];
-    
+
     // Get quotation machines/items
     const itemsQuery = `
       SELECT 
@@ -440,9 +464,9 @@ async function getQuotationWithDetails(quotationId) {
       WHERE qm.quotation_id = $1
       ORDER BY qm.created_at ASC
     `;
-    
+
     const itemsResult = await pool.query(itemsQuery, [quotationId]);
-    
+
     // Parse customer contact JSON
     let customerContact = {};
     try {
@@ -452,7 +476,7 @@ async function getQuotationWithDetails(quotationId) {
     } catch (e) {
       console.warn('Could not parse customer_contact JSON:', e);
     }
-    
+
     // Structure the quotation data
     const quotation = {
       id: row.id,
@@ -481,32 +505,32 @@ async function getQuotationWithDetails(quotationId) {
       accom_resources: row.accom_resources,
       created_at: row.created_at,
       updated_at: row.updated_at,
-      
+
       // Customer information (prioritize customer_contact JSON, fall back to joined data)
       customer: {
-        name: customerContact.name || row.customer_name || row.customer_db_name || 'Unknown Customer',
+        name:
+          customerContact.name || row.customer_name || row.customer_db_name || 'Unknown Customer',
         email: customerContact.email || row.customer_email || '',
         phone: customerContact.phone || row.customer_phone || '',
         address: customerContact.address || row.customer_address || '',
-        company: customerContact.company || row.customer_company || ''
+        company: customerContact.company || row.customer_company || '',
       },
-      
+
       // Items from quotation_machines
       items: itemsResult.rows.map(item => ({
         description: item.equipment_name || 'Equipment',
         quantity: item.quantity || 1,
         unit: 'Days',
         rate: item.base_rate || 0,
-        amount: (item.quantity || 1) * (item.base_rate || 0)
+        amount: (item.quantity || 1) * (item.base_rate || 0),
       })),
-      
+
       // Company information from database
-      company: await getCompanyInformation()
+      company: await getCompanyInformation(),
     };
 
     console.log('✅ [Helper] Quotation fetched successfully');
     return quotation;
-    
   } catch (error) {
     console.error('❌ [Helper] Error fetching quotation:', error);
     throw new Error(`Failed to fetch quotation: ${error.message}`);
@@ -520,7 +544,7 @@ async function getDefaultTemplate(templateBuilder) {
   try {
     // First try to get an existing default template
     const client = await pool.connect();
-    
+
     try {
       const result = await client.query(`
         SELECT id FROM enhanced_templates 
@@ -528,22 +552,24 @@ async function getDefaultTemplate(templateBuilder) {
         ORDER BY updated_at DESC
         LIMIT 1
       `);
-      
+
       if (result.rows.length > 0) {
         await templateBuilder.loadTemplate(result.rows[0].id);
         console.log('📋 [Helper] Loaded existing default template:', result.rows[0].id);
         return templateBuilder.template;
       }
     } catch (dbError) {
-      console.warn('⚠️ [Helper] Database query failed, creating fallback template:', dbError.message);
+      console.warn(
+        '⚠️ [Helper] Database query failed, creating fallback template:',
+        dbError.message
+      );
     } finally {
       client.release();
     }
-    
+
     // If no default template exists or DB is not available, create a fallback one
     console.log('📋 [Helper] No default template found, creating fallback template');
     return createDefaultQuotationTemplate(templateBuilder);
-    
   } catch (error) {
     console.error('❌ [Helper] Error getting default template:', error);
     console.log('📋 [Helper] Creating emergency fallback template');
@@ -561,20 +587,21 @@ function createDefaultQuotationTemplate(templateBuilder) {
       description: 'Professional quotation template for ASP Cranes',
       theme: 'PROFESSIONAL',
       isDefault: true,
-      isActive: true
+      isActive: true,
     };
-    
+
     console.log('🎨 [Helper] Creating template with theme: PROFESSIONAL');
-    
-    templateBuilder.createTemplate(templateData)
+
+    templateBuilder
+      .createTemplate(templateData)
       .addElement('header', {
         content: {
           title: 'ASP CRANES',
           subtitle: 'QUOTATION',
           showDate: true,
           showQuotationNumber: true,
-          alignment: 'center'
-        }
+          alignment: 'center',
+        },
       })
       .addElement('company_info', {
         content: {
@@ -582,11 +609,11 @@ function createDefaultQuotationTemplate(templateBuilder) {
             '{{company.name}}',
             '{{company.address}}',
             '{{company.phone}}',
-            '{{company.email}}'
+            '{{company.email}}',
           ],
           layout: 'vertical',
-          alignment: 'left'
-        }
+          alignment: 'left',
+        },
       })
       .addElement('client_info', {
         content: {
@@ -596,11 +623,11 @@ function createDefaultQuotationTemplate(templateBuilder) {
             '{{client.company}}',
             '{{client.address}}',
             '{{client.phone}}',
-            '{{client.email}}'
+            '{{client.email}}',
           ],
           layout: 'vertical',
-          alignment: 'left'
-        }
+          alignment: 'left',
+        },
       })
       .addElement('quotation_info', {
         content: {
@@ -608,11 +635,11 @@ function createDefaultQuotationTemplate(templateBuilder) {
             { label: 'Quotation #', value: '{{quotation.number}}' },
             { label: 'Date', value: '{{quotation.date}}' },
             { label: 'Machine Type', value: '{{quotation.machineType}}' },
-            { label: 'Duration', value: '{{quotation.duration}}' }
+            { label: 'Duration', value: '{{quotation.duration}}' },
           ],
           layout: 'table',
-          alignment: 'right'
-        }
+          alignment: 'right',
+        },
       })
       .addElement('items_table')
       .addElement('totals')
@@ -620,17 +647,16 @@ function createDefaultQuotationTemplate(templateBuilder) {
         content: {
           title: 'Terms & Conditions',
           text: 'Payment Terms: 50% advance, balance on completion. Equipment delivery within 2-3 working days from advance payment. Fuel charges extra as per actual consumption. All rates are subject to site conditions and accessibility. This quotation is valid for 15 days from date of issue.',
-          showTitle: true
-        }
+          showTitle: true,
+        },
       })
       .addElement('signature');
-    
+
     console.log('✅ [Helper] Created default template successfully');
     return templateBuilder.template;
-    
   } catch (error) {
     console.error('❌ [Helper] Error creating template:', error);
-    
+
     // Create emergency minimal template
     console.log('🚑 [Helper] Creating emergency minimal template');
     const emergencyTemplate = {
@@ -641,29 +667,29 @@ function createDefaultQuotationTemplate(templateBuilder) {
       elements: [
         {
           type: 'header',
-          content: { title: 'ASP CRANES', subtitle: 'QUOTATION' }
+          content: { title: 'ASP CRANES', subtitle: 'QUOTATION' },
         },
         {
           type: 'company_info',
-          content: { fields: ['{{company.name}}', '{{company.address}}'] }
+          content: { fields: ['{{company.name}}', '{{company.address}}'] },
         },
         {
           type: 'client_info',
-          content: { title: 'Bill To:', fields: ['{{client.name}}'] }
+          content: { title: 'Bill To:', fields: ['{{client.name}}'] },
         },
         {
           type: 'items_table',
-          content: {}
+          content: {},
         },
         {
           type: 'totals',
-          content: {}
-        }
+          content: {},
+        },
       ],
       isDefault: true,
-      isActive: true
+      isActive: true,
     };
-    
+
     templateBuilder.template = emergencyTemplate;
     return emergencyTemplate;
   }
@@ -676,7 +702,7 @@ function generateLetterheadCSS(letterhead) {
   if (!letterhead || !letterhead.enabled || !letterhead.url) {
     return '';
   }
-  
+
   return `
     <style>
       .letterhead-background {
@@ -711,7 +737,7 @@ function generateLetterheadCSS(letterhead) {
 function mapQuotationToTemplateData(quotationData) {
   const gstRate = 18; // could be dynamic later
   // Ensure numbers
-  const numberOrZero = v => (typeof v === 'number' && !isNaN(v)) ? v : (parseFloat(v) || 0);
+  const numberOrZero = v => (typeof v === 'number' && !isNaN(v) ? v : parseFloat(v) || 0);
   // Existing risk logic retained (shortened)
   let riskAdjustmentCalculated = numberOrZero(quotationData.risk_adjustment);
   let usageLoadFactorCalculated = numberOrZero(quotationData.usage_load_factor);
@@ -731,14 +757,14 @@ function mapQuotationToTemplateData(quotationData) {
       rate: baseRate.toFixed(2),
       rental: numberOrZero(quotationData.total_rent).toFixed(2),
       mobDemob: numberOrZero(quotationData.mob_demob_cost).toFixed(2),
-      riskUsage: (riskUsageTotalCalculated).toFixed(2)
+      riskUsage: riskUsageTotalCalculated.toFixed(2),
     };
   });
   if (items.length === 0) {
     // Use total_rent from database directly for Total Rental column
     const fallbackRate = numberOrZero(quotationData.total_rent || 0);
     const fallbackQty = 1;
-    
+
     items.push({
       no: quotationData.quotation_number,
       description: quotationData.machine_type || 'Equipment',
@@ -748,7 +774,7 @@ function mapQuotationToTemplateData(quotationData) {
       rate: fallbackRate.toFixed(2),
       rental: numberOrZero(quotation.total_rent || quotation.totalRent).toFixed(2), // Use total_rent from database directly
       mobDemob: numberOrZero(quotationData.mob_demob_cost).toFixed(2),
-      riskUsage: riskUsageTotalCalculated.toFixed(2)
+      riskUsage: riskUsageTotalCalculated.toFixed(2),
     });
   }
 
@@ -757,12 +783,16 @@ function mapQuotationToTemplateData(quotationData) {
     client: quotationData.customer,
     quotation: {
       number: quotationData.quotation_number,
-      date: quotationData.created_at ? new Date(quotationData.created_at).toLocaleDateString('en-IN') : new Date().toLocaleDateString('en-IN'),
+      date: quotationData.created_at
+        ? new Date(quotationData.created_at).toLocaleDateString('en-IN')
+        : new Date().toLocaleDateString('en-IN'),
       machineType: quotationData.machine_type,
       duration: `${durationDays} days`,
-      validUntil: quotationData.valid_until || new Date(Date.now() + 15*24*60*60*1000).toLocaleDateString('en-IN'),
+      validUntil:
+        quotationData.valid_until ||
+        new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN'),
       paymentTerms: '50% advance, balance on completion',
-      taxRate: gstRate
+      taxRate: gstRate,
     },
     tax: { rate: gstRate },
     items,
@@ -775,8 +805,8 @@ function mapQuotationToTemplateData(quotationData) {
       foodAccomCost: formatCurrency(quotationData.food_accom_cost || 0),
       riskAdjustment: formatCurrency(riskAdjustmentCalculated),
       usageLoadFactor: formatCurrency(usageLoadFactorCalculated),
-      riskUsageTotal: formatCurrency(riskUsageTotalCalculated)
-    }
+      riskUsageTotal: formatCurrency(riskUsageTotalCalculated),
+    },
   };
 }
 
@@ -788,7 +818,7 @@ function formatCurrency(amount) {
     style: 'currency',
     currency: 'INR',
     minimumFractionDigits: 0,
-    maximumFractionDigits: 0
+    maximumFractionDigits: 0,
   }).format(amount || 0);
 }
 

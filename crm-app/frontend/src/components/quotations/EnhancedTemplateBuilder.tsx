@@ -24,7 +24,7 @@ import {
   Droppable,
   Draggable,
   DraggableProvided,
-  DraggableStateSnapshot
+  DraggableStateSnapshot,
 } from 'react-beautiful-dnd';
 import {
   Plus,
@@ -48,7 +48,7 @@ import {
   Undo,
   Redo,
   ZoomIn,
-  ZoomOut
+  ZoomOut,
 } from 'lucide-react';
 
 // TypeScript interfaces
@@ -127,11 +127,11 @@ interface PropertiesPanelProps {
 
 interface EnhancedTemplateBuilderProps {
   quotationId?: string | null;
-  templateId?: string | null;  // Add templateId prop for editing existing templates
+  templateId?: string | null; // Add templateId prop for editing existing templates
   onClose: () => void;
   onSave: (template: Template) => void;
   autoPreview?: boolean; // when true, builder opens directly in preview mode with sample data
-  readOnly?: boolean;    // when true, hide editing controls (used for manager card preview)
+  readOnly?: boolean; // when true, hide editing controls (used for manager card preview)
 }
 
 // Enhanced Template Element Types
@@ -150,7 +150,7 @@ const ELEMENT_TYPES = {
   IMAGE: 'image',
   DIVIDER: 'divider',
   SPACER: 'spacer',
-  SIGNATURE: 'signature'
+  SIGNATURE: 'signature',
 };
 
 // Template Themes
@@ -158,7 +158,7 @@ const THEMES: Record<string, Theme> = {
   MODERN: { name: 'Modern', primaryColor: '#2563eb', description: 'Clean and minimal' },
   CLASSIC: { name: 'Classic', primaryColor: '#1f2937', description: 'Traditional and elegant' },
   PROFESSIONAL: { name: 'Professional', primaryColor: '#0f172a', description: 'Corporate style' },
-  CREATIVE: { name: 'Creative', primaryColor: '#7c3aed', description: 'Vibrant and artistic' }
+  CREATIVE: { name: 'Creative', primaryColor: '#7c3aed', description: 'Vibrant and artistic' },
 };
 
 // Element Library Components
@@ -169,20 +169,40 @@ interface PlaceholderLibraryProps {
   clipboardMessage?: string;
 }
 
-const PlaceholderLibrary: React.FC<PlaceholderLibraryProps> = ({ previewData, onCopyPlaceholder, clipboardMessage }) => {
+const PlaceholderLibrary: React.FC<PlaceholderLibraryProps> = ({
+  previewData,
+  onCopyPlaceholder,
+  clipboardMessage,
+}) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('quotation');
-  
+
   const placeholderCategories = {
     quotation: {
       icon: '📄',
       title: 'Quotation Data',
       color: 'bg-blue-50 border-blue-200',
       placeholders: [
-        { code: '{{quotation.number}}', source: 'quotations.quotation_number', description: 'Quotation number/ID' },
-        { code: '{{quotation.date}}', source: 'quotations.created_at', description: 'Creation date' },
-        { code: '{{quotation.valid_until}}', source: 'quotations.valid_until', description: 'Expiry date' },
-        { code: '{{quotation.terms}}', source: 'quotations.terms_conditions', description: 'Terms & conditions' }
-      ]
+        {
+          code: '{{quotation.number}}',
+          source: 'quotations.quotation_number',
+          description: 'Quotation number/ID',
+        },
+        {
+          code: '{{quotation.date}}',
+          source: 'quotations.created_at',
+          description: 'Creation date',
+        },
+        {
+          code: '{{quotation.valid_until}}',
+          source: 'quotations.valid_until',
+          description: 'Expiry date',
+        },
+        {
+          code: '{{quotation.terms}}',
+          source: 'quotations.terms_conditions',
+          description: 'Terms & conditions',
+        },
+      ],
     },
     customer: {
       icon: '👤',
@@ -193,58 +213,134 @@ const PlaceholderLibrary: React.FC<PlaceholderLibraryProps> = ({ previewData, on
         { code: '{{client.company}}', source: 'customers.company', description: 'Company name' },
         { code: '{{client.email}}', source: 'customers.email', description: 'Email address' },
         { code: '{{client.phone}}', source: 'customers.phone', description: 'Phone number' },
-        { code: '{{client.address}}', source: 'customers.address', description: 'Full address' }
-      ]
+        { code: '{{client.address}}', source: 'customers.address', description: 'Full address' },
+      ],
     },
     equipment: {
       icon: '🏗️',
       title: 'Equipment Data',
       color: 'bg-yellow-50 border-yellow-200',
       placeholders: [
-        { code: '{{items.table}}', source: 'equipment join quotation_machines', description: 'Complete equipment table' },
+        {
+          code: '{{items.table}}',
+          source: 'equipment join quotation_machines',
+          description: 'Complete equipment table',
+        },
         { code: '{{equipment.name}}', source: 'equipment.name', description: 'Equipment name' },
-        { code: '{{equipment.capacity}}', source: 'equipment.max_lifting_capacity', description: 'Equipment capacity (e.g., 130MT)' },
-        { code: '{{equipment.rate}}', source: 'quotation_machines.base_rate', description: 'Base rate from equipment table' },
-        { code: '{{equipment.workingCost}}', source: 'calculated working cost', description: 'Total Rental (Working Cost)' },
-        { code: '{{equipment.quantity}}', source: 'quotation_machines.quantity', description: 'Quantity/duration' },
-        { code: '{{equipment.jobType}}', source: 'quotations.order_type', description: 'Job type (monthly, daily, etc.)' },
-        { code: '{{equipment.jobDuration}}', source: 'quotations.number_of_days', description: 'Job duration with units' },
-        { code: '{{equipment.mobDemob}}', source: 'quotations.mob_demob_cost', description: 'Mobilization/Demobilization cost' }
-      ]
+        {
+          code: '{{equipment.capacity}}',
+          source: 'equipment.max_lifting_capacity',
+          description: 'Equipment capacity (e.g., 130MT)',
+        },
+        {
+          code: '{{equipment.rate}}',
+          source: 'quotation_machines.base_rate',
+          description: 'Base rate from equipment table',
+        },
+        {
+          code: '{{equipment.workingCost}}',
+          source: 'calculated working cost',
+          description: 'Total Rental (Working Cost)',
+        },
+        {
+          code: '{{equipment.quantity}}',
+          source: 'quotation_machines.quantity',
+          description: 'Quantity/duration',
+        },
+        {
+          code: '{{equipment.jobType}}',
+          source: 'quotations.order_type',
+          description: 'Job type (monthly, daily, etc.)',
+        },
+        {
+          code: '{{equipment.jobDuration}}',
+          source: 'quotations.number_of_days',
+          description: 'Job duration with units',
+        },
+        {
+          code: '{{equipment.mobDemob}}',
+          source: 'quotations.mob_demob_cost',
+          description: 'Mobilization/Demobilization cost',
+        },
+      ],
     },
     jobDetails: {
       icon: '📋',
       title: 'Job Information',
       color: 'bg-cyan-50 border-cyan-200',
       placeholders: [
-        { code: '{{quotation.order_type}}', source: 'quotations.order_type', description: 'Order type (monthly, daily, etc.)' },
-        { code: '{{quotation.number_of_days}}', source: 'quotations.number_of_days', description: 'Duration in days' },
-        { code: '{{quotation.working_hours}}', source: 'quotations.working_hours', description: 'Working hours per day' },
-        { code: '{{quotation.machine_type}}', source: 'quotations.machine_type', description: 'Type of machine/equipment' }
-      ]
+        {
+          code: '{{quotation.order_type}}',
+          source: 'quotations.order_type',
+          description: 'Order type (monthly, daily, etc.)',
+        },
+        {
+          code: '{{quotation.number_of_days}}',
+          source: 'quotations.number_of_days',
+          description: 'Duration in days',
+        },
+        {
+          code: '{{quotation.working_hours}}',
+          source: 'quotations.working_hours',
+          description: 'Working hours per day',
+        },
+        {
+          code: '{{quotation.machine_type}}',
+          source: 'quotations.machine_type',
+          description: 'Type of machine/equipment',
+        },
+      ],
     },
     charges: {
       icon: '💳',
       title: 'Additional Charges',
       color: 'bg-orange-50 border-orange-200',
       placeholders: [
-        { code: '{{charges.mobilization}}', source: 'calculated mob charges', description: 'Mobilization charges' },
-        { code: '{{charges.demobilization}}', source: 'calculated demob charges', description: 'Demobilization charges' },
-        { code: '{{charges.rigger}}', source: 'configuration rigger amount', description: 'Rigger charges' },
-        { code: '{{charges.helper}}', source: 'configuration helper amount', description: 'Helper charges' },
-        { code: '{{charges.incidental}}', source: 'quotation incidental charges', description: 'Other incidental charges' }
-      ]
+        {
+          code: '{{charges.mobilization}}',
+          source: 'calculated mob charges',
+          description: 'Mobilization charges',
+        },
+        {
+          code: '{{charges.demobilization}}',
+          source: 'calculated demob charges',
+          description: 'Demobilization charges',
+        },
+        {
+          code: '{{charges.rigger}}',
+          source: 'configuration rigger amount',
+          description: 'Rigger charges',
+        },
+        {
+          code: '{{charges.helper}}',
+          source: 'configuration helper amount',
+          description: 'Helper charges',
+        },
+        {
+          code: '{{charges.incidental}}',
+          source: 'quotation incidental charges',
+          description: 'Other incidental charges',
+        },
+      ],
     },
     financial: {
       icon: '💰',
       title: 'Financial Data',
       color: 'bg-purple-50 border-purple-200',
       placeholders: [
-        { code: '{{totals.subtotal}}', source: 'Calculated: Σ(quantity × rate)', description: 'Subtotal amount' },
+        {
+          code: '{{totals.subtotal}}',
+          source: 'Calculated: Σ(quantity × rate)',
+          description: 'Subtotal amount',
+        },
         { code: '{{totals.tax}}', source: 'quotations.tax_amount', description: 'Tax amount' },
         { code: '{{totals.total}}', source: 'quotations.total_amount', description: 'Final total' },
-        { code: '{{totals.discount}}', source: 'quotations.discount_amount', description: 'Discount amount' }
-      ]
+        {
+          code: '{{totals.discount}}',
+          source: 'quotations.discount_amount',
+          description: 'Discount amount',
+        },
+      ],
     },
     company: {
       icon: '🏢',
@@ -252,11 +348,23 @@ const PlaceholderLibrary: React.FC<PlaceholderLibraryProps> = ({ previewData, on
       color: 'bg-indigo-50 border-indigo-200',
       placeholders: [
         { code: '{{company.name}}', source: 'Static: ASP Cranes', description: 'Company name' },
-        { code: '{{company.address}}', source: 'Static: Company Address', description: 'Company address' },
-        { code: '{{company.phone}}', source: 'Static: Company Phone', description: 'Company phone' },
-        { code: '{{company.email}}', source: 'Static: Company Email', description: 'Company email' }
-      ]
-    }
+        {
+          code: '{{company.address}}',
+          source: 'Static: Company Address',
+          description: 'Company address',
+        },
+        {
+          code: '{{company.phone}}',
+          source: 'Static: Company Phone',
+          description: 'Company phone',
+        },
+        {
+          code: '{{company.email}}',
+          source: 'Static: Company Email',
+          description: 'Company email',
+        },
+      ],
+    },
   };
 
   const copyToClipboard = async (text: string) => {
@@ -266,7 +374,11 @@ const PlaceholderLibrary: React.FC<PlaceholderLibraryProps> = ({ previewData, on
     }
     try {
       // Try modern clipboard API first
-      if (typeof navigator !== 'undefined' && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+      if (
+        typeof navigator !== 'undefined' &&
+        navigator.clipboard &&
+        typeof navigator.clipboard.writeText === 'function'
+      ) {
         try {
           await navigator.clipboard.writeText(text);
           console.log('✅ Copied to clipboard:', text);
@@ -275,7 +387,7 @@ const PlaceholderLibrary: React.FC<PlaceholderLibraryProps> = ({ previewData, on
           console.warn('Clipboard API failed, trying fallback:', clipboardError);
         }
       }
-      
+
       // Fallback method for all browsers
       const textArea = document.createElement('textarea');
       textArea.value = text;
@@ -285,16 +397,16 @@ const PlaceholderLibrary: React.FC<PlaceholderLibraryProps> = ({ previewData, on
       textArea.style.opacity = '0';
       textArea.setAttribute('readonly', '');
       document.body.appendChild(textArea);
-      
+
       // Select the text
       textArea.focus();
       textArea.select();
       textArea.setSelectionRange(0, 99999); // For mobile devices
-      
+
       // Execute copy command
       const successful = document.execCommand('copy');
       document.body.removeChild(textArea);
-      
+
       if (successful) {
         console.log('✅ Copied to clipboard (fallback):', text);
       } else {
@@ -305,26 +417,27 @@ const PlaceholderLibrary: React.FC<PlaceholderLibraryProps> = ({ previewData, on
     }
   };
 
-  const currentCategory = placeholderCategories[selectedCategory as keyof typeof placeholderCategories];
+  const currentCategory =
+    placeholderCategories[selectedCategory as keyof typeof placeholderCategories];
 
   return (
-      <div className="p-4 h-full overflow-y-auto">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Placeholders</h3>
-        
-        {/* Clipboard feedback message */}
-        {clipboardMessage && (
-          <div className="mb-4 p-2 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
-            {clipboardMessage}
-          </div>
-        )}      {/* Category Selection */}
+    <div className="p-4 h-full overflow-y-auto">
+      <h3 className="text-lg font-semibold text-gray-900 mb-4">Placeholders</h3>
+      {/* Clipboard feedback message */}
+      {clipboardMessage && (
+        <div className="mb-4 p-2 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
+          {clipboardMessage}
+        </div>
+      )}{' '}
+      {/* Category Selection */}
       <div className="space-y-2 mb-6">
         {Object.entries(placeholderCategories).map(([key, category]) => (
           <button
             key={key}
             onClick={() => setSelectedCategory(key)}
-            className={`w-full text-left p-3 rounded-lg border-2 transition-all ${ 
-              selectedCategory === key 
-                ? `${category.color} border-opacity-100` 
+            className={`w-full text-left p-3 rounded-lg border-2 transition-all ${
+              selectedCategory === key
+                ? `${category.color} border-opacity-100`
                 : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
             }`}
           >
@@ -338,18 +451,20 @@ const PlaceholderLibrary: React.FC<PlaceholderLibraryProps> = ({ previewData, on
           </button>
         ))}
       </div>
-
       {/* Placeholder List */}
       <div className="space-y-3">
         <h4 className="text-sm font-semibold text-gray-700 flex items-center space-x-2">
           <span>{currentCategory.icon}</span>
           <span>{currentCategory.title}</span>
         </h4>
-        
+
         {currentCategory.placeholders.map((placeholder, index) => (
-          <div key={index} className="border border-gray-200 rounded-lg p-3 hover:shadow-sm transition-shadow">
+          <div
+            key={index}
+            className="border border-gray-200 rounded-lg p-3 hover:shadow-sm transition-shadow"
+          >
             <div className="flex items-center justify-between mb-2">
-              <code 
+              <code
                 className="bg-gray-100 px-2 py-1 rounded text-xs font-mono cursor-pointer hover:bg-gray-200 transition-colors"
                 onClick={() => copyToClipboard(placeholder.code)}
                 title="Click to copy"
@@ -370,25 +485,35 @@ const PlaceholderLibrary: React.FC<PlaceholderLibraryProps> = ({ previewData, on
           </div>
         ))}
       </div>
-
       {/* Live Data Preview */}
       {previewData && (
         <div className="mt-6 p-3 bg-blue-50 rounded-lg border border-blue-200">
           <h5 className="text-sm font-semibold text-blue-800 mb-2">📊 Live Data Preview</h5>
           <div className="text-xs text-blue-700 space-y-1">
-            <div><strong>Quotation:</strong> {previewData.quotation?.number || 'N/A'}</div>
-            <div><strong>Customer:</strong> {previewData.client?.name || 'N/A'}</div>
-            <div><strong>Company:</strong> {previewData.client?.company || 'N/A'}</div>
-            <div><strong>Total:</strong> {previewData.totals?.total || '₹0.00'}</div>
-            <div><strong>Items:</strong> {previewData.items?.length || 0} equipment</div>
-            <div><strong>Valid Until:</strong> {previewData.quotation?.validUntil || 'N/A'}</div>
+            <div>
+              <strong>Quotation:</strong> {previewData.quotation?.number || 'N/A'}
+            </div>
+            <div>
+              <strong>Customer:</strong> {previewData.client?.name || 'N/A'}
+            </div>
+            <div>
+              <strong>Company:</strong> {previewData.client?.company || 'N/A'}
+            </div>
+            <div>
+              <strong>Total:</strong> {previewData.totals?.total || '₹0.00'}
+            </div>
+            <div>
+              <strong>Items:</strong> {previewData.items?.length || 0} equipment
+            </div>
+            <div>
+              <strong>Valid Until:</strong> {previewData.quotation?.validUntil || 'N/A'}
+            </div>
           </div>
           <div className="mt-2 text-xs text-blue-600">
             ✅ Data loaded from database - placeholders will show real values
           </div>
         </div>
       )}
-      
       {/* Usage Instructions */}
       <div className="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
         <h5 className="text-sm font-semibold text-gray-700 mb-2">💡 How to Use</h5>
@@ -406,17 +531,67 @@ const PlaceholderLibrary: React.FC<PlaceholderLibraryProps> = ({ previewData, on
 const ElementLibrary: React.FC<ElementLibraryProps> = ({ onAddElement, onLogoUpload }) => {
   const elementTypes = [
     { type: ELEMENT_TYPES.HEADER, icon: Type, label: 'Header', color: 'bg-blue-100 text-blue-600' },
-    { type: ELEMENT_TYPES.COMPANY_INFO, icon: Layout, label: 'Company Info', color: 'bg-green-100 text-green-600' },
-    { type: ELEMENT_TYPES.CLIENT_INFO, icon: Layout, label: 'Client Info', color: 'bg-purple-100 text-purple-600' },
-    { type: ELEMENT_TYPES.QUOTATION_INFO, icon: FileText, label: 'Quote Details', color: 'bg-orange-100 text-orange-600' },
-    { type: ELEMENT_TYPES.JOB_DETAILS, icon: Grid, label: 'Job Details', color: 'bg-cyan-100 text-cyan-600' },
-    { type: ELEMENT_TYPES.ITEMS_TABLE, icon: Table, label: 'Equipment & Services', color: 'bg-indigo-100 text-indigo-600' },
-    { type: ELEMENT_TYPES.CHARGES_TABLE, icon: Calculator, label: 'Additional Charges', color: 'bg-orange-100 text-orange-600' },
-    { type: ELEMENT_TYPES.TOTALS, icon: Calculator, label: 'Totals', color: 'bg-red-100 text-red-600' },
-    { type: ELEMENT_TYPES.TERMS, icon: FileText, label: 'Terms', color: 'bg-gray-100 text-gray-600' },
-    { type: ELEMENT_TYPES.CUSTOM_TEXT, icon: Type, label: 'Custom Text', color: 'bg-yellow-100 text-yellow-600' },
+    {
+      type: ELEMENT_TYPES.COMPANY_INFO,
+      icon: Layout,
+      label: 'Company Info',
+      color: 'bg-green-100 text-green-600',
+    },
+    {
+      type: ELEMENT_TYPES.CLIENT_INFO,
+      icon: Layout,
+      label: 'Client Info',
+      color: 'bg-purple-100 text-purple-600',
+    },
+    {
+      type: ELEMENT_TYPES.QUOTATION_INFO,
+      icon: FileText,
+      label: 'Quote Details',
+      color: 'bg-orange-100 text-orange-600',
+    },
+    {
+      type: ELEMENT_TYPES.JOB_DETAILS,
+      icon: Grid,
+      label: 'Job Details',
+      color: 'bg-cyan-100 text-cyan-600',
+    },
+    {
+      type: ELEMENT_TYPES.ITEMS_TABLE,
+      icon: Table,
+      label: 'Equipment & Services',
+      color: 'bg-indigo-100 text-indigo-600',
+    },
+    {
+      type: ELEMENT_TYPES.CHARGES_TABLE,
+      icon: Calculator,
+      label: 'Additional Charges',
+      color: 'bg-orange-100 text-orange-600',
+    },
+    {
+      type: ELEMENT_TYPES.TOTALS,
+      icon: Calculator,
+      label: 'Totals',
+      color: 'bg-red-100 text-red-600',
+    },
+    {
+      type: ELEMENT_TYPES.TERMS,
+      icon: FileText,
+      label: 'Terms',
+      color: 'bg-gray-100 text-gray-600',
+    },
+    {
+      type: ELEMENT_TYPES.CUSTOM_TEXT,
+      icon: Type,
+      label: 'Custom Text',
+      color: 'bg-yellow-100 text-yellow-600',
+    },
     { type: ELEMENT_TYPES.IMAGE, icon: Image, label: 'Image', color: 'bg-pink-100 text-pink-600' },
-    { type: ELEMENT_TYPES.SIGNATURE, icon: PenTool, label: 'Signature', color: 'bg-teal-100 text-teal-600' }
+    {
+      type: ELEMENT_TYPES.SIGNATURE,
+      icon: PenTool,
+      label: 'Signature',
+      color: 'bg-teal-100 text-teal-600',
+    },
   ];
 
   return (
@@ -441,12 +616,7 @@ const ElementLibrary: React.FC<ElementLibraryProps> = ({ onAddElement, onLogoUpl
           <label className="w-full p-2 text-left text-sm bg-gray-50 hover:bg-gray-100 rounded flex items-center space-x-2 cursor-pointer">
             <Upload className="w-4 h-4" />
             <span>Upload Logo</span>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={onLogoUpload}
-              className="hidden"
-            />
+            <input type="file" accept="image/*" onChange={onLogoUpload} className="hidden" />
           </label>
           <button className="w-full p-2 text-left text-sm bg-gray-50 hover:bg-gray-100 rounded flex items-center space-x-2">
             <Palette className="w-4 h-4" />
@@ -459,7 +629,14 @@ const ElementLibrary: React.FC<ElementLibraryProps> = ({ onAddElement, onLogoUpl
 };
 
 // Template Element Component
-const TemplateElement: React.FC<TemplateElementProps> = ({ element, index, onUpdate, onDelete, isSelected, onClick }) => {
+const TemplateElement: React.FC<TemplateElementProps> = ({
+  element,
+  index,
+  onUpdate,
+  onDelete,
+  isSelected,
+  onClick,
+}) => {
   const getElementIcon = (type: string) => {
     const icons: Record<string, any> = {
       [ELEMENT_TYPES.HEADER]: Type,
@@ -473,7 +650,7 @@ const TemplateElement: React.FC<TemplateElementProps> = ({ element, index, onUpd
       [ELEMENT_TYPES.TERMS]: FileText,
       [ELEMENT_TYPES.CUSTOM_TEXT]: Type,
       [ELEMENT_TYPES.IMAGE]: Image,
-      [ELEMENT_TYPES.SIGNATURE]: PenTool
+      [ELEMENT_TYPES.SIGNATURE]: PenTool,
     };
     return icons[type] || Grid;
   };
@@ -508,7 +685,7 @@ const TemplateElement: React.FC<TemplateElementProps> = ({ element, index, onUpd
             </div>
             <div className="flex items-center space-x-2">
               <button
-                onClick={(e) => {
+                onClick={e => {
                   e.stopPropagation();
                   onUpdate(element.id, { visible: !element.visible });
                 }}
@@ -517,7 +694,7 @@ const TemplateElement: React.FC<TemplateElementProps> = ({ element, index, onUpd
                 <Eye className="w-4 h-4" />
               </button>
               <button
-                onClick={(e) => {
+                onClick={e => {
                   e.stopPropagation();
                   onDelete(element.id);
                 }}
@@ -534,7 +711,19 @@ const TemplateElement: React.FC<TemplateElementProps> = ({ element, index, onUpd
 };
 
 // Properties Panel Component
-const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUpdate, themes, currentTheme, onThemeChange, template, setTemplate, companySettings, uploadLetterhead, removeLetterhead, setMessage }) => {
+const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
+  selectedElement,
+  onUpdate,
+  themes,
+  currentTheme,
+  onThemeChange,
+  template,
+  setTemplate,
+  companySettings,
+  uploadLetterhead,
+  removeLetterhead,
+  setMessage,
+}) => {
   if (!selectedElement) {
     return (
       <div className="w-96 bg-white border-l border-gray-200 p-4">
@@ -549,7 +738,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
   return (
     <div className="w-96 bg-white border-l border-gray-200 p-4 overflow-y-auto max-h-screen">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">Properties</h3>
-      
+
       <div className="space-y-6">
         {/* Element Type */}
         <div>
@@ -565,7 +754,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
             <input
               type="checkbox"
               checked={selectedElement.visible}
-              onChange={(e) => onUpdate(selectedElement.id, { visible: e.target.checked })}
+              onChange={e => onUpdate(selectedElement.id, { visible: e.target.checked })}
               className="rounded border-gray-300"
             />
             <span className="text-sm font-medium text-gray-700">Visible</span>
@@ -580,13 +769,13 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <input
                 type="text"
                 value={selectedElement.content?.title ?? ''}
-                onChange={(e) => {
+                onChange={e => {
                   e.stopPropagation();
                   onUpdate(selectedElement.id, {
-                    content: { ...selectedElement.content, title: e.target.value }
+                    content: { ...selectedElement.content, title: e.target.value },
                   });
                 }}
-                onKeyDown={(e) => e.stopPropagation()}
+                onKeyDown={e => e.stopPropagation()}
                 className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
@@ -595,9 +784,11 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <input
                 type="text"
                 value={selectedElement.content?.subtitle ?? ''}
-                onChange={(e) => onUpdate(selectedElement.id, {
-                  content: { ...selectedElement.content, subtitle: e.target.value }
-                })}
+                onChange={e =>
+                  onUpdate(selectedElement.id, {
+                    content: { ...selectedElement.content, subtitle: e.target.value },
+                  })
+                }
                 className="w-full p-2 border border-gray-300 rounded-md"
               />
             </div>
@@ -609,13 +800,13 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
             <label className="block text-sm font-medium text-gray-700 mb-2">Text Content</label>
             <textarea
               value={selectedElement.content?.text ?? ''}
-              onChange={(e) => {
+              onChange={e => {
                 e.stopPropagation();
                 onUpdate(selectedElement.id, {
-                  content: { ...selectedElement.content, text: e.target.value }
+                  content: { ...selectedElement.content, text: e.target.value },
                 });
               }}
-              onKeyDown={(e) => e.stopPropagation()}
+              onKeyDown={e => e.stopPropagation()}
               rows={8}
               className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               style={{ minHeight: '150px', resize: 'vertical' }}
@@ -630,60 +821,68 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <input
                 type="text"
                 value={selectedElement.content?.title ?? 'Terms & Conditions'}
-                onChange={(e) => onUpdate(selectedElement.id, {
-                  content: { ...selectedElement.content, title: e.target.value }
-                })}
+                onChange={e =>
+                  onUpdate(selectedElement.id, {
+                    content: { ...selectedElement.content, title: e.target.value },
+                  })
+                }
                 className="w-full p-2 border border-gray-300 rounded-md"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Terms Content
-                <span className="text-xs font-normal text-gray-500 ml-2">(Scroll inside the box to see all content)</span>
+                <span className="text-xs font-normal text-gray-500 ml-2">
+                  (Scroll inside the box to see all content)
+                </span>
               </label>
               <textarea
                 value={selectedElement.content?.text ?? ''}
-                onChange={(e) => {
+                onChange={e => {
                   e.stopPropagation();
                   onUpdate(selectedElement.id, {
-                    content: { ...selectedElement.content, text: e.target.value }
+                    content: { ...selectedElement.content, text: e.target.value },
                   });
                 }}
-                onKeyDown={(e) => e.stopPropagation()}
-                onPaste={(e) => e.stopPropagation()}
+                onKeyDown={e => e.stopPropagation()}
+                onPaste={e => e.stopPropagation()}
                 rows={30}
                 className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm overflow-y-auto"
                 placeholder="Enter terms and conditions..."
-                style={{ 
-                  minHeight: '600px', 
+                style={{
+                  minHeight: '600px',
                   maxHeight: '80vh',
                   resize: 'vertical',
                   whiteSpace: 'pre-wrap',
-                  overflowWrap: 'break-word'
+                  overflowWrap: 'break-word',
                 }}
               />
               <p className="mt-1 text-xs text-gray-500">
-                Tip: The text box scrolls internally. You can drag the bottom-right corner to resize. Character count: {(selectedElement.content?.text ?? '').length}
+                Tip: The text box scrolls internally. You can drag the bottom-right corner to
+                resize. Character count: {(selectedElement.content?.text ?? '').length}
               </p>
             </div>
           </>
         )}
 
-        {(selectedElement.type === ELEMENT_TYPES.ITEMS_TABLE || selectedElement.type === 'table') && (
+        {(selectedElement.type === ELEMENT_TYPES.ITEMS_TABLE ||
+          selectedElement.type === 'table') && (
           <>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Table Title</label>
               <input
                 type="text"
                 value={selectedElement.content?.title ?? 'Equipment & Services'}
-                onChange={(e) => onUpdate(selectedElement.id, {
-                  content: { ...selectedElement.content, title: e.target.value }
-                })}
+                onChange={e =>
+                  onUpdate(selectedElement.id, {
+                    content: { ...selectedElement.content, title: e.target.value },
+                  })
+                }
                 className="w-full p-2 border border-gray-300 rounded-md"
                 placeholder="e.g., Equipment & Services, Machinery Details"
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Show Columns</label>
               <div className="space-y-2 max-h-40 overflow-y-auto">
@@ -695,18 +894,23 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
                   { key: 'duration', label: 'Duration/Days' },
                   { key: 'rate', label: 'Rate' },
                   { key: 'rental', label: 'Total Rental (Working Cost)' },
-                  { key: 'mobDemob', label: 'Mob/Demob' }
+                  { key: 'mobDemob', label: 'Mob/Demob' },
                 ].map(col => (
                   <label key={col.key} className="flex items-center">
                     <input
                       type="checkbox"
                       checked={selectedElement.content?.columns?.[col.key] !== false}
-                      onChange={(e) => onUpdate(selectedElement.id, {
-                        content: { 
-                          ...selectedElement.content, 
-                          columns: { ...selectedElement.content?.columns, [col.key]: e.target.checked }
-                        }
-                      })}
+                      onChange={e =>
+                        onUpdate(selectedElement.id, {
+                          content: {
+                            ...selectedElement.content,
+                            columns: {
+                              ...selectedElement.content?.columns,
+                              [col.key]: e.target.checked,
+                            },
+                          },
+                        })
+                      }
                       className="mr-2"
                     />
                     <span className="text-sm">{col.label}</span>
@@ -720,23 +924,27 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
                 <input
                   type="checkbox"
                   checked={selectedElement.content?.showHeader !== false}
-                  onChange={(e) => onUpdate(selectedElement.id, {
-                    content: { ...selectedElement.content, showHeader: e.target.checked }
-                  })}
+                  onChange={e =>
+                    onUpdate(selectedElement.id, {
+                      content: { ...selectedElement.content, showHeader: e.target.checked },
+                    })
+                  }
                   className="rounded border-gray-300"
                 />
                 <span className="text-sm font-medium text-gray-700">Show Table Header</span>
               </label>
             </div>
-            
+
             <div>
               <label className="flex items-center space-x-2">
                 <input
                   type="checkbox"
                   checked={selectedElement.content?.alternateRows || false}
-                  onChange={(e) => onUpdate(selectedElement.id, {
-                    content: { ...selectedElement.content, alternateRows: e.target.checked }
-                  })}
+                  onChange={e =>
+                    onUpdate(selectedElement.id, {
+                      content: { ...selectedElement.content, alternateRows: e.target.checked },
+                    })
+                  }
                   className="rounded border-gray-300"
                 />
                 <span className="text-sm font-medium text-gray-700">Alternate Row Colors</span>
@@ -744,12 +952,22 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
             </div>
 
             <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-              <h5 className="text-sm font-medium text-blue-800 mb-2">📊 Complete Equipment Data:</h5>
+              <h5 className="text-sm font-medium text-blue-800 mb-2">
+                📊 Complete Equipment Data:
+              </h5>
               <div className="text-xs space-y-1 text-blue-700">
-                <div><strong>Equipment Details:</strong> Name, capacity, specifications</div>
-                <div><strong>Pricing:</strong> Daily rates, total rental, mob/demob costs</div>
-                <div><strong>Job Info:</strong> Duration, quantity, job type</div>
-                <div><strong>Calculations:</strong> Automatic totals and amounts</div>
+                <div>
+                  <strong>Equipment Details:</strong> Name, capacity, specifications
+                </div>
+                <div>
+                  <strong>Pricing:</strong> Daily rates, total rental, mob/demob costs
+                </div>
+                <div>
+                  <strong>Job Info:</strong> Duration, quantity, job type
+                </div>
+                <div>
+                  <strong>Calculations:</strong> Automatic totals and amounts
+                </div>
               </div>
               <div className="mt-2 text-xs text-blue-600">
                 ✓ All-in-one comprehensive equipment table
@@ -758,27 +976,33 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
           </>
         )}
 
-        {(selectedElement.type === 'section') && (
+        {selectedElement.type === 'section' && (
           <>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Section Title</label>
               <input
                 type="text"
                 value={selectedElement.content?.title ?? ''}
-                onChange={(e) => onUpdate(selectedElement.id, {
-                  content: { ...selectedElement.content, title: e.target.value }
-                })}
+                onChange={e =>
+                  onUpdate(selectedElement.id, {
+                    content: { ...selectedElement.content, title: e.target.value },
+                  })
+                }
                 className="w-full p-2 border border-gray-300 rounded-md"
                 placeholder="e.g., QUOTATION, INVOICE, etc."
               />
             </div>
             <div className="mt-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Section Content</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Section Content
+              </label>
               <textarea
                 value={selectedElement.content?.text ?? ''}
-                onChange={(e) => onUpdate(selectedElement.id, {
-                  content: { ...selectedElement.content, text: e.target.value }
-                })}
+                onChange={e =>
+                  onUpdate(selectedElement.id, {
+                    content: { ...selectedElement.content, text: e.target.value },
+                  })
+                }
                 rows={3}
                 className="w-full p-2 border border-gray-300 rounded-md"
                 placeholder="Additional section content (optional)"
@@ -787,28 +1011,40 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
           </>
         )}
 
-        {(selectedElement.type === 'field') && (
+        {selectedElement.type === 'field' && (
           <>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Field Content</label>
               <div className="space-y-2">
-                <button 
-                  onClick={() => onUpdate(selectedElement.id, {
-                    content: { ...selectedElement.content, fields: [
-                      'Quotation No: {{quotation.number}}',
-                      'Date: {{quotation.date}}',
-                      'Valid Until: {{quotation.validUntil}}'
-                    ]}
-                  })}
+                <button
+                  onClick={() =>
+                    onUpdate(selectedElement.id, {
+                      content: {
+                        ...selectedElement.content,
+                        fields: [
+                          'Quotation No: {{quotation.number}}',
+                          'Date: {{quotation.date}}',
+                          'Valid Until: {{quotation.validUntil}}',
+                        ],
+                      },
+                    })
+                  }
                   className="w-full px-3 py-2 text-sm bg-blue-50 text-blue-700 rounded border hover:bg-blue-100"
                 >
                   ↻ Use Standard Quotation Fields
                 </button>
                 <textarea
-                  value={selectedElement.content?.fields ? selectedElement.content.fields.join('\n') : ''}
-                  onChange={(e) => onUpdate(selectedElement.id, {
-                    content: { ...selectedElement.content, fields: e.target.value.split('\n').filter(f => f.trim()) }
-                  })}
+                  value={
+                    selectedElement.content?.fields ? selectedElement.content.fields.join('\n') : ''
+                  }
+                  onChange={e =>
+                    onUpdate(selectedElement.id, {
+                      content: {
+                        ...selectedElement.content,
+                        fields: e.target.value.split('\n').filter(f => f.trim()),
+                      },
+                    })
+                  }
                   rows={6}
                   className="w-full p-2 border border-gray-300 rounded-md font-mono text-sm"
                   placeholder="Enter field content (one per line)&#10;Use placeholders like:&#10;{{quotation.number}}&#10;{{quotation.date}}&#10;{{client.name}}"
@@ -839,52 +1075,78 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
           </>
         )}
 
-        {(selectedElement.type === 'customer') && (
+        {selectedElement.type === 'customer' && (
           <>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Customer Section Title</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Customer Section Title
+              </label>
               <input
                 type="text"
                 value={selectedElement.content?.title ?? 'Bill To:'}
-                onChange={(e) => onUpdate(selectedElement.id, {
-                  content: { ...selectedElement.content, title: e.target.value }
-                })}
+                onChange={e =>
+                  onUpdate(selectedElement.id, {
+                    content: { ...selectedElement.content, title: e.target.value },
+                  })
+                }
                 className="w-full p-2 border border-gray-300 rounded-md"
               />
             </div>
             <div className="mt-3 p-3 bg-blue-50 rounded-lg">
               <h5 className="text-sm font-medium text-gray-700 mb-2">Customer Data Preview:</h5>
               <div className="text-xs space-y-1 text-gray-600">
-                <div><strong>Name:</strong> From quotations.customer_name</div>
-                <div><strong>Company:</strong> From customers.company_name</div>
-                <div><strong>Address:</strong> From customers.address</div>
-                <div><strong>Phone:</strong> From customers.phone</div>
-                <div><strong>Email:</strong> From customers.email</div>
+                <div>
+                  <strong>Name:</strong> From quotations.customer_name
+                </div>
+                <div>
+                  <strong>Company:</strong> From customers.company_name
+                </div>
+                <div>
+                  <strong>Address:</strong> From customers.address
+                </div>
+                <div>
+                  <strong>Phone:</strong> From customers.phone
+                </div>
+                <div>
+                  <strong>Email:</strong> From customers.email
+                </div>
               </div>
             </div>
           </>
         )}
 
-        {(selectedElement.type === 'total') && (
+        {selectedElement.type === 'total' && (
           <>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Total Section Title</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Total Section Title
+              </label>
               <input
                 type="text"
                 value={selectedElement.content?.title ?? 'Total Amount'}
-                onChange={(e) => onUpdate(selectedElement.id, {
-                  content: { ...selectedElement.content, title: e.target.value }
-                })}
+                onChange={e =>
+                  onUpdate(selectedElement.id, {
+                    content: { ...selectedElement.content, title: e.target.value },
+                  })
+                }
                 className="w-full p-2 border border-gray-300 rounded-md"
               />
             </div>
             <div className="mt-4 p-3 bg-purple-50 rounded-lg">
               <h5 className="text-sm font-medium text-gray-700 mb-2">💰 Financial Data Source:</h5>
               <div className="text-xs space-y-1 text-gray-600">
-                <div><strong>Subtotal:</strong> quotations.working_cost</div>
-                <div><strong>Tax (GST):</strong> quotations.gst_amount</div>
-                <div><strong>Total:</strong> quotations.total_cost</div>
-                <div><strong>Currency:</strong> Indian Rupees (₹)</div>
+                <div>
+                  <strong>Subtotal:</strong> quotations.working_cost
+                </div>
+                <div>
+                  <strong>Tax (GST):</strong> quotations.gst_amount
+                </div>
+                <div>
+                  <strong>Total:</strong> quotations.total_cost
+                </div>
+                <div>
+                  <strong>Currency:</strong> Indian Rupees (₹)
+                </div>
               </div>
               <div className="mt-2 text-xs text-purple-700">
                 ✓ Calculations include mob/demob, food/accom costs
@@ -900,9 +1162,11 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <input
                 type="text"
                 value={selectedElement.content?.title ?? 'Image'}
-                onChange={(e) => onUpdate(selectedElement.id, {
-                  content: { ...selectedElement.content, title: e.target.value }
-                })}
+                onChange={e =>
+                  onUpdate(selectedElement.id, {
+                    content: { ...selectedElement.content, title: e.target.value },
+                  })
+                }
                 className="w-full p-2 border border-gray-300 rounded-md"
               />
             </div>
@@ -911,9 +1175,11 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <input
                 type="text"
                 value={selectedElement.content?.alt ?? ''}
-                onChange={(e) => onUpdate(selectedElement.id, {
-                  content: { ...selectedElement.content, alt: e.target.value }
-                })}
+                onChange={e =>
+                  onUpdate(selectedElement.id, {
+                    content: { ...selectedElement.content, alt: e.target.value },
+                  })
+                }
                 className="w-full p-2 border border-gray-300 rounded-md"
               />
             </div>
@@ -922,9 +1188,11 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <input
                 type="text"
                 value={selectedElement.style?.width ?? '120px'}
-                onChange={(e) => onUpdate(selectedElement.id, {
-                  style: { ...selectedElement.style, width: e.target.value }
-                })}
+                onChange={e =>
+                  onUpdate(selectedElement.id, {
+                    style: { ...selectedElement.style, width: e.target.value },
+                  })
+                }
                 className="w-full p-2 border border-gray-300 rounded-md"
                 placeholder="e.g., 120px, 50%, auto"
               />
@@ -934,9 +1202,11 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <input
                 type="text"
                 value={selectedElement.style?.height ?? 'auto'}
-                onChange={(e) => onUpdate(selectedElement.id, {
-                  style: { ...selectedElement.style, height: e.target.value }
-                })}
+                onChange={e =>
+                  onUpdate(selectedElement.id, {
+                    style: { ...selectedElement.style, height: e.target.value },
+                  })
+                }
                 className="w-full p-2 border border-gray-300 rounded-md"
                 placeholder="e.g., 80px, 50%, auto"
               />
@@ -952,9 +1222,11 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <input
                 type="text"
                 value={selectedElement.content?.title ?? 'Job Details'}
-                onChange={(e) => onUpdate(selectedElement.id, {
-                  content: { ...selectedElement.content, title: e.target.value }
-                })}
+                onChange={e =>
+                  onUpdate(selectedElement.id, {
+                    content: { ...selectedElement.content, title: e.target.value },
+                  })
+                }
                 className="w-full p-2 border border-gray-300 rounded-md"
                 placeholder="e.g., Job Information, Project Details"
               />
@@ -967,12 +1239,17 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
                     <input
                       type="checkbox"
                       checked={selectedElement.content?.fields?.[field] !== false}
-                      onChange={(e) => onUpdate(selectedElement.id, {
-                        content: { 
-                          ...selectedElement.content, 
-                          fields: { ...selectedElement.content?.fields, [field]: e.target.checked }
-                        }
-                      })}
+                      onChange={e =>
+                        onUpdate(selectedElement.id, {
+                          content: {
+                            ...selectedElement.content,
+                            fields: {
+                              ...selectedElement.content?.fields,
+                              [field]: e.target.checked,
+                            },
+                          },
+                        })
+                      }
                       className="mr-2"
                     />
                     <span className="capitalize">{field.replace(/([A-Z])/g, ' $1').trim()}</span>
@@ -983,8 +1260,6 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
           </>
         )}
 
-
-
         {/* Charges Table Component */}
         {selectedElement.type === ELEMENT_TYPES.CHARGES_TABLE && (
           <>
@@ -993,32 +1268,43 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <input
                 type="text"
                 value={selectedElement.content?.title ?? 'Additional Charges'}
-                onChange={(e) => onUpdate(selectedElement.id, {
-                  content: { ...selectedElement.content, title: e.target.value }
-                })}
+                onChange={e =>
+                  onUpdate(selectedElement.id, {
+                    content: { ...selectedElement.content, title: e.target.value },
+                  })
+                }
                 className="w-full p-2 border border-gray-300 rounded-md"
                 placeholder="e.g., Additional Charges, Extra Costs"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Show Charge Types</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Show Charge Types
+              </label>
               <div className="space-y-2">
-                {['mobilization', 'demobilization', 'rigger', 'helper', 'incidental'].map(charge => (
-                  <label key={charge} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={selectedElement.content?.chargeTypes?.[charge] !== false}
-                      onChange={(e) => onUpdate(selectedElement.id, {
-                        content: { 
-                          ...selectedElement.content, 
-                          chargeTypes: { ...selectedElement.content?.chargeTypes, [charge]: e.target.checked }
+                {['mobilization', 'demobilization', 'rigger', 'helper', 'incidental'].map(
+                  charge => (
+                    <label key={charge} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={selectedElement.content?.chargeTypes?.[charge] !== false}
+                        onChange={e =>
+                          onUpdate(selectedElement.id, {
+                            content: {
+                              ...selectedElement.content,
+                              chargeTypes: {
+                                ...selectedElement.content?.chargeTypes,
+                                [charge]: e.target.checked,
+                              },
+                            },
+                          })
                         }
-                      })}
-                      className="mr-2"
-                    />
-                    <span className="capitalize">{charge} Charges</span>
-                  </label>
-                ))}
+                        className="mr-2"
+                      />
+                      <span className="capitalize">{charge} Charges</span>
+                    </label>
+                  )
+                )}
               </div>
             </div>
           </>
@@ -1033,14 +1319,14 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <input
                 type="text"
                 value={selectedElement.position?.x ?? ''}
-                onChange={(e) => {
+                onChange={e => {
                   e.stopPropagation();
                   onUpdate(selectedElement.id, {
-                    position: { ...selectedElement.position, x: e.target.value || '0' }
+                    position: { ...selectedElement.position, x: e.target.value || '0' },
                   });
                 }}
-                onKeyDown={(e) => e.stopPropagation()}
-                onPaste={(e) => e.stopPropagation()}
+                onKeyDown={e => e.stopPropagation()}
+                onPaste={e => e.stopPropagation()}
                 className="w-full p-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="0px"
               />
@@ -1050,14 +1336,14 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <input
                 type="text"
                 value={selectedElement.position?.y ?? ''}
-                onChange={(e) => {
+                onChange={e => {
                   e.stopPropagation();
                   onUpdate(selectedElement.id, {
-                    position: { ...selectedElement.position, y: e.target.value || '0' }
+                    position: { ...selectedElement.position, y: e.target.value || '0' },
                   });
                 }}
-                onKeyDown={(e) => e.stopPropagation()}
-                onPaste={(e) => e.stopPropagation()}
+                onKeyDown={e => e.stopPropagation()}
+                onPaste={e => e.stopPropagation()}
                 className="w-full p-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="0px"
               />
@@ -1067,14 +1353,14 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <input
                 type="text"
                 value={selectedElement.position?.width ?? ''}
-                onChange={(e) => {
+                onChange={e => {
                   e.stopPropagation();
                   onUpdate(selectedElement.id, {
-                    position: { ...selectedElement.position, width: e.target.value || '100%' }
+                    position: { ...selectedElement.position, width: e.target.value || '100%' },
                   });
                 }}
-                onKeyDown={(e) => e.stopPropagation()}
-                onPaste={(e) => e.stopPropagation()}
+                onKeyDown={e => e.stopPropagation()}
+                onPaste={e => e.stopPropagation()}
                 className="w-full p-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="100%"
               />
@@ -1084,14 +1370,14 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <input
                 type="text"
                 value={selectedElement.position?.height ?? ''}
-                onChange={(e) => {
+                onChange={e => {
                   e.stopPropagation();
                   onUpdate(selectedElement.id, {
-                    position: { ...selectedElement.position, height: e.target.value || 'auto' }
+                    position: { ...selectedElement.position, height: e.target.value || 'auto' },
                   });
                 }}
-                onKeyDown={(e) => e.stopPropagation()}
-                onPaste={(e) => e.stopPropagation()}
+                onKeyDown={e => e.stopPropagation()}
+                onPaste={e => e.stopPropagation()}
                 className="w-full p-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="auto"
               />
@@ -1108,15 +1394,15 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <input
                 type="text"
                 value={selectedElement.style?.fontSize ?? ''}
-                onChange={(e) => {
+                onChange={e => {
                   e.stopPropagation();
                   const newValue = e.target.value;
                   onUpdate(selectedElement.id, {
-                    style: { ...selectedElement.style, fontSize: newValue === '' ? '' : newValue }
+                    style: { ...selectedElement.style, fontSize: newValue === '' ? '' : newValue },
                   });
                 }}
-                onKeyDown={(e) => e.stopPropagation()}
-                onPaste={(e) => e.stopPropagation()}
+                onKeyDown={e => e.stopPropagation()}
+                onPaste={e => e.stopPropagation()}
                 className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
                 placeholder="14px"
               />
@@ -1126,9 +1412,11 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <input
                 type="color"
                 value={selectedElement.style?.color ?? '#000000'}
-                onChange={(e) => onUpdate(selectedElement.id, {
-                  style: { ...selectedElement.style, color: e.target.value }
-                })}
+                onChange={e =>
+                  onUpdate(selectedElement.id, {
+                    style: { ...selectedElement.style, color: e.target.value },
+                  })
+                }
                 className="w-full h-10 border border-gray-300 rounded-md"
               />
             </div>
@@ -1136,12 +1424,17 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <label className="block text-sm font-medium text-gray-700 mb-1">Background</label>
               <input
                 type="color"
-                value={selectedElement.style?.backgroundColor && selectedElement.style.backgroundColor !== 'transparent' 
-                  ? selectedElement.style.backgroundColor 
-                  : '#ffffff'}
-                onChange={(e) => onUpdate(selectedElement.id, {
-                  style: { ...selectedElement.style, backgroundColor: e.target.value }
-                })}
+                value={
+                  selectedElement.style?.backgroundColor &&
+                  selectedElement.style.backgroundColor !== 'transparent'
+                    ? selectedElement.style.backgroundColor
+                    : '#ffffff'
+                }
+                onChange={e =>
+                  onUpdate(selectedElement.id, {
+                    style: { ...selectedElement.style, backgroundColor: e.target.value },
+                  })
+                }
                 className="w-full h-10 border border-gray-300 rounded-md"
               />
             </div>
@@ -1149,9 +1442,11 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <label className="block text-sm font-medium text-gray-700 mb-1">Font Weight</label>
               <select
                 value={selectedElement.style?.fontWeight ?? 'normal'}
-                onChange={(e) => onUpdate(selectedElement.id, {
-                  style: { ...selectedElement.style, fontWeight: e.target.value }
-                })}
+                onChange={e =>
+                  onUpdate(selectedElement.id, {
+                    style: { ...selectedElement.style, fontWeight: e.target.value },
+                  })
+                }
                 className="w-full p-2 border border-gray-300 rounded-md"
               >
                 <option value="normal">Normal</option>
@@ -1164,9 +1459,11 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <label className="block text-sm font-medium text-gray-700 mb-1">Text Alignment</label>
               <select
                 value={selectedElement.style?.textAlign ?? 'left'}
-                onChange={(e) => onUpdate(selectedElement.id, {
-                  style: { ...selectedElement.style, textAlign: e.target.value }
-                })}
+                onChange={e =>
+                  onUpdate(selectedElement.id, {
+                    style: { ...selectedElement.style, textAlign: e.target.value },
+                  })
+                }
                 className="w-full p-2 border border-gray-300 rounded-md"
               >
                 <option value="left">Left</option>
@@ -1180,14 +1477,14 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <input
                 type="text"
                 value={selectedElement.style?.padding ?? ''}
-                onChange={(e) => {
+                onChange={e => {
                   e.stopPropagation();
                   onUpdate(selectedElement.id, {
-                    style: { ...selectedElement.style, padding: e.target.value || '0px' }
+                    style: { ...selectedElement.style, padding: e.target.value || '0px' },
                   });
                 }}
-                onKeyDown={(e) => e.stopPropagation()}
-                onPaste={(e) => e.stopPropagation()}
+                onKeyDown={e => e.stopPropagation()}
+                onPaste={e => e.stopPropagation()}
                 className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="e.g., 8px, 10px 15px"
               />
@@ -1197,30 +1494,36 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <input
                 type="text"
                 value={selectedElement.style?.margin ?? ''}
-                onChange={(e) => {
+                onChange={e => {
                   e.stopPropagation();
                   onUpdate(selectedElement.id, {
-                    style: { ...selectedElement.style, margin: e.target.value || '0px' }
+                    style: { ...selectedElement.style, margin: e.target.value || '0px' },
                   });
                 }}
-                onKeyDown={(e) => e.stopPropagation()}
-                onPaste={(e) => e.stopPropagation()}
+                onKeyDown={e => e.stopPropagation()}
+                onPaste={e => e.stopPropagation()}
                 className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="e.g., 4px 0, 10px"
               />
             </div>
-            
+
             {/* Advanced Typography */}
             <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
-              <h5 className="text-xs font-semibold text-blue-800 mb-2 uppercase tracking-wide">Advanced Typography</h5>
+              <h5 className="text-xs font-semibold text-blue-800 mb-2 uppercase tracking-wide">
+                Advanced Typography
+              </h5>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Font Family</label>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                    Font Family
+                  </label>
                   <select
                     value={selectedElement.style?.fontFamily ?? 'Arial, sans-serif'}
-                    onChange={(e) => onUpdate(selectedElement.id, {
-                      style: { ...selectedElement.style, fontFamily: e.target.value }
-                    })}
+                    onChange={e =>
+                      onUpdate(selectedElement.id, {
+                        style: { ...selectedElement.style, fontFamily: e.target.value },
+                      })
+                    }
                     className="w-full p-1.5 text-xs border border-gray-300 rounded-md"
                   >
                     <option value="Arial, sans-serif">Arial</option>
@@ -1234,12 +1537,16 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Line Height</label>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                    Line Height
+                  </label>
                   <select
                     value={selectedElement.style?.lineHeight ?? '1.4'}
-                    onChange={(e) => onUpdate(selectedElement.id, {
-                      style: { ...selectedElement.style, lineHeight: e.target.value }
-                    })}
+                    onChange={e =>
+                      onUpdate(selectedElement.id, {
+                        style: { ...selectedElement.style, lineHeight: e.target.value },
+                      })
+                    }
                     className="w-full p-1.5 text-xs border border-gray-300 rounded-md"
                   >
                     <option value="1">1x</option>
@@ -1250,12 +1557,16 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Letter Spacing</label>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                    Letter Spacing
+                  </label>
                   <select
                     value={selectedElement.style?.letterSpacing ?? 'normal'}
-                    onChange={(e) => onUpdate(selectedElement.id, {
-                      style: { ...selectedElement.style, letterSpacing: e.target.value }
-                    })}
+                    onChange={e =>
+                      onUpdate(selectedElement.id, {
+                        style: { ...selectedElement.style, letterSpacing: e.target.value },
+                      })
+                    }
                     className="w-full p-1.5 text-xs border border-gray-300 rounded-md"
                   >
                     <option value="normal">Normal</option>
@@ -1265,12 +1576,16 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Text Transform</label>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                    Text Transform
+                  </label>
                   <select
                     value={selectedElement.style?.textTransform ?? 'none'}
-                    onChange={(e) => onUpdate(selectedElement.id, {
-                      style: { ...selectedElement.style, textTransform: e.target.value }
-                    })}
+                    onChange={e =>
+                      onUpdate(selectedElement.id, {
+                        style: { ...selectedElement.style, textTransform: e.target.value },
+                      })
+                    }
                     className="w-full p-1.5 text-xs border border-gray-300 rounded-md"
                   >
                     <option value="none">None</option>
@@ -1284,20 +1599,29 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
 
             {/* Border & Shadow */}
             <div className="bg-green-50 p-3 rounded-lg border border-green-200">
-              <h5 className="text-xs font-semibold text-green-800 mb-2 uppercase tracking-wide">Border & Effects</h5>
+              <h5 className="text-xs font-semibold text-green-800 mb-2 uppercase tracking-wide">
+                Border & Effects
+              </h5>
               <div className="space-y-2">
                 <div className="grid grid-cols-3 gap-2">
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Border Width</label>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      Border Width
+                    </label>
                     <select
                       value={selectedElement.style?.borderWidth ?? '0'}
-                      onChange={(e) => onUpdate(selectedElement.id, {
-                        style: { 
-                          ...selectedElement.style, 
-                          borderWidth: e.target.value,
-                          borderStyle: e.target.value !== '0' ? (selectedElement.style?.borderStyle || 'solid') : 'none'
-                        }
-                      })}
+                      onChange={e =>
+                        onUpdate(selectedElement.id, {
+                          style: {
+                            ...selectedElement.style,
+                            borderWidth: e.target.value,
+                            borderStyle:
+                              e.target.value !== '0'
+                                ? selectedElement.style?.borderStyle || 'solid'
+                                : 'none',
+                          },
+                        })
+                      }
                       className="w-full p-1.5 text-xs border border-gray-300 rounded-md"
                     >
                       <option value="0">None</option>
@@ -1308,12 +1632,16 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Border Style</label>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      Border Style
+                    </label>
                     <select
                       value={selectedElement.style?.borderStyle ?? 'solid'}
-                      onChange={(e) => onUpdate(selectedElement.id, {
-                        style: { ...selectedElement.style, borderStyle: e.target.value }
-                      })}
+                      onChange={e =>
+                        onUpdate(selectedElement.id, {
+                          style: { ...selectedElement.style, borderStyle: e.target.value },
+                        })
+                      }
                       className="w-full p-1.5 text-xs border border-gray-300 rounded-md"
                       disabled={selectedElement.style?.borderWidth === '0'}
                     >
@@ -1324,13 +1652,17 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Border Color</label>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      Border Color
+                    </label>
                     <input
                       type="color"
                       value={selectedElement.style?.borderColor ?? '#cccccc'}
-                      onChange={(e) => onUpdate(selectedElement.id, {
-                        style: { ...selectedElement.style, borderColor: e.target.value }
-                      })}
+                      onChange={e =>
+                        onUpdate(selectedElement.id, {
+                          style: { ...selectedElement.style, borderColor: e.target.value },
+                        })
+                      }
                       className="w-full h-8 border border-gray-300 rounded-md"
                       disabled={selectedElement.style?.borderWidth === '0'}
                     />
@@ -1338,12 +1670,16 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Border Radius</label>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      Border Radius
+                    </label>
                     <select
                       value={selectedElement.style?.borderRadius ?? '0'}
-                      onChange={(e) => onUpdate(selectedElement.id, {
-                        style: { ...selectedElement.style, borderRadius: e.target.value }
-                      })}
+                      onChange={e =>
+                        onUpdate(selectedElement.id, {
+                          style: { ...selectedElement.style, borderRadius: e.target.value },
+                        })
+                      }
                       className="w-full p-1.5 text-xs border border-gray-300 rounded-md"
                     >
                       <option value="0">None</option>
@@ -1354,12 +1690,16 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Box Shadow</label>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      Box Shadow
+                    </label>
                     <select
                       value={selectedElement.style?.boxShadow ?? 'none'}
-                      onChange={(e) => onUpdate(selectedElement.id, {
-                        style: { ...selectedElement.style, boxShadow: e.target.value }
-                      })}
+                      onChange={e =>
+                        onUpdate(selectedElement.id, {
+                          style: { ...selectedElement.style, boxShadow: e.target.value },
+                        })
+                      }
                       className="w-full p-1.5 text-xs border border-gray-300 rounded-md"
                     >
                       <option value="none">None</option>
@@ -1375,15 +1715,19 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
 
             {/* Layout & Positioning */}
             <div className="bg-purple-50 p-3 rounded-lg border border-purple-200">
-              <h5 className="text-xs font-semibold text-purple-800 mb-2 uppercase tracking-wide">Layout & Positioning</h5>
+              <h5 className="text-xs font-semibold text-purple-800 mb-2 uppercase tracking-wide">
+                Layout & Positioning
+              </h5>
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1">Display</label>
                   <select
                     value={selectedElement.style?.display ?? 'block'}
-                    onChange={(e) => onUpdate(selectedElement.id, {
-                      style: { ...selectedElement.style, display: e.target.value }
-                    })}
+                    onChange={e =>
+                      onUpdate(selectedElement.id, {
+                        style: { ...selectedElement.style, display: e.target.value },
+                      })
+                    }
                     className="w-full p-1.5 text-xs border border-gray-300 rounded-md"
                   >
                     <option value="block">Block</option>
@@ -1396,9 +1740,11 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
                   <label className="block text-xs font-medium text-gray-600 mb-1">Width</label>
                   <select
                     value={selectedElement.style?.width ?? 'auto'}
-                    onChange={(e) => onUpdate(selectedElement.id, {
-                      style: { ...selectedElement.style, width: e.target.value }
-                    })}
+                    onChange={e =>
+                      onUpdate(selectedElement.id, {
+                        style: { ...selectedElement.style, width: e.target.value },
+                      })
+                    }
                     className="w-full p-1.5 text-xs border border-gray-300 rounded-md"
                   >
                     <option value="auto">Auto</option>
@@ -1413,13 +1759,13 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
                   <input
                     type="text"
                     value={selectedElement.style?.minHeight ?? 'auto'}
-                    onChange={(e) => {
+                    onChange={e => {
                       e.stopPropagation();
                       onUpdate(selectedElement.id, {
-                        style: { ...selectedElement.style, minHeight: e.target.value }
+                        style: { ...selectedElement.style, minHeight: e.target.value },
                       });
                     }}
-                    onKeyDown={(e) => e.stopPropagation()}
+                    onKeyDown={e => e.stopPropagation()}
                     className="w-full p-1.5 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="e.g., 40px, auto"
                   />
@@ -1428,9 +1774,11 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
                   <label className="block text-xs font-medium text-gray-600 mb-1">Overflow</label>
                   <select
                     value={selectedElement.style?.overflow ?? 'visible'}
-                    onChange={(e) => onUpdate(selectedElement.id, {
-                      style: { ...selectedElement.style, overflow: e.target.value }
-                    })}
+                    onChange={e =>
+                      onUpdate(selectedElement.id, {
+                        style: { ...selectedElement.style, overflow: e.target.value },
+                      })
+                    }
                     className="w-full p-1.5 text-xs border border-gray-300 rounded-md"
                   >
                     <option value="visible">Visible</option>
@@ -1444,53 +1792,67 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
 
             {/* Print Optimization */}
             <div className="bg-orange-50 p-3 rounded-lg border border-orange-200">
-              <h5 className="text-xs font-semibold text-orange-800 mb-2 uppercase tracking-wide">Print Optimization</h5>
+              <h5 className="text-xs font-semibold text-orange-800 mb-2 uppercase tracking-wide">
+                Print Optimization
+              </h5>
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
                   <input
                     type="checkbox"
                     id="pageBreakBefore"
                     checked={selectedElement.style?.pageBreakBefore === 'always'}
-                    onChange={(e) => onUpdate(selectedElement.id, {
-                      style: { 
-                        ...selectedElement.style, 
-                        pageBreakBefore: e.target.checked ? 'always' : 'auto' 
-                      }
-                    })}
+                    onChange={e =>
+                      onUpdate(selectedElement.id, {
+                        style: {
+                          ...selectedElement.style,
+                          pageBreakBefore: e.target.checked ? 'always' : 'auto',
+                        },
+                      })
+                    }
                     className="rounded border-gray-300"
                   />
-                  <label htmlFor="pageBreakBefore" className="text-xs text-gray-700">Page break before element</label>
+                  <label htmlFor="pageBreakBefore" className="text-xs text-gray-700">
+                    Page break before element
+                  </label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <input
                     type="checkbox"
                     id="pageBreakAfter"
                     checked={selectedElement.style?.pageBreakAfter === 'always'}
-                    onChange={(e) => onUpdate(selectedElement.id, {
-                      style: { 
-                        ...selectedElement.style, 
-                        pageBreakAfter: e.target.checked ? 'always' : 'auto' 
-                      }
-                    })}
+                    onChange={e =>
+                      onUpdate(selectedElement.id, {
+                        style: {
+                          ...selectedElement.style,
+                          pageBreakAfter: e.target.checked ? 'always' : 'auto',
+                        },
+                      })
+                    }
                     className="rounded border-gray-300"
                   />
-                  <label htmlFor="pageBreakAfter" className="text-xs text-gray-700">Page break after element</label>
+                  <label htmlFor="pageBreakAfter" className="text-xs text-gray-700">
+                    Page break after element
+                  </label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <input
                     type="checkbox"
                     id="printColorAdjust"
                     checked={selectedElement.style?.printColorAdjust === 'exact'}
-                    onChange={(e) => onUpdate(selectedElement.id, {
-                      style: { 
-                        ...selectedElement.style, 
-                        printColorAdjust: e.target.checked ? 'exact' : 'economy',
-                        WebkitPrintColorAdjust: e.target.checked ? 'exact' : 'economy'
-                      }
-                    })}
+                    onChange={e =>
+                      onUpdate(selectedElement.id, {
+                        style: {
+                          ...selectedElement.style,
+                          printColorAdjust: e.target.checked ? 'exact' : 'economy',
+                          WebkitPrintColorAdjust: e.target.checked ? 'exact' : 'economy',
+                        },
+                      })
+                    }
                     className="rounded border-gray-300"
                   />
-                  <label htmlFor="printColorAdjust" className="text-xs text-gray-700">Force background colors in print</label>
+                  <label htmlFor="printColorAdjust" className="text-xs text-gray-700">
+                    Force background colors in print
+                  </label>
                 </div>
               </div>
             </div>
@@ -1527,16 +1889,18 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
             <Image className="mr-2 text-purple-600" size={20} />
             Letterhead Settings
           </h3>
-          
+
           <div className="space-y-4">
             {/* Letterhead Upload */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Upload Letterhead</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Upload Letterhead
+              </label>
               <div className="flex items-center space-x-3">
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={async (e) => {
+                  onChange={async e => {
                     const file = e.target.files?.[0];
                     if (file) {
                       try {
@@ -1552,8 +1916,8 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
                                 position: companySettings.letterheadPosition,
                                 opacity: companySettings.letterheadPosition.opacity,
                                 zIndex: companySettings.letterheadPosition.zIndex,
-                                enabled: true
-                              }
+                                enabled: true,
+                              },
                             }));
                           }
                         } else {
@@ -1571,9 +1935,9 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               {template.letterhead?.url && (
                 <div className="mt-2 p-3 bg-white rounded-lg border">
                   <div className="flex items-center justify-between">
-                    <img 
-                      src={template.letterhead.url} 
-                      alt="Letterhead preview" 
+                    <img
+                      src={template.letterhead.url}
+                      alt="Letterhead preview"
                       className="max-w-full h-20 object-contain"
                     />
                     <button
@@ -1586,8 +1950,8 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
                               letterhead: {
                                 ...prev.letterhead!,
                                 url: '',
-                                enabled: false
-                              }
+                                enabled: false,
+                              },
                             }));
                             setMessage('Letterhead removed successfully!');
                           }
@@ -1611,38 +1975,46 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
               <>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Position X</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Position X
+                    </label>
                     <input
                       type="number"
                       value={template.letterhead?.position?.x ?? 0}
-                      onChange={(e) => setTemplate(prev => ({
-                        ...prev,
-                        letterhead: {
-                          ...prev.letterhead!,
-                          position: {
-                            ...prev.letterhead!.position,
-                            x: parseInt(e.target.value)
-                          }
-                        }
-                      }))}
+                      onChange={e =>
+                        setTemplate(prev => ({
+                          ...prev,
+                          letterhead: {
+                            ...prev.letterhead!,
+                            position: {
+                              ...prev.letterhead!.position,
+                              x: parseInt(e.target.value),
+                            },
+                          },
+                        }))
+                      }
                       className="w-full p-2 text-sm border border-gray-300 rounded-md"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Position Y</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Position Y
+                    </label>
                     <input
                       type="number"
                       value={template.letterhead?.position?.y ?? 0}
-                      onChange={(e) => setTemplate(prev => ({
-                        ...prev,
-                        letterhead: {
-                          ...prev.letterhead!,
-                          position: {
-                            ...prev.letterhead!.position,
-                            y: parseInt(e.target.value)
-                          }
-                        }
-                      }))}
+                      onChange={e =>
+                        setTemplate(prev => ({
+                          ...prev,
+                          letterhead: {
+                            ...prev.letterhead!,
+                            position: {
+                              ...prev.letterhead!.position,
+                              y: parseInt(e.target.value),
+                            },
+                          },
+                        }))
+                      }
                       className="w-full p-2 text-sm border border-gray-300 rounded-md"
                     />
                   </div>
@@ -1656,13 +2028,15 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
                     max="1"
                     step="0.1"
                     value={template.letterhead?.opacity ?? 0.3}
-                    onChange={(e) => setTemplate(prev => ({
-                      ...prev,
-                      letterhead: {
-                        ...prev.letterhead!,
-                        opacity: parseFloat(e.target.value)
-                      }
-                    }))}
+                    onChange={e =>
+                      setTemplate(prev => ({
+                        ...prev,
+                        letterhead: {
+                          ...prev.letterhead!,
+                          opacity: parseFloat(e.target.value),
+                        },
+                      }))
+                    }
                     className="w-full"
                   />
                   <div className="text-xs text-gray-500 mt-1">
@@ -1675,13 +2049,15 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
                     <input
                       type="checkbox"
                       checked={template.letterhead?.enabled !== false}
-                      onChange={(e) => setTemplate(prev => ({
-                        ...prev,
-                        letterhead: {
-                          ...prev.letterhead!,
-                          enabled: e.target.checked
-                        }
-                      }))}
+                      onChange={e =>
+                        setTemplate(prev => ({
+                          ...prev,
+                          letterhead: {
+                            ...prev.letterhead!,
+                            enabled: e.target.checked,
+                          },
+                        }))
+                      }
                       className="rounded border-gray-300"
                     />
                     <span className="text-sm font-medium text-gray-700">Show Letterhead</span>
@@ -1691,16 +2067,22 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ selectedElement, onUp
             )}
           </div>
         </div>
-
       </div>
     </div>
   );
 };
 
 // Main Enhanced Template Builder Component
-const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quotationId, templateId, onClose, onSave, autoPreview = false, readOnly = false }) => {
+const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({
+  quotationId,
+  templateId,
+  onClose,
+  onSave,
+  autoPreview = false,
+  readOnly = false,
+}) => {
   const { settings: companySettings, uploadLetterhead, removeLetterhead } = useCompanySettings();
-  
+
   const [template, setTemplate] = useState<Template>({
     id: templateId || null,
     name: 'New Template',
@@ -1712,12 +2094,12 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
       position: { x: 0, y: 0, width: '100%', height: 'auto' },
       opacity: 0.3,
       zIndex: -1,
-      enabled: false
+      enabled: false,
     },
     settings: {},
-    branding: {}
+    branding: {},
   });
-  
+
   const [selectedElement, setSelectedElement] = useState<TemplateElement | null>(null);
   const [previewMode, setPreviewMode] = useState(false);
   const [previewData, setPreviewData] = useState<any>(null);
@@ -1729,14 +2111,18 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
   const [history, setHistory] = useState<Template[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [clipboardMessage, setClipboardMessage] = useState<string>('');
-  
+
   const previewRef = useRef<HTMLIFrameElement>(null);
 
   // Clipboard function for placeholders
   const copyToClipboard = async (text: string) => {
     try {
       // Try modern clipboard API first
-      if (typeof navigator !== 'undefined' && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+      if (
+        typeof navigator !== 'undefined' &&
+        navigator.clipboard &&
+        typeof navigator.clipboard.writeText === 'function'
+      ) {
         try {
           await navigator.clipboard.writeText(text);
           setClipboardMessage(`Copied: ${text}`);
@@ -1746,7 +2132,7 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
           console.warn('Clipboard API failed, trying fallback:', clipboardError);
         }
       }
-      
+
       // Fallback method for all browsers
       const textArea = document.createElement('textarea');
       textArea.value = text;
@@ -1756,14 +2142,14 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
       textArea.style.opacity = '0';
       textArea.setAttribute('readonly', '');
       document.body.appendChild(textArea);
-      
+
       textArea.focus();
       textArea.select();
       textArea.setSelectionRange(0, 99999);
-      
+
       const successful = document.execCommand('copy');
       document.body.removeChild(textArea);
-      
+
       if (successful) {
         setClipboardMessage(`Copied: ${text}`);
         setTimeout(() => setClipboardMessage(''), 2000);
@@ -1791,10 +2177,10 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
     try {
       // If we have a quotationId, fetch that specific quotation's data
       // Otherwise, fetch generic sample data
-      const url = quotationId 
+      const url = quotationId
         ? `/api/templates/enhanced/sample-data?quotationId=${quotationId}`
         : '/api/templates/enhanced/sample-data';
-      
+
       const response = await fetch(url);
       const result = await response.json();
       if (result.success) {
@@ -1818,14 +2204,14 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
     try {
       setIsLoading(true);
       console.log('🔍 Loading template data for ID:', templateId);
-      
+
       const response = await fetch(`/api/templates/enhanced/${templateId}`);
       const result = await response.json();
-      
+
       if (result.success && result.data) {
         const templateData = result.data;
         console.log('✅ Template data loaded successfully:', templateData);
-        
+
         // Update template state with loaded data
         setTemplate({
           id: templateData.id,
@@ -1834,9 +2220,9 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
           theme: templateData.theme || 'MODERN',
           elements: templateData.elements || [],
           settings: templateData.settings || {},
-          branding: templateData.branding || {}
+          branding: templateData.branding || {},
         });
-        
+
         setMessage('Template loaded successfully');
         setTimeout(() => setMessage(''), 3000);
       } else {
@@ -1883,12 +2269,12 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
       visible: true,
       content: getDefaultContent(elementType),
       style: getDefaultStyle(elementType),
-      position: { x: 0, y: 0, width: '100%', height: 'auto' }
+      position: { x: 0, y: 0, width: '100%', height: 'auto' },
     };
 
     setTemplate(prev => ({
       ...prev,
-      elements: [...prev.elements, newElement]
+      elements: [...prev.elements, newElement],
     }));
     saveToHistory();
   };
@@ -1905,7 +2291,7 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
           return updated;
         }
         return el;
-      })
+      }),
     }));
   }, []);
 
@@ -1916,15 +2302,18 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
   );
 
   // Enhanced update with debounced history save
-  const updateElementWithHistory = useCallback((elementId: string, updates: any) => {
-    updateElement(elementId, updates);
-    debouncedSaveToHistory();
-  }, [updateElement, debouncedSaveToHistory]);
+  const updateElementWithHistory = useCallback(
+    (elementId: string, updates: any) => {
+      updateElement(elementId, updates);
+      debouncedSaveToHistory();
+    },
+    [updateElement, debouncedSaveToHistory]
+  );
 
   const deleteElement = (elementId: string) => {
     setTemplate(prev => ({
       ...prev,
-      elements: prev.elements.filter(el => el.id !== elementId)
+      elements: prev.elements.filter(el => el.id !== elementId),
     }));
     if (selectedElement?.id === elementId) {
       setSelectedElement(null);
@@ -1941,7 +2330,7 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
 
     setTemplate(prev => ({
       ...prev,
-      elements: items
+      elements: items,
     }));
     saveToHistory();
   };
@@ -1949,7 +2338,7 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
   const applyTheme = (themeName: string) => {
     setTemplate(prev => ({
       ...prev,
-      theme: themeName
+      theme: themeName,
     }));
     saveToHistory();
   };
@@ -1957,7 +2346,7 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
   // Preview functions
   const generatePreview = async () => {
     setIsLoading(true);
-    
+
     // Ensure we have sample data before generating preview
     let dataToUse = previewData;
     if (!dataToUse) {
@@ -1973,22 +2362,22 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
       const token = localStorage.getItem('jwt-token');
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
-        'X-Bypass-Auth': 'development-only-123'
+        'X-Bypass-Auth': 'development-only-123',
       };
-      
+
       // Add auth header if token exists
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
       }
-      
+
       const response = await fetch('/api/templates/enhanced/preview', {
         method: 'POST',
         headers,
         body: JSON.stringify({
           templateData: template,
           quotationData: dataToUse,
-          format: 'html'
-        })
+          format: 'html',
+        }),
       });
 
       const result = await response.json();
@@ -2029,14 +2418,14 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
       const token = localStorage.getItem('jwt-token');
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
-        'X-Bypass-Auth': 'development-only-123'
+        'X-Bypass-Auth': 'development-only-123',
       };
-      
+
       // Add auth header if token exists
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
       }
-      
+
       const response = await fetch('/api/templates/enhanced/generate-pdf', {
         method: 'POST',
         headers,
@@ -2046,15 +2435,15 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
           options: {
             format: 'A4',
             orientation: 'portrait',
-            quality: 'HIGH'
+            quality: 'HIGH',
           },
-          filename: 'enhanced_template_preview.pdf'
-        })
+          filename: 'enhanced_template_preview.pdf',
+        }),
       });
 
       if (response.ok) {
         const contentType = response.headers.get('content-type');
-        
+
         if (contentType && contentType.includes('application/pdf')) {
           // Handle PDF response
           const blob = await response.blob();
@@ -2066,7 +2455,7 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
           a.click();
           window.URL.revokeObjectURL(url);
           document.body.removeChild(a);
-          
+
           setClipboardMessage('✅ PDF downloaded successfully!');
           setTimeout(() => setClipboardMessage(''), 3000);
         } else {
@@ -2080,14 +2469,14 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
         // Handle HTTP errors
         const errorText = await response.text();
         let errorMessage = `HTTP ${response.status}`;
-        
+
         try {
           const errorData = JSON.parse(errorText);
           errorMessage = errorData.message || errorData.error || errorMessage;
         } catch {
           errorMessage = errorText || errorMessage;
         }
-        
+
         if (response.status === 401 || response.status === 403) {
           console.warn('Authentication issue with PDF download, but continuing...');
           setMessage('PDF generation not available in demo mode');
@@ -2107,9 +2496,11 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
       }
     } catch (error) {
       console.error('Error downloading PDF:', error);
-      setClipboardMessage(`❌ PDF error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setClipboardMessage(
+        `❌ PDF error: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
       setTimeout(() => setClipboardMessage(''), 4000);
-      
+
       // Try fallback PDF generation
       if (quotationId) {
         console.log('Attempting fallback PDF generation...');
@@ -2132,17 +2523,17 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-Bypass-Auth': 'development-only-123'
+          'X-Bypass-Auth': 'development-only-123',
         },
-        body: JSON.stringify({ 
-          quotationId: quotationId
+        body: JSON.stringify({
+          quotationId: quotationId,
           // Let backend use default template system
-        })
+        }),
       });
 
       if (response.ok) {
         const contentType = response.headers.get('content-type');
-        
+
         if (contentType && contentType.includes('application/pdf')) {
           const blob = await response.blob();
           const url = window.URL.createObjectURL(blob);
@@ -2153,7 +2544,7 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
           a.click();
           window.URL.revokeObjectURL(url);
           document.body.removeChild(a);
-          
+
           setClipboardMessage('✅ PDF generated using fallback method!');
           setTimeout(() => setClipboardMessage(''), 3000);
         } else {
@@ -2176,27 +2567,27 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
       const token = localStorage.getItem('jwt-token');
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
-        'X-Bypass-Auth': 'development-only-123'
+        'X-Bypass-Auth': 'development-only-123',
       };
-      
+
       // Add auth header if token exists
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
       }
-      
+
       // Determine if this is an update or create operation
       const isUpdate = template.id && templateId;
-      const endpoint = isUpdate 
-        ? `/api/templates/enhanced/${template.id}` 
+      const endpoint = isUpdate
+        ? `/api/templates/enhanced/${template.id}`
         : '/api/templates/enhanced/create';
       const method = isUpdate ? 'PUT' : 'POST';
-      
+
       console.log(`🔄 ${isUpdate ? 'Updating' : 'Creating'} template:`, {
         templateId: template.id,
         endpoint,
-        method
+        method,
       });
-      
+
       const response = await fetch(endpoint, {
         method,
         headers,
@@ -2205,21 +2596,21 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
           // Ensure we have the required fields
           name: template.name || 'Untitled Template',
           description: template.description || 'Template created with Enhanced Template Builder',
-          elements: template.elements || []
-        })
+          elements: template.elements || [],
+        }),
       });
 
       if (response.ok) {
         const result = await response.json();
         if (result.success || result.data || result.id) {
           const savedTemplate = result.data || result;
-          
+
           // Update template with saved data including ID for future updates
           if (savedTemplate.id && !template.id) {
             setTemplate(prev => ({ ...prev, id: savedTemplate.id }));
             console.log('✅ Template ID set for future updates:', savedTemplate.id);
           }
-          
+
           if (onSave) onSave(savedTemplate);
           setMessage(`Template ${isUpdate ? 'updated' : 'created'} successfully!`);
           setClipboardMessage(`✅ Template ${isUpdate ? 'updated' : 'saved'} successfully!`);
@@ -2233,14 +2624,14 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
         // Handle HTTP errors and auth issues
         const errorText = await response.text();
         let errorMessage = 'Unknown error';
-        
+
         try {
           const errorData = JSON.parse(errorText);
           errorMessage = errorData.message || errorData.error || errorText;
         } catch {
           errorMessage = errorText || `HTTP ${response.status} error`;
         }
-        
+
         if (response.status === 401 || response.status === 403) {
           console.warn('Authentication issue with save, but continuing...');
           setMessage('Template save not available in demo mode');
@@ -2263,21 +2654,21 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
     try {
       const formData = new FormData();
       formData.append('logo', file);
-      
+
       const token = localStorage.getItem('jwt-token');
       const headers: Record<string, string> = {
-        'X-Bypass-Auth': 'development-only-123'
+        'X-Bypass-Auth': 'development-only-123',
       };
-      
+
       // Add auth header if token exists
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
       }
-      
+
       const response = await fetch('/api/templates/enhanced/upload-logo', {
         method: 'POST',
         headers,
-        body: formData
+        body: formData,
       });
 
       const result = await response.json();
@@ -2286,8 +2677,8 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
           ...prev,
           branding: {
             ...prev.branding,
-            logoUrl: result.data.logoUrl
-          }
+            logoUrl: result.data.logoUrl,
+          },
         }));
         setMessage('Logo uploaded successfully!');
       } else {
@@ -2312,10 +2703,10 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
     if (file) {
       try {
         setIsLoading(true);
-        
+
         // Upload the logo first
         await uploadLogo(file);
-        
+
         // Create a new image element with the uploaded logo
         const imageElement: TemplateElement = {
           id: `element_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -2324,7 +2715,7 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
           content: {
             src: template.branding?.logoUrl,
             alt: 'Company Logo',
-            title: 'Logo'
+            title: 'Logo',
           },
           style: {
             width: '120px',
@@ -2332,25 +2723,24 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
             fontSize: '14px',
             fontWeight: 'normal',
             color: '#000000',
-            backgroundColor: 'transparent'
+            backgroundColor: 'transparent',
           },
           position: {
             x: 20,
             y: 20,
             width: '120px',
-            height: 'auto'
-          }
+            height: 'auto',
+          },
         };
-        
+
         // Add the logo as a template element
         setTemplate(prev => ({
           ...prev,
-          elements: [...prev.elements, imageElement]
+          elements: [...prev.elements, imageElement],
         }));
-        
+
         setMessage('Logo uploaded and added to template!');
         setTimeout(() => setMessage(''), 3000);
-        
       } catch (error) {
         console.error('Error handling logo upload:', error);
         setMessage('Failed to upload logo');
@@ -2364,45 +2754,50 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
   const getDefaultContent = (elementType: string) => {
     const defaults: Record<string, any> = {
       [ELEMENT_TYPES.HEADER]: { title: 'ASP CRANES', subtitle: 'QUOTATION' },
-      [ELEMENT_TYPES.COMPANY_INFO]: { fields: ['{{company.name}}', '{{company.address}}', '{{company.phone}}'] },
-      [ELEMENT_TYPES.CLIENT_INFO]: { title: 'Bill To:', fields: ['{{client.name}}', '{{client.address}}'] },
-      [ELEMENT_TYPES.JOB_DETAILS]: { 
-        title: 'Job Details', 
-        fields: { 
-          orderType: true, 
-          duration: true, 
-          workingHours: true, 
-          machineType: true 
-        } 
+      [ELEMENT_TYPES.COMPANY_INFO]: {
+        fields: ['{{company.name}}', '{{company.address}}', '{{company.phone}}'],
       },
-      [ELEMENT_TYPES.ITEMS_TABLE]: { 
-        title: 'Equipment & Services', 
+      [ELEMENT_TYPES.CLIENT_INFO]: {
+        title: 'Bill To:',
+        fields: ['{{client.name}}', '{{client.address}}'],
+      },
+      [ELEMENT_TYPES.JOB_DETAILS]: {
+        title: 'Job Details',
+        fields: {
+          orderType: true,
+          duration: true,
+          workingHours: true,
+          machineType: true,
+        },
+      },
+      [ELEMENT_TYPES.ITEMS_TABLE]: {
+        title: 'Equipment & Services',
         showHeader: true,
         alternateRows: true,
-        columns: { 
-          no: true, 
-          description: true, 
-          jobType: true, 
-          quantity: true, 
-          duration: true, 
-          rate: true, 
-          rental: true, 
-          mobDemob: true 
-        } 
+        columns: {
+          no: true,
+          description: true,
+          jobType: true,
+          quantity: true,
+          duration: true,
+          rate: true,
+          rental: true,
+          mobDemob: true,
+        },
       },
-      [ELEMENT_TYPES.CHARGES_TABLE]: { 
-        title: 'Additional Charges', 
-        chargeTypes: { 
-          mobilization: true, 
-          demobilization: true, 
-          rigger: true, 
-          helper: true, 
-          incidental: true 
-        } 
+      [ELEMENT_TYPES.CHARGES_TABLE]: {
+        title: 'Additional Charges',
+        chargeTypes: {
+          mobilization: true,
+          demobilization: true,
+          rigger: true,
+          helper: true,
+          incidental: true,
+        },
       },
       [ELEMENT_TYPES.CUSTOM_TEXT]: { text: 'Custom text content...' },
-      [ELEMENT_TYPES.TERMS]: { 
-        title: 'Terms & Conditions', 
+      [ELEMENT_TYPES.TERMS]: {
+        title: 'Terms & Conditions',
         text: `• Any extension or modification to the rental period must be communicated and agreed upon in writing.
 • Rental rates are based on the agreed upon crane specified in the quotation. Payment for the rental fees is due in full prior to or upon delivery of the equipment. Late payments may incur late fees or result in the suspension of equipment rental.
 • All Risks on "The Hirer".
@@ -2410,8 +2805,8 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
 • Prices are exclusive of GST (GST will be added as per applicable rates).
 • Cancellation charges may apply as per company policy.
 • Equipment must be returned in the same condition as delivered.
-• The hirer is responsible for any damage to the equipment during rental period.` 
-      }
+• The hirer is responsible for any damage to the equipment during rental period.`,
+      },
     };
     return defaults[elementType] || {};
   };
@@ -2424,7 +2819,7 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
       fontWeight: 'normal',
       textAlign: 'left',
       padding: '8px',
-      margin: '4px 0'
+      margin: '4px 0',
     };
 
     switch (elementType) {
@@ -2435,18 +2830,18 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
           fontWeight: 'bold',
           textAlign: 'center',
           padding: '16px',
-          margin: '8px 0'
+          margin: '8px 0',
         };
       case ELEMENT_TYPES.CUSTOM_TEXT:
         return {
           ...baseStyle,
-          fontSize: '16px'
+          fontSize: '16px',
         };
       case ELEMENT_TYPES.TERMS:
         return {
           ...baseStyle,
           fontSize: '12px',
-          padding: '12px'
+          padding: '12px',
         };
       default:
         return baseStyle;
@@ -2462,7 +2857,7 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
       }, 500);
       return () => clearTimeout(timer);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoPreview, template.elements]);
 
   if (previewMode) {
@@ -2529,9 +2924,13 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
           </div>
         </div>
         <div className="p-8 bg-gray-100 min-h-screen">
-          <div 
+          <div
             className={`mx-auto bg-white shadow-lg ${
-              viewMode === 'desktop' ? 'max-w-4xl' : viewMode === 'tablet' ? 'max-w-2xl' : 'max-w-lg'
+              viewMode === 'desktop'
+                ? 'max-w-4xl'
+                : viewMode === 'tablet'
+                  ? 'max-w-2xl'
+                  : 'max-w-lg'
             }`}
             style={{ transform: `scale(${zoom / 100})` }}
           >
@@ -2564,7 +2963,7 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
           </div>
         </div>
       )}
-      
+
       {/* Header */}
       <div className="flex items-center justify-between p-4 bg-white border-b border-gray-200">
         <div className="flex items-center space-x-4">
@@ -2572,11 +2971,11 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
           <input
             type="text"
             value={template.name}
-            onChange={(e) => setTemplate(prev => ({ ...prev, name: e.target.value }))}
+            onChange={e => setTemplate(prev => ({ ...prev, name: e.target.value }))}
             className="px-3 py-1 border border-gray-300 rounded-md"
           />
         </div>
-        
+
         <div className="flex items-center space-x-4">
           {/* History controls */}
           <div className="flex items-center space-x-2">
@@ -2605,7 +3004,7 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
             <Eye className="w-4 h-4" />
             <span>Preview</span>
           </button>
-          
+
           <button
             onClick={saveTemplate}
             disabled={isLoading}
@@ -2614,7 +3013,7 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
             <Save className="w-4 h-4" />
             <span>{isLoading ? 'Saving...' : 'Save'}</span>
           </button>
-          
+
           <button
             onClick={onClose}
             className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
@@ -2654,13 +3053,10 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
 
           {/* Tab Content */}
           {activeTab === 'elements' ? (
-            <ElementLibrary
-              onAddElement={addElement}
-              onLogoUpload={handleLogoUpload}
-            />
+            <ElementLibrary onAddElement={addElement} onLogoUpload={handleLogoUpload} />
           ) : (
-            <PlaceholderLibrary 
-              previewData={previewData} 
+            <PlaceholderLibrary
+              previewData={previewData}
               onCopyPlaceholder={copyToClipboard}
               clipboardMessage={clipboardMessage}
             />
@@ -2672,15 +3068,11 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
           <div className="max-w-4xl mx-auto">
             <div className="bg-white rounded-lg shadow-lg p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Template Elements</h3>
-              
+
               <DragDropContext onDragEnd={reorderElements}>
                 <Droppable droppableId="template-elements">
                   {(provided: any) => (
-                    <div
-                      {...provided.droppableProps}
-                      ref={provided.innerRef}
-                      className="space-y-2"
-                    >
+                    <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
                       {template.elements.map((element, index) => (
                         <TemplateElement
                           key={element.id}
@@ -2696,7 +3088,7 @@ const EnhancedTemplateBuilder: React.FC<EnhancedTemplateBuilderProps> = ({ quota
                         />
                       ))}
                       {provided.placeholder}
-                      
+
                       {template.elements.length === 0 && (
                         <div className="text-center py-12 text-gray-500">
                           <Plus className="w-12 h-12 mx-auto mb-4 text-gray-300" />

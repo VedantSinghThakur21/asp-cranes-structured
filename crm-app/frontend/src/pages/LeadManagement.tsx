@@ -1,10 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Plus, 
-  Search, 
-  ArrowRight,
-  Edit2
-} from 'lucide-react';
+import { Plus, Search, ArrowRight, Edit2 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/common/Card';
 import { FormInput } from '../components/common/FormInput';
 import { Input } from '../components/common/Input';
@@ -20,7 +15,13 @@ import MockDataWarning from '../components/common/MockDataWarning';
 import { useAuthStore } from '../store/authStore';
 import { Lead, LeadStatus, LeadSource } from '../types/lead';
 import { Customer } from '../types/customer';
-import { getLeads, createLead, updateLeadStatus, updateLeadAssignment, updateLead } from '../services/lead';
+import {
+  getLeads,
+  createLead,
+  updateLeadStatus,
+  updateLeadAssignment,
+  updateLead,
+} from '../services/lead';
 import { createDeal } from '../services/deal';
 import { useNavigate } from 'react-router-dom';
 import { extractDataFromApiResponse, getCustomerIdentifier } from '../services/customerUtils';
@@ -43,14 +44,14 @@ const MACHINERY_OPTIONS = [
 
 const SHIFT_OPTIONS = [
   { value: 'day', label: 'Day Shift' },
-  { value: 'night', label: 'Night Shift' }
+  { value: 'night', label: 'Night Shift' },
 ];
 
 export function LeadManagement() {
   const { user } = useAuthStore();
   const navigate = useNavigate();
   const [leads, setLeads] = useState<Lead[]>([]);
-  const [salesAgents, setSalesAgents] = useState<{ id: string; name: string; }[]>([]);
+  const [salesAgents, setSalesAgents] = useState<{ id: string; name: string }[]>([]);
   const [filteredLeads, setFilteredLeads] = useState<Lead[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<LeadStatus | 'all'>('all');
@@ -116,12 +117,12 @@ export function LeadManagement() {
     if (!dateValue) {
       return new Date().toISOString().split('T')[0]; // Today's date as fallback
     }
-    
+
     // If it's already in yyyy-MM-dd format, return as is
     if (/^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
       return dateValue;
     }
-    
+
     // If it's an ISO date string, convert it
     try {
       const date = new Date(dateValue);
@@ -137,7 +138,7 @@ export function LeadManagement() {
     if (isEditModalOpen && selectedLead) {
       // Get today's date as default for start_date if it's missing
       const today = new Date().toISOString().split('T')[0];
-      
+
       setEditForm({
         fullName: selectedLead.customerName || '',
         companyName: selectedLead.companyName || '',
@@ -159,18 +160,18 @@ export function LeadManagement() {
     try {
       console.log('Fetching leads from API...');
       const response = await getLeads();
-      
+
       // Use robust data extraction utility
       const data = extractDataFromApiResponse<Lead>(response);
-      
+
       console.log('🧪 Debug leads response:', {
         originalResponse: response,
         extractedData: data,
         isArray: Array.isArray(data),
         length: Array.isArray(data) ? data.length : 'not array',
-        firstLead: data.length > 0 ? getCustomerIdentifier(data[0]) : 'none'
+        firstLead: data.length > 0 ? getCustomerIdentifier(data[0]) : 'none',
       });
-      
+
       console.log('Leads data received:', data);
       setLeads(data || []); // Ensure we always have an array
       setIsLoading(false);
@@ -190,8 +191,7 @@ export function LeadManagement() {
       const response = await fetch(url, {
         headers: {
           'Content-Type': 'application/json',
-
-        }
+        },
       });
       if (response.ok) {
         const agents = await response.json();
@@ -216,17 +216,22 @@ export function LeadManagement() {
 
     console.log(`Starting filtering with ${leads.length} leads. Current filters:`, {
       searchTerm,
-      statusFilter
+      statusFilter,
     });
     let filtered = [...leads];
 
     // Filter by search term
     if (searchTerm) {
-      filtered = filtered.filter(lead =>
-        (lead?.customerName?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
-        (lead?.companyName?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
-        (lead?.email?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
-        (lead?.phone?.includes(searchTerm) || false)
+      filtered = filtered.filter(
+        lead =>
+          lead?.customerName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          false ||
+          lead?.companyName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          false ||
+          lead?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          false ||
+          lead?.phone?.includes(searchTerm) ||
+          false
       );
       console.log(`After search filter: ${filtered.length} leads`);
     }
@@ -249,9 +254,15 @@ export function LeadManagement() {
     e.preventDefault();
 
     // Validate required fields
-    if (!formData.fullName || !formData.phoneNumber || !formData.email || 
-        !formData.machineryType || !formData.location || !formData.startDate || 
-        !formData.rentalDays) {
+    if (
+      !formData.fullName ||
+      !formData.phoneNumber ||
+      !formData.email ||
+      !formData.machineryType ||
+      !formData.location ||
+      !formData.startDate ||
+      !formData.rentalDays
+    ) {
       showToast('Please fill in all required fields', 'error');
       return;
     }
@@ -281,8 +292,10 @@ export function LeadManagement() {
     try {
       // If user is a sales agent, automatically assign the lead to them
       const assignedTo = user?.role === 'sales_agent' ? user.id : formData.assignedTo;
-      const assignedToName = user?.role === 'sales_agent' ? user.name : 
-        salesAgents.find(agent => agent.id === formData.assignedTo)?.name || '';
+      const assignedToName =
+        user?.role === 'sales_agent'
+          ? user.name
+          : salesAgents.find(agent => agent.id === formData.assignedTo)?.name || '';
 
       // Only include assignedTo and assignedToName if they have valid values
       const leadData = {
@@ -299,10 +312,12 @@ export function LeadManagement() {
         notes: formData.notes,
         designation: formData.designation,
         // Only include assignment if valid
-        ...(assignedTo && assignedTo.trim() !== '' ? { 
-          assignedTo: assignedTo,
-          assignedToName: assignedToName 
-        } : {})
+        ...(assignedTo && assignedTo.trim() !== ''
+          ? {
+              assignedTo: assignedTo,
+              assignedToName: assignedToName,
+            }
+          : {}),
       };
 
       console.log('Creating lead with data:', leadData);
@@ -322,12 +337,8 @@ export function LeadManagement() {
     try {
       const updatedLead = await updateLeadStatus(leadId, newStatus);
       if (updatedLead) {
-        setLeads(prev => 
-          prev.map(lead => 
-            lead.id === leadId ? updatedLead : lead
-          )
-        );
-        
+        setLeads(prev => prev.map(lead => (lead.id === leadId ? updatedLead : lead)));
+
         showToast('Lead status updated', 'success');
       }
     } catch (error) {
@@ -340,7 +351,7 @@ export function LeadManagement() {
     console.log('Selected customer:', customer);
     setSelectedCustomer(customer);
     setIsCustomerSelectionModalOpen(false);
-    setTimeout(() => { 
+    setTimeout(() => {
       setIsDealValueModalOpen(true);
     }, 100);
   };
@@ -349,7 +360,7 @@ export function LeadManagement() {
     try {
       setIsLoading(true);
       console.log('Creating deal with:', { selectedLead, selectedCustomer, dealValue });
-      
+
       if (!selectedLead) {
         showToast('No lead selected', 'error');
         return;
@@ -375,25 +386,21 @@ export function LeadManagement() {
           phone: selectedCustomer.phone || selectedLead.phone,
           company: selectedCustomer.companyName || '',
           address: selectedCustomer.address || '',
-          designation: selectedCustomer.designation || 'N/A'
+          designation: selectedCustomer.designation || 'N/A',
         },
         probability: 0,
         createdBy: user?.id || '',
-        assignedTo: selectedLead.assignedTo || user?.id || ''
+        assignedTo: selectedLead.assignedTo || user?.id || '',
       });
 
       console.log('Deal created successfully:', deal);
-      
+
       // Update lead status to converted
       await updateLeadStatus(selectedLead.id, 'converted');
-      
+
       // Update local state
-      setLeads(prev => 
-        prev.map(lead => 
-          lead.id === selectedLead.id 
-            ? { ...lead, status: 'converted' }
-            : lead
-        )
+      setLeads(prev =>
+        prev.map(lead => (lead.id === selectedLead.id ? { ...lead, status: 'converted' } : lead))
       );
 
       // Show success message
@@ -405,7 +412,7 @@ export function LeadManagement() {
       setSelectedLead(null);
       setSelectedCustomer(null);
       setDealValue(0);
-      
+
       // Navigate to deals page
       navigate('/deals');
     } catch (error) {
@@ -431,16 +438,12 @@ export function LeadManagement() {
         console.log('Unassigning lead', leadId);
         const updatedLead = await updateLeadAssignment(leadId, '', 'Unassigned');
         if (updatedLead) {
-          setLeads(prev => 
-            prev.map(lead => 
-              lead.id === leadId ? updatedLead : lead
-            )
-          );
+          setLeads(prev => prev.map(lead => (lead.id === leadId ? updatedLead : lead)));
           showToast('Lead unassigned successfully', 'success');
         }
         return;
       }
-      
+
       // Handle assignment to a sales agent
       const selectedAgent = salesAgents.find(agent => agent.id === salesAgentId);
       if (!selectedAgent) {
@@ -450,11 +453,7 @@ export function LeadManagement() {
 
       const updatedLead = await updateLeadAssignment(leadId, salesAgentId, selectedAgent.name);
       if (updatedLead) {
-        setLeads(prev => 
-          prev.map(lead => 
-            lead.id === leadId ? updatedLead : lead
-          )
-        );
+        setLeads(prev => prev.map(lead => (lead.id === leadId ? updatedLead : lead)));
         showToast('Lead assignment updated', 'success');
       }
     } catch (error) {
@@ -480,10 +479,7 @@ export function LeadManagement() {
     });
   };
 
-  const showToast = (
-    title: string,
-    variant: 'success' | 'error' | 'warning' = 'success'
-  ) => {
+  const showToast = (title: string, variant: 'success' | 'error' | 'warning' = 'success') => {
     setToast({ show: true, title, variant });
     setTimeout(() => setToast({ show: false, title: '' }), 3000);
   };
@@ -492,9 +488,16 @@ export function LeadManagement() {
     e.preventDefault();
 
     // Validate required fields
-    if (!editForm.fullName || !editForm.phoneNumber || !editForm.email || 
-        !editForm.serviceNeeded || !editForm.siteLocation || !editForm.startDate || 
-        !editForm.rentalDays || editForm.rentalDays < 1) {
+    if (
+      !editForm.fullName ||
+      !editForm.phoneNumber ||
+      !editForm.email ||
+      !editForm.serviceNeeded ||
+      !editForm.siteLocation ||
+      !editForm.startDate ||
+      !editForm.rentalDays ||
+      editForm.rentalDays < 1
+    ) {
       showToast('Please fill in all required fields', 'error');
       return;
     }
@@ -543,9 +546,7 @@ export function LeadManagement() {
       if (updatedLead) {
         // Update the specific lead in the state
         setLeads(prev => {
-          const newLeads = prev.map(lead => 
-            lead.id === selectedLead!.id ? updatedLead : lead
-          );
+          const newLeads = prev.map(lead => (lead.id === selectedLead!.id ? updatedLead : lead));
           console.log('Updated leads array:', newLeads);
           return newLeads;
         });
@@ -554,7 +555,7 @@ export function LeadManagement() {
         console.log('No updated lead returned, refetching all leads');
         await fetchLeads();
       }
-      
+
       setIsEditModalOpen(false);
       setSelectedLead(null);
       showToast('Lead updated successfully', 'success');
@@ -575,7 +576,7 @@ export function LeadManagement() {
     <div className="space-y-6">
       {/* Display warning if mock data is being used */}
       <MockDataWarning data={leads} dataType="leads" />
-      
+
       <Card>
         <CardHeader>
           {/* Title and Add Button Row */}
@@ -590,7 +591,7 @@ export function LeadManagement() {
               Add Lead
             </Button>
           </div>
-                    {/* Search and Filter Bar */}
+          {/* Search and Filter Bar */}
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4 p-4 bg-gradient-to-r from-gray-50/80 to-gray-100/50 rounded-xl border border-gray-200/60 shadow-sm relative z-10">
             <div className="flex items-center space-x-3 flex-1 min-w-0">
               <Search className="w-4 h-4 text-gray-500 flex-shrink-0" />
@@ -598,18 +599,15 @@ export function LeadManagement() {
                 type="text"
                 placeholder="Search leads..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={e => setSearchTerm(e.target.value)}
                 className="w-full bg-white border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 min-w-0 text-gray-900 placeholder:text-gray-500"
               />
             </div>
             <div className="relative z-20 w-full sm:w-[180px] flex-shrink-0">
               <Select
                 value={statusFilter}
-                onChange={(value) => setStatusFilter(value as LeadStatus | 'all')}
-                options={[
-                  { value: 'all', label: 'All Status' },
-                  ...LEAD_STATUS_OPTIONS
-                ]}
+                onChange={value => setStatusFilter(value as LeadStatus | 'all')}
+                options={[{ value: 'all', label: 'All Status' }, ...LEAD_STATUS_OPTIONS]}
                 className="w-full bg-white border-gray-200"
               />
             </div>
@@ -651,8 +649,11 @@ export function LeadManagement() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredLeads.map((lead) => (
-                    <tr key={lead.id} className="hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-indigo-50/30 transition-all duration-200">
+                  {filteredLeads.map(lead => (
+                    <tr
+                      key={lead.id}
+                      className="hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-indigo-50/30 transition-all duration-200"
+                    >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
                           <div className="font-medium text-gray-900">
@@ -662,7 +663,9 @@ export function LeadManagement() {
                             <div className="text-sm text-gray-500">{lead.companyName}</div>
                           )}
                           {!lead.customerName && !lead.companyName && lead.id && (
-                            <div className="text-xs text-gray-400">ID: {lead.id.substring(0, 8)}...</div>
+                            <div className="text-xs text-gray-400">
+                              ID: {lead.id.substring(0, 8)}...
+                            </div>
                           )}
                         </div>
                       </td>
@@ -680,7 +683,9 @@ export function LeadManagement() {
                         <div className="text-sm text-gray-900">
                           {lead.notes ? (
                             <div className="truncate" title={lead.notes}>
-                              {lead.notes.length > 50 ? `${lead.notes.substring(0, 50)}...` : lead.notes}
+                              {lead.notes.length > 50
+                                ? `${lead.notes.substring(0, 50)}...`
+                                : lead.notes}
                             </div>
                           ) : (
                             <span className="text-gray-400 italic">No notes</span>
@@ -697,28 +702,34 @@ export function LeadManagement() {
                           // Show editable select for other statuses
                           <Select
                             value={lead.status}
-                            onChange={(value) => handleStatusChange(lead.id, value as LeadStatus)}
-                            options={LEAD_STATUS_OPTIONS.filter(option => option.value !== 'converted')}
+                            onChange={value => handleStatusChange(lead.id, value as LeadStatus)}
+                            options={LEAD_STATUS_OPTIONS.filter(
+                              option => option.value !== 'converted'
+                            )}
                             className="min-w-[130px]"
                           />
                         )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">                        {user?.role === 'admin' ? (
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {' '}
+                        {user?.role === 'admin' ? (
                           <Select
                             value={lead.assignedTo || ''}
-                            onChange={(value) => handleAssignmentChange(lead.id, value)}
+                            onChange={value => handleAssignmentChange(lead.id, value)}
                             options={[
                               { value: '', label: 'Unassigned' },
                               ...salesAgents.map(agent => ({
                                 value: agent.id,
                                 label: agent.name,
-                              }))
+                              })),
                             ]}
                             className="min-w-[160px]"
                           />
                         ) : (
                           <div className="text-sm text-gray-900">
-                            {!lead.assignedTo || lead.assignedTo === '' ? 'Unassigned' : (lead.assignedToName || 'Unassigned')}
+                            {!lead.assignedTo || lead.assignedTo === ''
+                              ? 'Unassigned'
+                              : lead.assignedToName || 'Unassigned'}
                           </div>
                         )}
                       </td>
@@ -770,7 +781,7 @@ export function LeadManagement() {
       >
         <form onSubmit={handleCreateLead} className="space-y-8">
           <RequiredFieldsInfo />
-          
+
           {/* Personal Information Section */}
           <div className="bg-gray-50 p-6 rounded-lg">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Personal Information</h3>
@@ -778,14 +789,14 @@ export function LeadManagement() {
               <FormInput
                 label="Full Name"
                 value={formData.fullName}
-                onChange={(e) => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
+                onChange={e => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
                 required
               />
 
               <FormInput
                 label="Company Name"
                 value={formData.companyName}
-                onChange={(e) => setFormData(prev => ({ ...prev, companyName: e.target.value }))}
+                onChange={e => setFormData(prev => ({ ...prev, companyName: e.target.value }))}
                 helperText="Optional"
               />
 
@@ -793,7 +804,7 @@ export function LeadManagement() {
                 label="Phone Number"
                 type="tel"
                 value={formData.phoneNumber}
-                onChange={(e) => setFormData(prev => ({ ...prev, phoneNumber: e.target.value }))}
+                onChange={e => setFormData(prev => ({ ...prev, phoneNumber: e.target.value }))}
                 required
               />
 
@@ -801,14 +812,14 @@ export function LeadManagement() {
                 label="Email Address"
                 type="email"
                 value={formData.email}
-                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                onChange={e => setFormData(prev => ({ ...prev, email: e.target.value }))}
                 required
               />
 
               <FormInput
                 label="Designation"
                 value={formData.designation}
-                onChange={(e) => setFormData(prev => ({ ...prev, designation: e.target.value }))}
+                onChange={e => setFormData(prev => ({ ...prev, designation: e.target.value }))}
                 placeholder="Enter designation"
                 helperText="Optional"
               />
@@ -821,19 +832,16 @@ export function LeadManagement() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <Select
                 label="Type of Machinery Needed"
-                options={[
-                  { value: '', label: 'Select Machinery Type' },
-                  ...MACHINERY_OPTIONS
-                ]}
+                options={[{ value: '', label: 'Select Machinery Type' }, ...MACHINERY_OPTIONS]}
                 value={formData.machineryType}
-                onChange={(value) => setFormData(prev => ({ ...prev, machineryType: value }))}
+                onChange={value => setFormData(prev => ({ ...prev, machineryType: value }))}
                 required
               />
 
               <FormInput
                 label="Site Location"
                 value={formData.location}
-                onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
+                onChange={e => setFormData(prev => ({ ...prev, location: e.target.value }))}
                 required
               />
 
@@ -842,7 +850,7 @@ export function LeadManagement() {
                 type="date"
                 value={formData.startDate}
                 min={today}
-                onChange={(e) => setFormData(prev => ({ ...prev, startDate: e.target.value }))}
+                onChange={e => setFormData(prev => ({ ...prev, startDate: e.target.value }))}
                 required
               />
 
@@ -862,7 +870,7 @@ export function LeadManagement() {
                 label="Shift Timing"
                 options={SHIFT_OPTIONS}
                 value={formData.shiftTiming}
-                onChange={(value) => setFormData(prev => ({ ...prev, shiftTiming: value }))}
+                onChange={value => setFormData(prev => ({ ...prev, shiftTiming: value }))}
                 required
               />
 
@@ -875,10 +883,10 @@ export function LeadManagement() {
                     ...salesAgents.map(agent => ({
                       value: agent.id,
                       label: agent.name,
-                    }))
+                    })),
                   ]}
                   value={formData.assignedTo}
-                  onChange={(value) => setFormData(prev => ({ ...prev, assignedTo: value }))}
+                  onChange={value => setFormData(prev => ({ ...prev, assignedTo: value }))}
                   required
                 />
               )}
@@ -891,7 +899,7 @@ export function LeadManagement() {
             <TextArea
               label="Additional Notes"
               value={formData.notes}
-              onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+              onChange={e => setFormData(prev => ({ ...prev, notes: e.target.value }))}
               rows={4}
               className="w-full"
               placeholder="Any additional requirements, special instructions, or notes..."
@@ -910,11 +918,7 @@ export function LeadManagement() {
             >
               Cancel
             </Button>
-            <Button 
-              type="submit" 
-              variant="accent"
-              className="px-8 py-2"
-            >
+            <Button type="submit" variant="accent" className="px-8 py-2">
               Create Lead
             </Button>
           </div>
@@ -931,14 +935,18 @@ export function LeadManagement() {
           setDealValue(0);
         }}
         onSelect={handleCustomerSelect}
-        initialCustomerData={selectedLead ? {
-          name: selectedLead.customerName,
-          email: selectedLead.email || '',
-          phone: selectedLead.phone || '',
-          companyName: selectedLead.companyName || '',
-          address: '',
-          designation: selectedLead.designation || '',
-        } : undefined}
+        initialCustomerData={
+          selectedLead
+            ? {
+                name: selectedLead.customerName,
+                email: selectedLead.email || '',
+                phone: selectedLead.phone || '',
+                companyName: selectedLead.companyName || '',
+                address: '',
+                designation: selectedLead.designation || '',
+              }
+            : undefined
+        }
       />
 
       {/* Deal Value Modal */}
@@ -958,7 +966,7 @@ export function LeadManagement() {
             label="Deal Value"
             type="number"
             value={dealValue === 0 ? '' : dealValue}
-            onChange={(e) => {
+            onChange={e => {
               const value = e.target.value;
               setDealValue(value === '' ? 0 : Number(value));
             }}
@@ -1001,39 +1009,39 @@ export function LeadManagement() {
               <FormInput
                 label="Full Name"
                 value={editForm.fullName}
-                onChange={(e) => setEditForm(prev => ({ ...prev, fullName: e.target.value }))}
+                onChange={e => setEditForm(prev => ({ ...prev, fullName: e.target.value }))}
                 required
               />
               <FormInput
                 label="Company Name"
                 value={editForm.companyName}
-                onChange={(e) => setEditForm(prev => ({ ...prev, companyName: e.target.value }))}
+                onChange={e => setEditForm(prev => ({ ...prev, companyName: e.target.value }))}
                 helperText="Optional"
               />
               <FormInput
                 label="Phone Number"
                 type="tel"
                 value={editForm.phoneNumber}
-                onChange={(e) => setEditForm(prev => ({ ...prev, phoneNumber: e.target.value }))}
+                onChange={e => setEditForm(prev => ({ ...prev, phoneNumber: e.target.value }))}
                 required
               />
               <FormInput
                 label="Email Address"
                 type="email"
                 value={editForm.email}
-                onChange={(e) => setEditForm(prev => ({ ...prev, email: e.target.value }))}
+                onChange={e => setEditForm(prev => ({ ...prev, email: e.target.value }))}
                 required
               />
               <FormInput
                 label="Service Needed"
                 value={editForm.serviceNeeded}
-                onChange={(e) => setEditForm(prev => ({ ...prev, serviceNeeded: e.target.value }))}
+                onChange={e => setEditForm(prev => ({ ...prev, serviceNeeded: e.target.value }))}
                 required
               />
               <FormInput
                 label="Site Location"
                 value={editForm.siteLocation}
-                onChange={(e) => setEditForm(prev => ({ ...prev, siteLocation: e.target.value }))}
+                onChange={e => setEditForm(prev => ({ ...prev, siteLocation: e.target.value }))}
                 required
               />
               <FormInput
@@ -1041,7 +1049,7 @@ export function LeadManagement() {
                 type="date"
                 value={editForm.startDate}
                 min={today}
-                onChange={(e) => setEditForm(prev => ({ ...prev, startDate: e.target.value }))}
+                onChange={e => setEditForm(prev => ({ ...prev, startDate: e.target.value }))}
                 required
               />
               <FormInput
@@ -1049,19 +1057,21 @@ export function LeadManagement() {
                 type="number"
                 min="1"
                 value={editForm.rentalDays.toString()}
-                onChange={(e) => setEditForm(prev => ({ ...prev, rentalDays: parseInt(e.target.value) || 1 }))}
+                onChange={e =>
+                  setEditForm(prev => ({ ...prev, rentalDays: parseInt(e.target.value) || 1 }))
+                }
                 required
               />
               <FormInput
                 label="Shift Timing"
                 value={editForm.shiftTiming}
-                onChange={(e) => setEditForm(prev => ({ ...prev, shiftTiming: e.target.value }))}
+                onChange={e => setEditForm(prev => ({ ...prev, shiftTiming: e.target.value }))}
                 placeholder="e.g., Day Shift, Night Shift"
               />
               <Select
                 label="Status"
                 value={editForm.status}
-                onChange={(value) => setEditForm(prev => ({ ...prev, status: value }))}
+                onChange={value => setEditForm(prev => ({ ...prev, status: value }))}
                 options={[
                   { label: 'New', value: 'new' },
                   { label: 'In Process', value: 'in_process' },
@@ -1075,7 +1085,7 @@ export function LeadManagement() {
               <Select
                 label="Source"
                 value={editForm.source}
-                onChange={(value) => setEditForm(prev => ({ ...prev, source: value }))}
+                onChange={value => setEditForm(prev => ({ ...prev, source: value }))}
                 options={[
                   { label: 'Select Source', value: '' },
                   { label: 'Website', value: 'website' },
@@ -1092,7 +1102,7 @@ export function LeadManagement() {
               <FormInput
                 label="Designation"
                 value={editForm.designation}
-                onChange={(e) => setEditForm(prev => ({ ...prev, designation: e.target.value }))}
+                onChange={e => setEditForm(prev => ({ ...prev, designation: e.target.value }))}
                 placeholder="Job title or role"
               />
             </div>
@@ -1100,7 +1110,7 @@ export function LeadManagement() {
               <TextArea
                 label="Notes"
                 value={editForm.notes}
-                onChange={(e) => setEditForm(prev => ({ ...prev, notes: e.target.value }))}
+                onChange={e => setEditForm(prev => ({ ...prev, notes: e.target.value }))}
                 placeholder="Additional notes or comments..."
                 rows={3}
               />

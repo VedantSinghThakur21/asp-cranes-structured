@@ -1,7 +1,6 @@
 // Enhanced dealRepository using centralized db client
 import { db } from '../../lib/dbClient.js';
 
-
 export const getDeals = async () => {
   try {
     console.log('📋 Fetching all deals with customer info...');
@@ -21,8 +20,8 @@ export const getDeals = async () => {
         phone: deal.customer_phone || '',
         company: deal.customer_company || '',
         address: deal.customer_address || '',
-        designation: deal.customer_designation || ''
-      }
+        designation: deal.customer_designation || '',
+      },
     }));
     console.log(`✅ Found ${dealsWithCustomer.length} deals (with customer)`);
     return dealsWithCustomer;
@@ -32,18 +31,21 @@ export const getDeals = async () => {
   }
 };
 
-export const getDealsByStages = async (stages) => {
+export const getDealsByStages = async stages => {
   try {
     console.log(`📋 Fetching deals with stages: ${stages.join(', ')}`);
-    const deals = await db.any(`
+    const deals = await db.any(
+      `
       SELECT d.*, 
              c.name AS customer_name, c.email AS customer_email, c.phone AS customer_phone, c.company_name AS customer_company, c.address AS customer_address, c.designation AS customer_designation
       FROM deals d
       LEFT JOIN customers c ON d.customer_id = c.id
       WHERE d.stage = ANY($1)
       ORDER BY d.created_at DESC
-    `, [stages]);
-    
+    `,
+      [stages]
+    );
+
     // Map customer fields into a customer object for each deal
     const dealsWithCustomer = deals.map(deal => ({
       ...deal,
@@ -53,8 +55,8 @@ export const getDealsByStages = async (stages) => {
         phone: deal.customer_phone || '',
         company: deal.customer_company || '',
         address: deal.customer_address || '',
-        designation: deal.customer_designation || ''
-      }
+        designation: deal.customer_designation || '',
+      },
     }));
     console.log(`✅ Found ${dealsWithCustomer.length} deals with specified stages`);
     return dealsWithCustomer;
@@ -64,17 +66,19 @@ export const getDealsByStages = async (stages) => {
   }
 };
 
-
-export const getDealById = async (id) => {
+export const getDealById = async id => {
   try {
     console.log(`🔍 Fetching deal by ID (with customer): ${id}`);
-    const deal = await db.oneOrNone(`
+    const deal = await db.oneOrNone(
+      `
       SELECT d.*, 
              c.name AS customer_name, c.email AS customer_email, c.phone AS customer_phone, c.company_name AS customer_company, c.address AS customer_address, c.designation AS customer_designation
       FROM deals d
       LEFT JOIN customers c ON d.customer_id = c.id
       WHERE d.id = $1
-    `, [id]);
+    `,
+      [id]
+    );
     if (!deal) return null;
     const dealWithCustomer = {
       ...deal,
@@ -84,8 +88,8 @@ export const getDealById = async (id) => {
         phone: deal.customer_phone || '',
         company: deal.customer_company || '',
         address: deal.customer_address || '',
-        designation: deal.customer_designation || ''
-      }
+        designation: deal.customer_designation || '',
+      },
     };
     console.log(`📝 Deal found: Yes (with customer)`);
     return dealWithCustomer;
@@ -95,7 +99,7 @@ export const getDealById = async (id) => {
   }
 };
 
-export const createDeal = async (dealData) => {
+export const createDeal = async dealData => {
   try {
     console.log('🆕 Creating new deal...');
     const result = await db.one(
@@ -112,7 +116,7 @@ export const createDeal = async (dealData) => {
         dealData.assignedTo,
         dealData.probability || 50,
         dealData.expectedCloseDate || null,
-        dealData.notes || ''
+        dealData.notes || '',
       ]
     );
     console.log(`✅ Deal created successfully: ${result.id}`);
@@ -184,7 +188,7 @@ export const updateDeal = async (id, dealData) => {
   }
 };
 
-export const deleteDeal = async (id) => {
+export const deleteDeal = async id => {
   try {
     console.log(`🗑️ Deleting deal: ${id}`);
     await db.none('DELETE FROM deals WHERE id = $1', [id]);
@@ -195,32 +199,31 @@ export const deleteDeal = async (id) => {
   }
 };
 
-
 // Update the stage of a deal by ID
 export const updateDealStage = async (id, stage) => {
   try {
     console.log(`📝 Updating deal stage: ${id} to ${stage}`);
-    
+
     // Update the deal stage
-    await db.none(
-      'UPDATE deals SET stage = $1, updated_at = NOW() WHERE id = $2',
-      [stage, id]
-    );
-    
+    await db.none('UPDATE deals SET stage = $1, updated_at = NOW() WHERE id = $2', [stage, id]);
+
     // Fetch the updated deal with customer information
-    const updatedDeal = await db.oneOrNone(`
+    const updatedDeal = await db.oneOrNone(
+      `
       SELECT d.*, 
              c.name AS customer_name, c.email AS customer_email, c.phone AS customer_phone, 
              c.company_name AS customer_company, c.address AS customer_address, c.designation AS customer_designation
       FROM deals d
       LEFT JOIN customers c ON d.customer_id = c.id
       WHERE d.id = $1
-    `, [id]);
-    
+    `,
+      [id]
+    );
+
     if (!updatedDeal) {
       throw new Error(`Deal with ID ${id} not found after update`);
     }
-    
+
     // Map customer fields into a customer object
     const dealWithCustomer = {
       ...updatedDeal,
@@ -230,10 +233,10 @@ export const updateDealStage = async (id, stage) => {
         phone: updatedDeal.customer_phone || '',
         company: updatedDeal.customer_company || '',
         address: updatedDeal.customer_address || '',
-        designation: updatedDeal.customer_designation || ''
-      }
+        designation: updatedDeal.customer_designation || '',
+      },
     };
-    
+
     console.log(`✅ Deal stage updated successfully: ${dealWithCustomer.id}`);
     return dealWithCustomer;
   } catch (error) {

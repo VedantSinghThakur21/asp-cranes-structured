@@ -9,4 +9,4 @@ export const formatCurrency = (amount: number): string => {
 
 export const formatPercentage = (value: number): string => {
   return `${value}%`;
-}; 
+};

@@ -1,6 +1,6 @@
 /**
  * Environment Configuration Utility
- * 
+ *
  * This utility provides environment-specific configuration and behavior
  * for production-ready deployment with proper security controls.
  */
@@ -13,34 +13,34 @@ export const isProd = (): boolean => {
   if (_isProdCache !== null) {
     return _isProdCache;
   }
-  
+
   // Multiple checks to ensure we detect production correctly
   const checks = {
     // Check 1: Vite mode indicator
     viteModeCheck: (import.meta as any).env.MODE === 'production',
-    
+
     // Check 2: Vite dev flag (inverse)
     viteDevCheck: (import.meta as any).env.DEV === false,
-    
+
     // Check 3: Vite PROD flag (direct)
     viteProdCheck: (import.meta as any).env.PROD === true,
-    
+
     // Check 4: URL hostname check (only if in browser)
-    urlCheck: typeof window !== 'undefined' && (
-      window.location.hostname !== 'localhost' && 
+    urlCheck:
+      typeof window !== 'undefined' &&
+      window.location.hostname !== 'localhost' &&
       window.location.hostname !== '127.0.0.1' &&
-      !window.location.hostname.includes('.local')
-    )
+      !window.location.hostname.includes('.local'),
   };
-  
+
   // Log the results in development mode for debugging
   if ((import.meta as any).env.DEV) {
     console.log('Environment detection results:', checks);
   }
-  
+
   // STRICT PRODUCTION DETECTION:
   const isProdBuild = checks.viteProdCheck && checks.viteDevCheck;
-  
+
   // Cache the result
   _isProdCache = isProdBuild;
   return isProdBuild;
@@ -60,7 +60,7 @@ export const getApiBaseUrl = (): string => {
     // Server-side environment
     return '/api';
   }
-  
+
   // Client-side environment
   return (import.meta as any).env.VITE_API_URL || '/api';
 };
@@ -113,15 +113,18 @@ export const validateProductionDeploy = (): void => {
       '%c🔒 PRODUCTION MODE ACTIVE',
       'background: #4CAF50; color: white; font-size: 14px; font-weight: bold; padding: 4px 8px; border-radius: 4px;'
     );
-    
+
     // Apply production-specific security measures
     try {
       if (typeof window !== 'undefined' && isProd()) {
         const originalConsoleLog = console.log;
-        console.log = function(...args: any[]) {
+        console.log = function (...args: any[]) {
           // Only log errors and warnings in production, filter out debug logs
-          if (args[0] && typeof args[0] === 'string' && 
-              (args[0].includes('[ERROR]') || args[0].includes('[WARNING]'))) {
+          if (
+            args[0] &&
+            typeof args[0] === 'string' &&
+            (args[0].includes('[ERROR]') || args[0].includes('[WARNING]'))
+          ) {
             originalConsoleLog.apply(console, args);
           }
         };

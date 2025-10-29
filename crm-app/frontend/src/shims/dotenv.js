@@ -1,6 +1,6 @@
 /**
  * Browser-compatible dotenv shim
- * 
+ *
  * This provides a compatible API with dotenv in the browser.
  * It exports a config function that returns an empty parsed object
  * to prevent runtime errors when code tries to use dotenv.config().

@@ -1,7 +1,10 @@
 import { getHeaders } from './apiHeaders';
 import { Equipment } from '../types/equipment';
 // Update equipment by ID via backend API
-export async function updateEquipment(equipmentId: string, updates: Partial<Equipment>): Promise<Equipment> {
+export async function updateEquipment(
+  equipmentId: string,
+  updates: Partial<Equipment>
+): Promise<Equipment> {
   const apiUrl = import.meta.env.VITE_API_URL || '/api';
   const response = await fetch(`${apiUrl}/equipment/${equipmentId}`, {
     method: 'PATCH',
@@ -73,9 +76,9 @@ export async function getEquipmentByCategory(category: string): Promise<Equipmen
 export async function getEquipment(): Promise<Equipment[]> {
   const apiUrl = import.meta.env.VITE_API_URL || '/api';
   const fullUrl = `${apiUrl}/equipment`;
-  
+
   console.log('🔗 Equipment API URL:', fullUrl);
-  
+
   try {
     // Always include authentication headers since endpoint requires auth
     const response = await fetch(fullUrl, {
@@ -83,14 +86,14 @@ export async function getEquipment(): Promise<Equipment[]> {
       headers: getHeaders(),
       credentials: 'include',
     });
-    
+
     console.log('📡 Equipment API Response Status:', response.status);
     console.log('📡 Equipment API Response OK:', response.ok);
-    
+
     if (!response.ok) {
       const errorText = await response.text();
       console.error('❌ Equipment API Error:', response.status, errorText);
-      
+
       // If it's 401/403, try with auth headers
       if (response.status === 401 || response.status === 403) {
         console.log('🔄 Retrying with authentication headers...');
@@ -99,33 +102,40 @@ export async function getEquipment(): Promise<Equipment[]> {
           headers: getHeaders(),
           credentials: 'include',
         });
-        
+
         if (!authResponse.ok) {
           throw new Error(`Failed to fetch equipment: ${authResponse.status}`);
         }
-        
+
         const authData = await authResponse.json();
         console.log('📦 Equipment API Auth Data:', authData);
         console.log('📦 Auth Data Type:', typeof authData);
         console.log('📦 Auth Data is Array:', Array.isArray(authData));
         console.log('📦 Auth Data Keys:', Object.keys(authData || {}));
-        
-        const equipmentArray = Array.isArray(authData) ? authData : (authData.equipment || authData.data || []);
+
+        const equipmentArray = Array.isArray(authData)
+          ? authData
+          : authData.equipment || authData.data || [];
         console.log('📦 Auth Equipment Array Length:', equipmentArray.length);
         console.log('📦 Auth First Equipment Item (RAW):', equipmentArray[0]);
-        console.log('📦 Auth First Equipment Item Fields:', equipmentArray[0] ? Object.keys(equipmentArray[0]) : 'No items');
-        
+        console.log(
+          '📦 Auth First Equipment Item Fields:',
+          equipmentArray[0] ? Object.keys(equipmentArray[0]) : 'No items'
+        );
+
         // Log all equipment names and IDs to see what's actually being returned in auth path
         console.log('📋 All equipment from API (Auth Path):');
         equipmentArray.forEach((item: any, index: number) => {
-          console.log(`  ${index + 1}. ID: ${item.id} | Name: ${item.name} | Category: ${item.category}`);
+          console.log(
+            `  ${index + 1}. ID: ${item.id} | Name: ${item.name} | Category: ${item.category}`
+          );
         });
-        
+
         // Transform database format to match our interface
         const transformedEquipment = equipmentArray.map((item: any) => {
           console.log(`🔧 Auth path - Processing equipment: ${item.name} (${item.id})`);
           console.log(`🔧 Auth path - Raw baseRates:`, item.baseRates);
-          
+
           // Use the backend's baseRates object directly if it exists, otherwise build it
           const baseRates = item.baseRates || {
             micro: parseFloat(item.base_rate_micro) || 0,
@@ -133,9 +143,9 @@ export async function getEquipment(): Promise<Equipment[]> {
             monthly: parseFloat(item.base_rate_monthly) || 0,
             yearly: parseFloat(item.base_rate_yearly) || 0,
           };
-          
+
           console.log(`🔧 Auth path - Final baseRates for ${item.name}:`, baseRates);
-          
+
           return {
             ...item,
             // Ensure we have the baseRates object
@@ -157,30 +167,35 @@ export async function getEquipment(): Promise<Equipment[]> {
             updatedAt: item.updated_at || item.updatedAt,
           };
         });
-        
+
         return transformedEquipment;
       }
-      
+
       throw new Error(`Failed to fetch equipment: ${response.status} ${errorText}`);
     }
-    
+
     const data = await response.json();
     console.log('📦 Equipment API Raw Data:', data);
     console.log('📦 Raw Data Type:', typeof data);
     console.log('📦 Raw Data is Array:', Array.isArray(data));
     console.log('📦 Raw Data Keys:', Object.keys(data || {}));
-    
-    const equipmentArray = Array.isArray(data) ? data : (data.equipment || data.data || []);
+
+    const equipmentArray = Array.isArray(data) ? data : data.equipment || data.data || [];
     console.log('📦 Equipment Array Length:', equipmentArray.length);
     console.log('📦 First Equipment Item (RAW):', equipmentArray[0]);
-    console.log('📦 First Equipment Item Fields:', equipmentArray[0] ? Object.keys(equipmentArray[0]) : 'No items');
-    
+    console.log(
+      '📦 First Equipment Item Fields:',
+      equipmentArray[0] ? Object.keys(equipmentArray[0]) : 'No items'
+    );
+
     // Log all equipment names and IDs to see what's actually being returned
     console.log('📋 All equipment from API:');
     equipmentArray.forEach((item: any, index: number) => {
-      console.log(`  ${index + 1}. ID: ${item.id} | Name: ${item.name} | Category: ${item.category}`);
+      console.log(
+        `  ${index + 1}. ID: ${item.id} | Name: ${item.name} | Category: ${item.category}`
+      );
     });
-    
+
     // Transform database format to match our interface
     const transformedEquipment = equipmentArray.map((item: any) => {
       console.log(`🔧 Processing equipment: ${item.name} (${item.id})`);
@@ -189,9 +204,9 @@ export async function getEquipment(): Promise<Equipment[]> {
         base_rate_micro: item.base_rate_micro,
         base_rate_small: item.base_rate_small,
         base_rate_monthly: item.base_rate_monthly,
-        base_rate_yearly: item.base_rate_yearly
+        base_rate_yearly: item.base_rate_yearly,
       });
-      
+
       // Use the backend's baseRates object directly if it exists, otherwise build it
       const baseRates = item.baseRates || {
         micro: parseFloat(item.base_rate_micro) || 0,
@@ -199,9 +214,9 @@ export async function getEquipment(): Promise<Equipment[]> {
         monthly: parseFloat(item.base_rate_monthly) || 0,
         yearly: parseFloat(item.base_rate_yearly) || 0,
       };
-      
+
       console.log(`🔧 Final baseRates for ${item.name}:`, baseRates);
-      
+
       return {
         ...item,
         // Ensure we have the baseRates object
@@ -223,9 +238,9 @@ export async function getEquipment(): Promise<Equipment[]> {
         updatedAt: item.updated_at || item.updatedAt,
       };
     });
-    
+
     console.log('🏗️ Processed Equipment Array:', transformedEquipment);
-    
+
     return transformedEquipment;
   } catch (error) {
     console.error('💥 Equipment API Fetch Error:', error);

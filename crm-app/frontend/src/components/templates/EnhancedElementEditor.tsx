@@ -55,33 +55,128 @@ export interface EnhancedTemplateElement {
 // Enhanced field options with categories
 const enhancedFieldOptions = [
   // Company Information
-  { category: 'Company', value: '{{company_name}}', label: 'Company Name', description: 'Your company name' },
-  { category: 'Company', value: '{{company_address}}', label: 'Company Address', description: 'Full company address' },
-  { category: 'Company', value: '{{company_phone}}', label: 'Company Phone', description: 'Primary contact number' },
-  { category: 'Company', value: '{{company_email}}', label: 'Company Email', description: 'Primary email address' },
-  
+  {
+    category: 'Company',
+    value: '{{company_name}}',
+    label: 'Company Name',
+    description: 'Your company name',
+  },
+  {
+    category: 'Company',
+    value: '{{company_address}}',
+    label: 'Company Address',
+    description: 'Full company address',
+  },
+  {
+    category: 'Company',
+    value: '{{company_phone}}',
+    label: 'Company Phone',
+    description: 'Primary contact number',
+  },
+  {
+    category: 'Company',
+    value: '{{company_email}}',
+    label: 'Company Email',
+    description: 'Primary email address',
+  },
+
   // Customer Information
-  { category: 'Customer', value: '{{customer_name}}', label: 'Customer Name', description: 'Customer/client name' },
-  { category: 'Customer', value: '{{customer_address}}', label: 'Customer Address', description: 'Customer address' },
-  { category: 'Customer', value: '{{customer_phone}}', label: 'Customer Phone', description: 'Customer contact number' },
-  { category: 'Customer', value: '{{customer_email}}', label: 'Customer Email', description: 'Customer email address' },
-  
+  {
+    category: 'Customer',
+    value: '{{customer_name}}',
+    label: 'Customer Name',
+    description: 'Customer/client name',
+  },
+  {
+    category: 'Customer',
+    value: '{{customer_address}}',
+    label: 'Customer Address',
+    description: 'Customer address',
+  },
+  {
+    category: 'Customer',
+    value: '{{customer_phone}}',
+    label: 'Customer Phone',
+    description: 'Customer contact number',
+  },
+  {
+    category: 'Customer',
+    value: '{{customer_email}}',
+    label: 'Customer Email',
+    description: 'Customer email address',
+  },
+
   // Quotation Details
-  { category: 'Quotation', value: '{{quotation_number}}', label: 'Quotation Number', description: 'Unique quotation ID' },
-  { category: 'Quotation', value: '{{quotation_date}}', label: 'Quotation Date', description: 'Date of quotation' },
-  { category: 'Quotation', value: '{{quotation_validity}}', label: 'Quotation Validity', description: 'Valid until date' },
-  
+  {
+    category: 'Quotation',
+    value: '{{quotation_number}}',
+    label: 'Quotation Number',
+    description: 'Unique quotation ID',
+  },
+  {
+    category: 'Quotation',
+    value: '{{quotation_date}}',
+    label: 'Quotation Date',
+    description: 'Date of quotation',
+  },
+  {
+    category: 'Quotation',
+    value: '{{quotation_validity}}',
+    label: 'Quotation Validity',
+    description: 'Valid until date',
+  },
+
   // Financial Information
-  { category: 'Financial', value: '{{subtotal_amount}}', label: 'Subtotal Amount', description: 'Amount before tax' },
-  { category: 'Financial', value: '{{gst_amount}}', label: 'GST Amount', description: 'Total GST amount' },
-  { category: 'Financial', value: '{{total_amount}}', label: 'Total Amount', description: 'Final total amount' },
-  { category: 'Financial', value: '{{total_amount_words}}', label: 'Amount in Words', description: 'Total amount in words' },
-  
+  {
+    category: 'Financial',
+    value: '{{subtotal_amount}}',
+    label: 'Subtotal Amount',
+    description: 'Amount before tax',
+  },
+  {
+    category: 'Financial',
+    value: '{{gst_amount}}',
+    label: 'GST Amount',
+    description: 'Total GST amount',
+  },
+  {
+    category: 'Financial',
+    value: '{{total_amount}}',
+    label: 'Total Amount',
+    description: 'Final total amount',
+  },
+  {
+    category: 'Financial',
+    value: '{{total_amount_words}}',
+    label: 'Amount in Words',
+    description: 'Total amount in words',
+  },
+
   // Calculations
-  { category: 'Calculations', value: '{{working_cost}}', label: 'Working Cost', description: 'Total working cost' },
-  { category: 'Calculations', value: '{{mob_demob_cost}}', label: 'Mobilization Cost', description: 'Mobilization/demobilization cost' },
-  { category: 'Calculations', value: '{{food_accom_cost}}', label: 'Food & Accommodation', description: 'Food and accommodation cost' },
-  { category: 'Calculations', value: '{{number_of_days}}', label: 'Number of Days', description: 'Total working days' }
+  {
+    category: 'Calculations',
+    value: '{{working_cost}}',
+    label: 'Working Cost',
+    description: 'Total working cost',
+  },
+  {
+    category: 'Calculations',
+    value: '{{mob_demob_cost}}',
+    label: 'Mobilization Cost',
+    description: 'Mobilization/demobilization cost',
+  },
+  {
+    category: 'Calculations',
+    value: '{{food_accom_cost}}',
+    label: 'Food & Accommodation',
+    description: 'Food and accommodation cost',
+  },
+  {
+    category: 'Calculations',
+    value: '{{number_of_days}}',
+    label: 'Number of Days',
+    description: 'Total working days',
+  },
 ];
 
 interface EnhancedElementEditorProps {
@@ -90,10 +185,10 @@ interface EnhancedElementEditorProps {
   onClose: () => void;
 }
 
-export default function EnhancedElementEditor({ 
-  element, 
-  onUpdate, 
-  onClose 
+export default function EnhancedElementEditor({
+  element,
+  onUpdate,
+  onClose,
 }: EnhancedElementEditorProps) {
   const [localElement, setLocalElement] = useState(element);
   const [hasChanges, setHasChanges] = useState(false);
@@ -102,7 +197,7 @@ export default function EnhancedElementEditor({
   const handleStyleChange = (styleKey: string, value: string) => {
     setLocalElement(prev => ({
       ...prev,
-      style: { ...prev.style, [styleKey]: value }
+      style: { ...prev.style, [styleKey]: value },
     }));
     setHasChanges(true);
   };
@@ -115,18 +210,18 @@ export default function EnhancedElementEditor({
   const handleConfigChange = (configKey: string, value: any) => {
     setLocalElement(prev => ({
       ...prev,
-      config: { ...prev.config, [configKey]: value }
+      config: { ...prev.config, [configKey]: value },
     }));
     setHasChanges(true);
   };
 
   const handleImageUpload = (file: File) => {
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = e => {
       const src = e.target?.result as string;
       setLocalElement(prev => ({
         ...prev,
-        config: { ...prev.config, src, uploadedFile: file }
+        config: { ...prev.config, src, uploadedFile: file },
       }));
       setHasChanges(true);
     };
@@ -149,14 +244,11 @@ export default function EnhancedElementEditor({
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <h3 className="font-semibold text-gray-900">Edit Element</h3>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
-          >
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
             ✕
           </button>
         </div>
-        
+
         {/* Element Type Badge */}
         <div className="mt-2">
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
@@ -170,7 +262,7 @@ export default function EnhancedElementEditor({
         {[
           { id: 'content', label: 'Content' },
           { id: 'style', label: 'Style' },
-          { id: 'advanced', label: 'Advanced' }
+          { id: 'advanced', label: 'Advanced' },
         ].map(tab => (
           <button
             key={tab.id}
@@ -196,7 +288,7 @@ export default function EnhancedElementEditor({
               {localElement.type === 'field' ? (
                 <select
                   value={localElement.content}
-                  onChange={(e) => handleContentChange(e.target.value)}
+                  onChange={e => handleContentChange(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                 >
                   <option value="">Select a field...</option>
@@ -209,7 +301,7 @@ export default function EnhancedElementEditor({
               ) : (
                 <TextArea
                   value={localElement.content || ''}
-                  onChange={(e) => handleContentChange(e.target.value)}
+                  onChange={e => handleContentChange(e.target.value)}
                   rows={localElement.type === 'terms' ? 10 : 3}
                   className="w-full"
                   placeholder="Enter content..."
@@ -223,7 +315,7 @@ export default function EnhancedElementEditor({
                 <label className="block text-sm font-medium text-gray-700 mb-1">Condition</label>
                 <Input
                   value={localElement.config?.condition || ''}
-                  onChange={(e) => handleConfigChange('condition', e.target.value)}
+                  onChange={e => handleConfigChange('condition', e.target.value)}
                   placeholder="e.g., {{total_amount}} > 10000"
                   className="w-full"
                 />
@@ -239,7 +331,7 @@ export default function EnhancedElementEditor({
                 <label className="block text-sm font-medium text-gray-700 mb-1">Loop Over</label>
                 <select
                   value={localElement.config?.loopSource || ''}
-                  onChange={(e) => handleConfigChange('loopSource', e.target.value)}
+                  onChange={e => handleConfigChange('loopSource', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                 >
                   <option value="">Select data source...</option>
@@ -257,7 +349,7 @@ export default function EnhancedElementEditor({
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0])}
+                  onChange={e => e.target.files?.[0] && handleImageUpload(e.target.files[0])}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                 />
                 {localElement.config?.src && (
@@ -282,7 +374,7 @@ export default function EnhancedElementEditor({
                   <label className="block text-xs text-gray-600 mb-1">Font Size</label>
                   <select
                     value={localElement.style?.fontSize || '14px'}
-                    onChange={(e) => handleStyleChange('fontSize', e.target.value)}
+                    onChange={e => handleStyleChange('fontSize', e.target.value)}
                     className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
                   >
                     <option value="10px">10px</option>
@@ -300,7 +392,7 @@ export default function EnhancedElementEditor({
                   <label className="block text-xs text-gray-600 mb-1">Font Weight</label>
                   <select
                     value={localElement.style?.fontWeight || 'normal'}
-                    onChange={(e) => handleStyleChange('fontWeight', e.target.value)}
+                    onChange={e => handleStyleChange('fontWeight', e.target.value)}
                     className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
                   >
                     <option value="normal">Normal</option>
@@ -319,7 +411,7 @@ export default function EnhancedElementEditor({
                 {[
                   { value: 'left', icon: AlignLeft },
                   { value: 'center', icon: AlignCenter },
-                  { value: 'right', icon: AlignRight }
+                  { value: 'right', icon: AlignRight },
                 ].map(({ value, icon: Icon }) => (
                   <button
                     key={value}
@@ -346,12 +438,12 @@ export default function EnhancedElementEditor({
                     <input
                       type="color"
                       value={localElement.style?.color || '#000000'}
-                      onChange={(e) => handleStyleChange('color', e.target.value)}
+                      onChange={e => handleStyleChange('color', e.target.value)}
                       className="w-8 h-8 border border-gray-300 rounded"
                     />
                     <Input
                       value={localElement.style?.color || '#000000'}
-                      onChange={(e) => handleStyleChange('color', e.target.value)}
+                      onChange={e => handleStyleChange('color', e.target.value)}
                       className="flex-1 text-xs"
                       placeholder="#000000"
                     />
@@ -363,12 +455,12 @@ export default function EnhancedElementEditor({
                     <input
                       type="color"
                       value={localElement.style?.backgroundColor || '#ffffff'}
-                      onChange={(e) => handleStyleChange('backgroundColor', e.target.value)}
+                      onChange={e => handleStyleChange('backgroundColor', e.target.value)}
                       className="w-8 h-8 border border-gray-300 rounded"
                     />
                     <Input
                       value={localElement.style?.backgroundColor || '#ffffff'}
-                      onChange={(e) => handleStyleChange('backgroundColor', e.target.value)}
+                      onChange={e => handleStyleChange('backgroundColor', e.target.value)}
                       className="flex-1 text-xs"
                       placeholder="#ffffff"
                     />
@@ -385,7 +477,7 @@ export default function EnhancedElementEditor({
                   <label className="block text-xs text-gray-600 mb-1">Padding</label>
                   <Input
                     value={localElement.style?.padding || '8px'}
-                    onChange={(e) => handleStyleChange('padding', e.target.value)}
+                    onChange={e => handleStyleChange('padding', e.target.value)}
                     className="w-full text-xs"
                     placeholder="8px"
                   />
@@ -394,7 +486,7 @@ export default function EnhancedElementEditor({
                   <label className="block text-xs text-gray-600 mb-1">Margin</label>
                   <Input
                     value={localElement.style?.margin || '4px 0'}
-                    onChange={(e) => handleStyleChange('margin', e.target.value)}
+                    onChange={e => handleStyleChange('margin', e.target.value)}
                     className="w-full text-xs"
                     placeholder="4px 0"
                   />
@@ -410,7 +502,7 @@ export default function EnhancedElementEditor({
                   <label className="block text-xs text-gray-600 mb-1">Border</label>
                   <Input
                     value={localElement.style?.border || ''}
-                    onChange={(e) => handleStyleChange('border', e.target.value)}
+                    onChange={e => handleStyleChange('border', e.target.value)}
                     className="w-full text-xs"
                     placeholder="1px solid #ddd"
                   />
@@ -419,7 +511,7 @@ export default function EnhancedElementEditor({
                   <label className="block text-xs text-gray-600 mb-1">Border Radius</label>
                   <Input
                     value={localElement.style?.borderRadius || ''}
-                    onChange={(e) => handleStyleChange('borderRadius', e.target.value)}
+                    onChange={e => handleStyleChange('borderRadius', e.target.value)}
                     className="w-full text-xs"
                     placeholder="4px"
                   />
@@ -436,36 +528,36 @@ export default function EnhancedElementEditor({
               <label className="block text-sm font-medium text-gray-700 mb-1">CSS Classes</label>
               <Input
                 value={localElement.config?.cssClasses || ''}
-                onChange={(e) => handleConfigChange('cssClasses', e.target.value)}
+                onChange={e => handleConfigChange('cssClasses', e.target.value)}
                 className="w-full"
                 placeholder="custom-class another-class"
               />
-              <p className="text-xs text-gray-500 mt-1">
-                Space-separated CSS class names
-              </p>
+              <p className="text-xs text-gray-500 mt-1">Space-separated CSS class names</p>
             </div>
 
             {/* Custom Attributes */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Custom Attributes</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Custom Attributes
+              </label>
               <TextArea
                 value={localElement.config?.attributes || ''}
-                onChange={(e) => handleConfigChange('attributes', e.target.value)}
+                onChange={e => handleConfigChange('attributes', e.target.value)}
                 rows={3}
                 className="w-full"
                 placeholder='{"data-id": "custom-id", "title": "Custom title"}'
               />
-              <p className="text-xs text-gray-500 mt-1">
-                JSON object with custom HTML attributes
-              </p>
+              <p className="text-xs text-gray-500 mt-1">JSON object with custom HTML attributes</p>
             </div>
 
             {/* Visibility Rules */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Visibility Rules</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Visibility Rules
+              </label>
               <TextArea
                 value={localElement.config?.visibilityRules || ''}
-                onChange={(e) => handleConfigChange('visibilityRules', e.target.value)}
+                onChange={e => handleConfigChange('visibilityRules', e.target.value)}
                 rows={2}
                 className="w-full"
                 placeholder="Show only if: {{field_name}} === 'value'"
@@ -480,7 +572,7 @@ export default function EnhancedElementEditor({
               <label className="block text-sm font-medium text-gray-700 mb-1">Custom CSS</label>
               <TextArea
                 value={localElement.config?.customCss || ''}
-                onChange={(e) => handleConfigChange('customCss', e.target.value)}
+                onChange={e => handleConfigChange('customCss', e.target.value)}
                 rows={4}
                 className="w-full font-mono text-xs"
                 placeholder="/* Custom CSS styles */
@@ -504,12 +596,7 @@ export default function EnhancedElementEditor({
           >
             Apply Changes
           </Button>
-          <Button
-            onClick={resetChanges}
-            disabled={!hasChanges}
-            variant="ghost"
-            className="flex-1"
-          >
+          <Button onClick={resetChanges} disabled={!hasChanges} variant="ghost" className="flex-1">
             Reset
           </Button>
         </div>

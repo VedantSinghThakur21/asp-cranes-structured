@@ -29,7 +29,8 @@ export interface QuotationInputs {
   usage: 'normal' | 'medium' | 'heavy';
   riskFactor: 'low' | 'medium' | 'high';
   extraCharge: number;
-  incidentalCharges: string[];  otherFactorsCharge: number;
+  incidentalCharges: string[];
+  otherFactorsCharge: number;
   billing: 'gst' | 'non_gst';
   includeGst: boolean;
   shift: 'single' | 'double';
@@ -63,8 +64,8 @@ export interface SelectedMachine {
 
 export interface Quotation extends QuotationInputs {
   id: string;
-  dealId?: string;  // Add dealId to support quotations from deals
-  leadId?: string;  // Make leadId optional since we might have quotations from deals instead
+  dealId?: string; // Add dealId to support quotations from deals
+  leadId?: string; // Make leadId optional since we might have quotations from deals instead
   customerId: string;
   customerName: string;
   customerContact: CustomerContact;

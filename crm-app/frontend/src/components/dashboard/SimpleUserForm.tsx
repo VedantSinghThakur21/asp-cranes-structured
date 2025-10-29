@@ -13,20 +13,20 @@ export const SimpleUserForm: React.FC<SimpleUserFormProps> = ({ onSuccess, onCan
     name: '',
     role: 'operator',
   });
-  
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setIsSubmitting(true);
-    
+
     try {
       await userService.createUser(formData);
       onSuccess();
@@ -36,17 +36,13 @@ export const SimpleUserForm: React.FC<SimpleUserFormProps> = ({ onSuccess, onCan
       setIsSubmitting(false);
     }
   };
-  
+
   return (
     <div className="p-4 bg-white rounded-lg shadow">
       <h2 className="text-xl font-semibold mb-4">Add New User</h2>
-      
-      {error && (
-        <div className="mb-4 p-3 bg-red-100 text-red-800 rounded-md">
-          {error}
-        </div>
-      )}
-      
+
+      {error && <div className="mb-4 p-3 bg-red-100 text-red-800 rounded-md">{error}</div>}
+
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <label className="block text-sm font-medium mb-1">Name</label>
@@ -59,7 +55,7 @@ export const SimpleUserForm: React.FC<SimpleUserFormProps> = ({ onSuccess, onCan
             required
           />
         </div>
-        
+
         <div className="mb-4">
           <label className="block text-sm font-medium mb-1">Email</label>
           <input
@@ -71,7 +67,7 @@ export const SimpleUserForm: React.FC<SimpleUserFormProps> = ({ onSuccess, onCan
             required
           />
         </div>
-        
+
         <div className="mb-4">
           <label className="block text-sm font-medium mb-1">Password</label>
           <input
@@ -83,7 +79,7 @@ export const SimpleUserForm: React.FC<SimpleUserFormProps> = ({ onSuccess, onCan
             required
           />
         </div>
-        
+
         <div className="mb-4">
           <label className="block text-sm font-medium mb-1">Role</label>
           <select
@@ -99,7 +95,7 @@ export const SimpleUserForm: React.FC<SimpleUserFormProps> = ({ onSuccess, onCan
             <option value="support">Support</option>
           </select>
         </div>
-        
+
         <div className="flex justify-end space-x-3 mt-6">
           <button
             type="button"

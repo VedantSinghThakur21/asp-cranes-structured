@@ -16,7 +16,11 @@ export async function updateLeadStatus(leadId: string, status: string) {
 }
 // Update lead assignment via backend API
 // Update lead assignment via backend API (PATCH /leads/:id/assign)
-export async function updateLeadAssignment(id: string, salesAgentId: string, salesAgentName: string): Promise<Lead> {
+export async function updateLeadAssignment(
+  id: string,
+  salesAgentId: string,
+  salesAgentName: string
+): Promise<Lead> {
   const apiUrl = import.meta.env.VITE_API_URL || '/api';
   const res = await fetch(`${apiUrl}/leads/${encodeURIComponent(id)}/assign`, {
     method: 'PATCH',
@@ -42,7 +46,9 @@ export async function updateLead(id: string, lead: Partial<Lead>): Promise<Lead>
   return result.data || result;
 }
 // Create a lead via backend API
-export async function createLead(lead: Omit<Lead, 'id' | 'createdAt' | 'updatedAt'>): Promise<Lead> {
+export async function createLead(
+  lead: Omit<Lead, 'id' | 'createdAt' | 'updatedAt'>
+): Promise<Lead> {
   const apiUrl = import.meta.env.VITE_API_URL || '/api';
   const res = await fetch(`${apiUrl}/leads`, {
     method: 'POST',
@@ -71,8 +77,8 @@ export type LeadSource = 'website' | 'referral' | 'direct' | 'social' | 'email' 
 
 export interface Customer {
   id: string;
-  customerId: string;  // Unique business identifier
-  name: string;        // Customer Name
+  customerId: string; // Unique business identifier
+  name: string; // Customer Name
   companyName: string; // Company Name
   email: string;
   phone: string;
@@ -105,9 +111,9 @@ export interface Lead {
   shiftTiming?: string;
   status: LeadStatus;
   source?: LeadSource;
-  assignedTo?: string;  // ID of the sales agent
-  assignedToName?: string;  // Name of the sales agent
-  designation?: string;  // Customer's designation
+  assignedTo?: string; // ID of the sales agent
+  assignedToName?: string; // Name of the sales agent
+  designation?: string; // Customer's designation
   createdAt: string;
   updatedAt: string;
   files?: string[];

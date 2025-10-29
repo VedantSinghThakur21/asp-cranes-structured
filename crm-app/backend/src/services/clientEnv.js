@@ -1,15 +1,13 @@
 /**
  * Client-side Environment Variables
- * 
+ *
  * This module provides environment variables for the browser
  * without relying on dotenv or Node.js process.env
  */
 
 // Get environment variables from import.meta.env (Vite feature)
 // or from a fallback object with default values
-const clientEnv = typeof import.meta !== 'undefined' ? 
-  import.meta.env || {} : 
-  {};
+const clientEnv = typeof import.meta !== 'undefined' ? import.meta.env || {} : {};
 
 // Default values for client-side environment variables
 const defaults = {
@@ -22,33 +20,36 @@ const defaults = {
 };
 
 // Create a browser-safe process.env replacement
-export const env = new Proxy({}, {
-  get: (target, prop) => {
-    // Try to get from import.meta.env first
-    if (clientEnv[prop] !== undefined) {
-      return clientEnv[prop];
-    }
-    
-    // Fall back to defaults
-    if (defaults[prop] !== undefined) {
-      return defaults[prop];
-    }
-    
-    // For VITE_ prefixed variables, try without prefix
-    if (typeof prop === 'string' && prop.startsWith('VITE_')) {
-      const unprefixed = prop.substring(5);
-      if (clientEnv[unprefixed] !== undefined) {
-        return clientEnv[unprefixed];
+export const env = new Proxy(
+  {},
+  {
+    get: (target, prop) => {
+      // Try to get from import.meta.env first
+      if (clientEnv[prop] !== undefined) {
+        return clientEnv[prop];
       }
-      if (defaults[unprefixed] !== undefined) {
-        return defaults[unprefixed];
+
+      // Fall back to defaults
+      if (defaults[prop] !== undefined) {
+        return defaults[prop];
       }
-    }
-    
-    // Return undefined for anything else
-    return undefined;
+
+      // For VITE_ prefixed variables, try without prefix
+      if (typeof prop === 'string' && prop.startsWith('VITE_')) {
+        const unprefixed = prop.substring(5);
+        if (clientEnv[unprefixed] !== undefined) {
+          return clientEnv[unprefixed];
+        }
+        if (defaults[unprefixed] !== undefined) {
+          return defaults[unprefixed];
+        }
+      }
+
+      // Return undefined for anything else
+      return undefined;
+    },
   }
-});
+);
 
 // Mock config function that does nothing in the browser
 export const config = () => {

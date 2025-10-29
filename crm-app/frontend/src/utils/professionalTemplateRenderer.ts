@@ -40,52 +40,56 @@ export function calculateQuotationTotals(quotation: Quotation): QuotationCalcula
     foodAccomCost: quotation.foodAccomCost,
     usageLoadFactor: quotation.usageLoadFactor,
     riskAdjustment: quotation.riskAdjustment,
-    gstAmount: quotation.gstAmount
+    gstAmount: quotation.gstAmount,
   });
-  
+
   // Prioritize database values over calculations
-  const workingCost = quotation.workingCost || (quotation.totalRent || 0);
-  
+  const workingCost = quotation.workingCost || quotation.totalRent || 0;
+
   // Food & accommodation cost - use database value only
   const foodAccomCost = quotation.foodAccomCost || 0;
-  
+
   console.log('🍽️ Food & Accom calculation:', {
     fromDatabase: quotation.foodAccomCost,
     finalValue: foodAccomCost,
     foodResources: quotation.foodResources || 0,
     accomResources: quotation.accomResources || 0,
     numberOfDays: quotation.numberOfDays || 1,
-    usingDatabaseValue: quotation.foodAccomCost !== undefined && quotation.foodAccomCost !== null
+    usingDatabaseValue: quotation.foodAccomCost !== undefined && quotation.foodAccomCost !== null,
   });
-  
+
   const transportCost = (quotation.siteDistance || 0) * (quotation.runningCostPerKm || 100);
-  
+
   // Use database mob/demob cost first
   const mobDemobCost = quotation.mobDemobCost ?? (quotation.mobDemob || 0);
-  
+
   console.log('🚚 Transport & Mob/Demob:', {
     siteDistance: quotation.siteDistance || 0,
     runningCostPerKm: quotation.runningCostPerKm || 100,
     transportCost,
     mobDemobFromDB: quotation.mobDemobCost,
     mobDemobFinal: mobDemobCost,
-    usingDatabaseValue: quotation.mobDemobCost !== undefined && quotation.mobDemobCost !== null
+    usingDatabaseValue: quotation.mobDemobCost !== undefined && quotation.mobDemobCost !== null,
   });
-  
+
   // Use database risk adjustment first
-  const riskAdjustment = quotation.riskAdjustment ?? (() => {
-    // Calculate risk as percentage of working cost
-    if (quotation.riskFactor === 'high') return Math.round(workingCost * 0.20); // 20%
-    if (quotation.riskFactor === 'medium') return Math.round(workingCost * 0.10); // 10%
-    return 0;
-  })();
-  
+  const riskAdjustment =
+    quotation.riskAdjustment ??
+    (() => {
+      // Calculate risk as percentage of working cost
+      if (quotation.riskFactor === 'high') return Math.round(workingCost * 0.2); // 20%
+      if (quotation.riskFactor === 'medium') return Math.round(workingCost * 0.1); // 10%
+      return 0;
+    })();
+
   // Use database usage load factor first
-  const usageLoadFactor = quotation.usageLoadFactor ?? (() => {
-    if (quotation.usage === 'heavy') return Math.round(workingCost * 0.50); // 50%
-    return 0;
-  })();
-  
+  const usageLoadFactor =
+    quotation.usageLoadFactor ??
+    (() => {
+      if (quotation.usage === 'heavy') return Math.round(workingCost * 0.5); // 50%
+      return 0;
+    })();
+
   console.log('⚠️ Risk & Usage factors:', {
     riskFromDB: quotation.riskAdjustment,
     riskFinal: riskAdjustment,
@@ -94,27 +98,37 @@ export function calculateQuotationTotals(quotation: Quotation): QuotationCalcula
     riskFactor: quotation.riskFactor,
     usage: quotation.usage,
     usingDatabaseRisk: quotation.riskAdjustment !== undefined && quotation.riskAdjustment !== null,
-    usingDatabaseUsage: quotation.usageLoadFactor !== undefined && quotation.usageLoadFactor !== null
+    usingDatabaseUsage:
+      quotation.usageLoadFactor !== undefined && quotation.usageLoadFactor !== null,
   });
-  
+
   const extraCharges = quotation.extraCharge || 0;
-  
+
   const incidentalRates = { incident1: 5000, incident2: 10000, incident3: 15000 };
-  const incidentalCost = (quotation.incidentalCharges || [])
-    .reduce((sum, inc) => sum + (incidentalRates[inc as keyof typeof incidentalRates] || 0), 0);
-  
+  const incidentalCost = (quotation.incidentalCharges || []).reduce(
+    (sum, inc) => sum + (incidentalRates[inc as keyof typeof incidentalRates] || 0),
+    0
+  );
+
   let otherFactorsCost = 0;
   if (quotation.otherFactors?.includes('rigger')) otherFactorsCost += 40000;
   if (quotation.otherFactors?.includes('helper')) otherFactorsCost += 12000;
-  
-  const subtotal = workingCost + foodAccomCost + transportCost + mobDemobCost + 
-                  riskAdjustment + usageLoadFactor + extraCharges + 
-                  incidentalCost + otherFactorsCost;
-  
+
+  const subtotal =
+    workingCost +
+    foodAccomCost +
+    transportCost +
+    mobDemobCost +
+    riskAdjustment +
+    usageLoadFactor +
+    extraCharges +
+    incidentalCost +
+    otherFactorsCost;
+
   // Use database GST amount first, then calculate if needed
   const gstAmount = quotation.gstAmount ?? (quotation.includeGst ? Math.round(subtotal * 0.18) : 0);
   const totalAmount = subtotal + gstAmount;
-  
+
   console.log('💰 Final calculations:', {
     workingCost,
     foodAccomCost,
@@ -133,21 +147,30 @@ export function calculateQuotationTotals(quotation: Quotation): QuotationCalcula
       mobDemob: quotation.mobDemobCost !== undefined && quotation.mobDemobCost !== null,
       risk: quotation.riskAdjustment !== undefined && quotation.riskAdjustment !== null,
       usage: quotation.usageLoadFactor !== undefined && quotation.usageLoadFactor !== null,
-      gst: quotation.gstAmount !== undefined && quotation.gstAmount !== null
+      gst: quotation.gstAmount !== undefined && quotation.gstAmount !== null,
     },
     databaseValues: {
       foodAccomCost: quotation.foodAccomCost,
       mobDemobCost: quotation.mobDemobCost,
       riskAdjustment: quotation.riskAdjustment,
       usageLoadFactor: quotation.usageLoadFactor,
-      gstAmount: quotation.gstAmount
-    }
+      gstAmount: quotation.gstAmount,
+    },
   });
-  
+
   return {
-    workingCost, foodAccomCost, transportCost, mobDemobCost,
-    riskAdjustment, usageLoadFactor, extraCharges,
-    incidentalCost, otherFactorsCost, subtotal, gstAmount, totalAmount
+    workingCost,
+    foodAccomCost,
+    transportCost,
+    mobDemobCost,
+    riskAdjustment,
+    usageLoadFactor,
+    extraCharges,
+    incidentalCost,
+    otherFactorsCost,
+    subtotal,
+    gstAmount,
+    totalAmount,
   };
 }
 
@@ -159,18 +182,25 @@ export function renderProfessionalTemplate(quotation: Quotation, template?: Temp
     hasContent: !!template?.content,
     hasElements: !!template?.elements,
     elementsCount: template?.elements?.length || 0,
-    elements: template?.elements
+    elements: template?.elements,
   });
-  
+
   const calculations = calculateQuotationTotals(quotation);
   const quoteNumber = `ASP-${new Date().getFullYear()}-${quotation.id.slice(-6).toUpperCase()}`;
   const quoteDate = new Date().toLocaleDateString('en-IN');
-  const validUntil = new Date(Date.now() + 30*24*60*60*1000).toLocaleDateString('en-IN');
+  const validUntil = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN');
 
   // Check if we have Template Builder elements
   if (template?.elements && template.elements.length > 0) {
     console.log('🏗️ Using Template Builder elements:', template.elements.length);
-    return renderTemplateBuilderTemplate(quotation, template, calculations, quoteNumber, quoteDate, validUntil);
+    return renderTemplateBuilderTemplate(
+      quotation,
+      template,
+      calculations,
+      quoteNumber,
+      quoteDate,
+      validUntil
+    );
   }
 
   // Check if we have legacy template content
@@ -185,15 +215,19 @@ export function renderProfessionalTemplate(quotation: Quotation, template?: Temp
 }
 
 function renderTemplateBuilderTemplate(
-  quotation: Quotation, 
-  template: Template, 
+  quotation: Quotation,
+  template: Template,
   calculations: QuotationCalculations,
   quoteNumber: string,
   quoteDate: string,
   validUntil: string
 ): string {
-  console.log('🏗️ Processing Template Builder template with', template.elements?.length, 'elements');
-  
+  console.log(
+    '🏗️ Processing Template Builder template with',
+    template.elements?.length,
+    'elements'
+  );
+
   let html = getBaseStyles() + '<div class="quotation-container">';
 
   // Process each element from Template Builder
@@ -201,9 +235,19 @@ function renderTemplateBuilderTemplate(
     template.elements.forEach((element, index) => {
       console.log(`📦 Processing element ${index + 1}:`, element.type, element);
       try {
-        const elementHtml = processTemplateElement(element, quotation, calculations, quoteNumber, quoteDate, validUntil);
+        const elementHtml = processTemplateElement(
+          element,
+          quotation,
+          calculations,
+          quoteNumber,
+          quoteDate,
+          validUntil
+        );
         html += elementHtml;
-        console.log(`✅ Element ${index + 1} processed successfully, HTML length:`, elementHtml.length);
+        console.log(
+          `✅ Element ${index + 1} processed successfully, HTML length:`,
+          elementHtml.length
+        );
       } catch (error) {
         console.error(`❌ Error processing element ${index + 1}:`, error);
         html += `<div style="padding: 10px; background: #ffebee; border: 1px solid #f44336; margin: 10px 0;">
@@ -214,7 +258,8 @@ function renderTemplateBuilderTemplate(
     });
   } else {
     console.warn('⚠️ No elements found in Template Builder template');
-    html += '<div style="padding: 20px; text-align: center; color: #666;">No template elements found</div>';
+    html +=
+      '<div style="padding: 20px; text-align: center; color: #666;">No template elements found</div>';
   }
 
   // Add cost summary if not included
@@ -232,22 +277,24 @@ function renderTemplateBuilderTemplate(
 }
 
 function processTemplateElement(
-  element: any, 
-  quotation: Quotation, 
+  element: any,
+  quotation: Quotation,
   calculations: QuotationCalculations,
   quoteNumber: string,
   quoteDate: string,
   validUntil: string
 ): string {
   console.log(`🧩 Processing element: ${element.type}`, element);
-  
+
   // Apply element styles
-  const styleString = element.style ? Object.entries(element.style)
-    .map(([key, value]) => `${key.replace(/([A-Z])/g, '-$1').toLowerCase()}: ${value}`)
-    .join('; ') : '';
-  
+  const styleString = element.style
+    ? Object.entries(element.style)
+        .map(([key, value]) => `${key.replace(/([A-Z])/g, '-$1').toLowerCase()}: ${value}`)
+        .join('; ')
+    : '';
+
   const wrapperStyle = styleString ? `style="${styleString}"` : '';
-  
+
   switch (element.type) {
     case 'header':
       return `<div class="template-header" ${wrapperStyle}>
@@ -266,24 +313,36 @@ function processTemplateElement(
           <div><strong>Valid Until:</strong> ${validUntil}</div>
         </div>
       </div>`;
-      
+
     case 'text':
-      const processedText = replaceTemplatePlaceholders(element.content || '', quotation, quoteNumber, quoteDate);
+      const processedText = replaceTemplatePlaceholders(
+        element.content || '',
+        quotation,
+        quoteNumber,
+        quoteDate
+      );
       return `<div class="text-section" ${wrapperStyle}>${processedText}</div>`;
-      
+
     case 'field':
-      const fieldValue = replaceTemplatePlaceholders(element.content || '', quotation, quoteNumber, quoteDate);
+      const fieldValue = replaceTemplatePlaceholders(
+        element.content || '',
+        quotation,
+        quoteNumber,
+        quoteDate
+      );
       return `<div class="field-section" ${wrapperStyle}>${fieldValue}</div>`;
-      
+
     case 'customer':
     case 'customer_details':
     case 'client_info':
-      const customerName = quotation.customerContact?.name || quotation.customerName || 'ABC Construction';
-      const customerCompany = quotation.customerContact?.company || quotation.customerName || 'ABC Construction';
+      const customerName =
+        quotation.customerContact?.name || quotation.customerName || 'ABC Construction';
+      const customerCompany =
+        quotation.customerContact?.company || quotation.customerName || 'ABC Construction';
       const customerEmail = quotation.customerContact?.email || 'info@abcconstruction.com';
       const customerPhone = quotation.customerContact?.phone || '+91 98765 43210';
       const customerAddress = quotation.customerContact?.address || 'Mumbai, Maharashtra';
-      
+
       return `<div class="customer-section" ${wrapperStyle}>
         <h3>📋 Bill To</h3>
         <div><strong>${customerCompany}</strong></div>
@@ -292,10 +351,10 @@ function processTemplateElement(
         <div>Phone: ${customerPhone}</div>
         <div>Email: ${customerEmail}</div>
       </div>`;
-      
+
     case 'table':
       return renderTemplateBuilderTable(element, quotation, calculations, wrapperStyle);
-      
+
     case 'terms':
     case 'terms_conditions':
       const termsContent = element.content || getDefaultTerms();
@@ -303,14 +362,14 @@ function processTemplateElement(
         <h3>⚖️ Terms & Conditions</h3>
         <div class="terms-content">${termsContent}</div>
       </div>`;
-      
+
     case 'image':
       const imageSrc = element.config?.src || '/placeholder-image.png';
       const imageAlt = element.config?.alt || 'Template Image';
       return `<div class="image-section" ${wrapperStyle}>
         <img src="${imageSrc}" alt="${imageAlt}" style="max-width: 100%; height: auto;" />
       </div>`;
-      
+
     case 'job_details':
       return `<div class="job-details-section" ${wrapperStyle}>
         <h3>🏗️ Job Details</h3>
@@ -334,7 +393,7 @@ function processTemplateElement(
         <h3>💰 Cost Summary</h3>
         ${generateCostBreakdown(calculations, quotation)}
       </div>`;
-      
+
     default:
       console.warn(`⚠️ Unknown element type: ${element.type}`);
       return `<div class="unknown-element" ${wrapperStyle}>
@@ -353,20 +412,20 @@ function renderTemplateBuilderTable(
   // If the element has table configuration, use it
   if (element.config?.columns && element.config?.rows) {
     const { columns, rows } = element.config;
-    
+
     let tableHtml = `<div class="equipment-section" ${wrapperStyle}>
       <h3>🏗️ ${element.content || 'Equipment & Services'}</h3>
       <table class="equipment-table">
         <thead>
           <tr>`;
-    
+
     // Render headers
     columns.forEach((column: string) => {
       tableHtml += `<th>${column}</th>`;
     });
-    
+
     tableHtml += `</tr></thead><tbody>`;
-    
+
     // Render rows with placeholder replacement
     rows.forEach((row: string[]) => {
       tableHtml += '<tr>';
@@ -377,11 +436,11 @@ function renderTemplateBuilderTable(
       });
       tableHtml += '</tr>';
     });
-    
+
     tableHtml += `</tbody></table></div>`;
     return tableHtml;
   }
-  
+
   // Fallback to default equipment table
   return `<div class="equipment-section" ${wrapperStyle}>
     <h3>🏗️ Equipment & Services</h3>
@@ -389,13 +448,17 @@ function renderTemplateBuilderTable(
   </div>`;
 }
 
-function renderLegacyTemplate(quotation: Quotation, template: Template, _calculations: QuotationCalculations): string {
+function renderLegacyTemplate(
+  quotation: Quotation,
+  template: Template,
+  _calculations: QuotationCalculations
+): string {
   let content = template.content || '';
   const quoteNumber = `ASP-${new Date().getFullYear()}-${quotation.id.slice(-6)}`;
   const quoteDate = new Date().toLocaleDateString('en-IN');
-  
+
   content = replaceTemplatePlaceholders(content, quotation, quoteNumber, quoteDate);
-  
+
   return `<style>
     body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
     .legacy-template { background: white; padding: 20px; }
@@ -404,13 +467,15 @@ function renderLegacyTemplate(quotation: Quotation, template: Template, _calcula
 }
 
 function renderDefaultTemplate(
-  quotation: Quotation, 
+  quotation: Quotation,
   calculations: QuotationCalculations,
   quoteNumber: string,
   quoteDate: string,
   validUntil: string
 ): string {
-  return getBaseStyles() + `
+  return (
+    getBaseStyles() +
+    `
     <div class="quotation-container">
       <div class="template-header">
         <div class="company-section">
@@ -453,7 +518,8 @@ function renderDefaultTemplate(
         <div class="terms-content">${getDefaultTerms()}</div>
       </div>
     </div>
-  `;
+  `
+  );
 }
 
 function getBaseStyles(): string {
@@ -721,7 +787,7 @@ function getBaseStyles(): string {
 
 function generateEquipmentTable(quotation: Quotation): string {
   const machines = quotation.selectedMachines || [];
-  
+
   if (machines.length === 0 && quotation.selectedEquipment) {
     machines.push({
       id: quotation.selectedEquipment.id,
@@ -731,7 +797,7 @@ function generateEquipmentTable(quotation: Quotation): string {
       baseRates: quotation.selectedEquipment.baseRates,
       baseRate: quotation.workingCost || quotation.totalRent || 0,
       runningCostPerKm: quotation.runningCostPerKm || 100,
-      quantity: 1
+      quantity: 1,
     });
   }
 
@@ -741,7 +807,7 @@ function generateEquipmentTable(quotation: Quotation): string {
     const totalDays = quotation.numberOfDays || 1;
     const quantity = machine.quantity || 1;
     const lineTotal = dailyRate * totalDays * quantity;
-    
+
     tableRows += `
       <tr>
         <td>${index + 1}</td>
@@ -782,112 +848,133 @@ function generateCostBreakdown(calculations: QuotationCalculations, quotation: Q
       <span>₹${calculations.workingCost.toLocaleString('en-IN')}</span>
     </div>
   `;
-  
+
   if (calculations.foodAccomCost > 0) {
     html += `<div class="cost-row">
       <span>Food & Accommodation</span>
       <span>₹${calculations.foodAccomCost.toLocaleString('en-IN')}</span>
     </div>`;
   }
-  
+
   if (calculations.transportCost > 0) {
     html += `<div class="cost-row">
       <span>Transportation</span>
       <span>₹${calculations.transportCost.toLocaleString('en-IN')}</span>
     </div>`;
   }
-  
+
   if (calculations.mobDemobCost > 0) {
     html += `<div class="cost-row">
       <span>Mobilization & Demobilization</span>
       <span>₹${calculations.mobDemobCost.toLocaleString('en-IN')}</span>
     </div>`;
   }
-  
+
   if (calculations.extraCharges > 0) {
     html += `<div class="cost-row">
       <span>Additional Charges</span>
       <span>₹${calculations.extraCharges.toLocaleString('en-IN')}</span>
     </div>`;
   }
-  
+
   html += `
     <div class="cost-row" style="font-weight: 600; border-top: 2px solid #2563eb; padding-top: 12px; margin-top: 8px;">
       <span>Subtotal</span>
       <span>₹${calculations.subtotal.toLocaleString('en-IN')}</span>
     </div>
   `;
-  
+
   if (calculations.gstAmount > 0) {
     html += `<div class="cost-row">
       <span>GST @ 18%</span>
       <span>₹${calculations.gstAmount.toLocaleString('en-IN')}</span>
     </div>`;
   }
-  
+
   html += `
     <div class="cost-row total">
       <span>Total Amount</span>
       <span>₹${calculations.totalAmount.toLocaleString('en-IN')}</span>
     </div>
   `;
-  
+
   return html;
 }
 
-function replaceTemplatePlaceholders(content: string, quotation: Quotation, quoteNumber: string, quoteDate: string): string {
+function replaceTemplatePlaceholders(
+  content: string,
+  quotation: Quotation,
+  quoteNumber: string,
+  quoteDate: string
+): string {
   console.log('🔄 [TemplateRenderer] Replacing placeholders for quotation:', quotation.id);
   console.log('🔄 [TemplateRenderer] Customer data available:', {
     customerName: quotation.customerName,
     customerContact: quotation.customerContact,
     hasName: !!(quotation.customerContact?.name || quotation.customerName),
-    hasCompany: !!(quotation.customerContact?.company),
-    hasEmail: !!(quotation.customerContact?.email),
-    hasPhone: !!(quotation.customerContact?.phone)
+    hasCompany: !!quotation.customerContact?.company,
+    hasEmail: !!quotation.customerContact?.email,
+    hasPhone: !!quotation.customerContact?.phone,
   });
 
   // Extract customer information with better fallbacks
-  const customerName = quotation.customerContact?.name || quotation.customerName || 'ABC Construction';
-  const customerCompany = quotation.customerContact?.company || quotation.customerName || 'ABC Construction';
+  const customerName =
+    quotation.customerContact?.name || quotation.customerName || 'ABC Construction';
+  const customerCompany =
+    quotation.customerContact?.company || quotation.customerName || 'ABC Construction';
   const customerEmail = quotation.customerContact?.email || 'info@abcconstruction.com';
   const customerPhone = quotation.customerContact?.phone || '+91 98765 43210';
   const customerAddress = quotation.customerContact?.address || 'Mumbai, Maharashtra';
 
-  return content
-    // Legacy customer placeholders
-    .replace(/\{\{customer_name\}\}/g, customerName)
-    .replace(/\{\{customer_company\}\}/g, customerCompany)
-    .replace(/\{\{customer_phone\}\}/g, customerPhone)
-    .replace(/\{\{customer_email\}\}/g, customerEmail)
-    .replace(/\{\{customer_address\}\}/g, customerAddress)
-    
-    // Enhanced template client placeholders
-    .replace(/\{\{client\.name\}\}/g, customerName)
-    .replace(/\{\{client\.company\}\}/g, customerCompany)
-    .replace(/\{\{client\.phone\}\}/g, customerPhone)
-    .replace(/\{\{client\.email\}\}/g, customerEmail)
-    .replace(/\{\{client\.address\}\}/g, customerAddress)
-    
-    // Company placeholders
-    .replace(/\{\{company\.name\}\}/g, 'ASP CRANES')
-    .replace(/\{\{company\.address\}\}/g, 'Industrial Area, Pune, Maharashtra 411019')
-    .replace(/\{\{company\.phone\}\}/g, '+91 99999 88888')
-    .replace(/\{\{company\.email\}\}/g, 'sales@aspcranes.com')
-    .replace(/\{\{company\.website\}\}/g, 'www.aspcranes.com')
-    
-    // Quotation placeholders
-    .replace(/\{\{quotation\.number\}\}/g, quoteNumber)
-    .replace(/\{\{quotation\.date\}\}/g, quoteDate)
-    .replace(/\{\{quotation\.validUntil\}\}/g, new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN'))
-    
-    // Equipment and project placeholders
-    .replace(/\{\{equipment_name\}\}/g, quotation.selectedEquipment?.name || quotation.selectedMachines?.[0]?.name || 'Equipment')
-    .replace(/\{\{total_amount\}\}/g, `₹${quotation.totalRent?.toLocaleString('en-IN') || '50,000'}`)
-    .replace(/\{\{project_duration\}\}/g, `${quotation.numberOfDays || 7} ${(quotation.numberOfDays || 7) === 1 ? 'Day' : 'Days'}`)
-    
-    // Legacy placeholders
-    .replace(/\{\{quote_date\}\}/g, quoteDate)
-    .replace(/\{\{quote_number\}\}/g, quoteNumber);
+  return (
+    content
+      // Legacy customer placeholders
+      .replace(/\{\{customer_name\}\}/g, customerName)
+      .replace(/\{\{customer_company\}\}/g, customerCompany)
+      .replace(/\{\{customer_phone\}\}/g, customerPhone)
+      .replace(/\{\{customer_email\}\}/g, customerEmail)
+      .replace(/\{\{customer_address\}\}/g, customerAddress)
+
+      // Enhanced template client placeholders
+      .replace(/\{\{client\.name\}\}/g, customerName)
+      .replace(/\{\{client\.company\}\}/g, customerCompany)
+      .replace(/\{\{client\.phone\}\}/g, customerPhone)
+      .replace(/\{\{client\.email\}\}/g, customerEmail)
+      .replace(/\{\{client\.address\}\}/g, customerAddress)
+
+      // Company placeholders
+      .replace(/\{\{company\.name\}\}/g, 'ASP CRANES')
+      .replace(/\{\{company\.address\}\}/g, 'Industrial Area, Pune, Maharashtra 411019')
+      .replace(/\{\{company\.phone\}\}/g, '+91 99999 88888')
+      .replace(/\{\{company\.email\}\}/g, 'sales@aspcranes.com')
+      .replace(/\{\{company\.website\}\}/g, 'www.aspcranes.com')
+
+      // Quotation placeholders
+      .replace(/\{\{quotation\.number\}\}/g, quoteNumber)
+      .replace(/\{\{quotation\.date\}\}/g, quoteDate)
+      .replace(
+        /\{\{quotation\.validUntil\}\}/g,
+        new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN')
+      )
+
+      // Equipment and project placeholders
+      .replace(
+        /\{\{equipment_name\}\}/g,
+        quotation.selectedEquipment?.name || quotation.selectedMachines?.[0]?.name || 'Equipment'
+      )
+      .replace(
+        /\{\{total_amount\}\}/g,
+        `₹${quotation.totalRent?.toLocaleString('en-IN') || '50,000'}`
+      )
+      .replace(
+        /\{\{project_duration\}\}/g,
+        `${quotation.numberOfDays || 7} ${(quotation.numberOfDays || 7) === 1 ? 'Day' : 'Days'}`
+      )
+
+      // Legacy placeholders
+      .replace(/\{\{quote_date\}\}/g, quoteDate)
+      .replace(/\{\{quote_number\}\}/g, quoteNumber)
+  );
 }
 
 function renderEquipmentTable(
@@ -916,14 +1003,14 @@ function renderEquipmentTable(
           <td>${quotation.orderType || 'Unloading work'}</td>
           <td>${quotation.numberOfDays || 1} ${quotation.orderType === 'monthly' ? 'Month' : 'Days'}</td>
           <td>₹${calculations.workingCost?.toLocaleString('en-IN') || '0'} + GST 18%</td>
-          <td>₹${calculations.mobDemobCost ? (calculations.mobDemobCost/2).toLocaleString('en-IN') : '10,000'}/- + GST 18%</td>
-          <td>₹${calculations.mobDemobCost ? (calculations.mobDemobCost/2).toLocaleString('en-IN') : '10,000'}/- + GST 18%</td>
+          <td>₹${calculations.mobDemobCost ? (calculations.mobDemobCost / 2).toLocaleString('en-IN') : '10,000'}/- + GST 18%</td>
+          <td>₹${calculations.mobDemobCost ? (calculations.mobDemobCost / 2).toLocaleString('en-IN') : '10,000'}/- + GST 18%</td>
         </tr>
         <tr class="total-row">
           <td colspan="4"><strong>Total</strong></td>
           <td><strong>₹${calculations.workingCost?.toLocaleString('en-IN') || '0'} + GST 18%</strong></td>
-          <td><strong>₹${calculations.mobDemobCost ? (calculations.mobDemobCost/2).toLocaleString('en-IN') : '10,000'}/- + GST 18%</strong></td>
-          <td><strong>₹${calculations.mobDemobCost ? (calculations.mobDemobCost/2).toLocaleString('en-IN') : '10,000'}/- + GST 18%</strong></td>
+          <td><strong>₹${calculations.mobDemobCost ? (calculations.mobDemobCost / 2).toLocaleString('en-IN') : '10,000'}/- + GST 18%</strong></td>
+          <td><strong>₹${calculations.mobDemobCost ? (calculations.mobDemobCost / 2).toLocaleString('en-IN') : '10,000'}/- + GST 18%</strong></td>
         </tr>
       </tbody>
     </table>
@@ -936,7 +1023,7 @@ function renderChargesTable(
   wrapperStyle: string
 ): string {
   const hasCharges = calculations.incidentalCost > 0 || calculations.extraCharges > 0;
-  
+
   if (!hasCharges) {
     return '';
   }
@@ -953,22 +1040,30 @@ function renderChargesTable(
         </tr>
       </thead>
       <tbody>
-        ${calculations.incidentalCost > 0 ? `
+        ${
+          calculations.incidentalCost > 0
+            ? `
           <tr>
             <td>Incidental Charges</td>
             <td>₹${calculations.incidentalCost.toLocaleString('en-IN')}</td>
             <td>₹${(calculations.incidentalCost * 0.18).toLocaleString('en-IN')}</td>
             <td>₹${(calculations.incidentalCost * 1.18).toLocaleString('en-IN')}</td>
           </tr>
-        ` : ''}
-        ${calculations.extraCharges > 0 ? `
+        `
+            : ''
+        }
+        ${
+          calculations.extraCharges > 0
+            ? `
           <tr>
             <td>Extra Charges</td>
             <td>₹${calculations.extraCharges.toLocaleString('en-IN')}</td>
             <td>₹${(calculations.extraCharges * 0.18).toLocaleString('en-IN')}</td>
             <td>₹${(calculations.extraCharges * 1.18).toLocaleString('en-IN')}</td>
           </tr>
-        ` : ''}
+        `
+            : ''
+        }
       </tbody>
     </table>
   </div>`;

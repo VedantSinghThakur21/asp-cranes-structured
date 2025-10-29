@@ -11,7 +11,7 @@ const MAX_HEIGHT = 700;
 export const FloatingChatWidget: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { sender: 'ai', text: 'Hi! I am your Sales Agent AI. How can I help you today?' }
+    { sender: 'ai', text: 'Hi! I am your Sales Agent AI. How can I help you today?' },
   ]);
   const [input, setInput] = useState('');
   const [size, setSize] = useState({ width: DEFAULT_WIDTH, height: DEFAULT_HEIGHT });
@@ -51,7 +51,7 @@ export const FloatingChatWidget: React.FC = () => {
   const handleSend = async () => {
     if (!input.trim()) return;
     const userMessage = { sender: 'user', text: input };
-    setMessages((msgs) => [...msgs, userMessage]);
+    setMessages(msgs => [...msgs, userMessage]);
     setInput('');
     try {
       const res = await fetch('/api/ai/chat', {
@@ -61,12 +61,12 @@ export const FloatingChatWidget: React.FC = () => {
       });
       if (!res.ok) throw new Error('Network error');
       const data = await res.json();
-      setMessages((msgs) => [
+      setMessages(msgs => [
         ...msgs,
         { sender: 'ai', text: data.response || 'No response from agent.' },
       ]);
     } catch (err) {
-      setMessages((msgs) => [
+      setMessages(msgs => [
         ...msgs,
         { sender: 'ai', text: 'Sorry, there was a problem connecting to the agent.' },
       ]);
@@ -91,23 +91,45 @@ export const FloatingChatWidget: React.FC = () => {
         <div
           ref={widgetRef}
           className="fixed bottom-8 right-8 z-50 bg-white rounded-2xl shadow-2xl flex flex-col border border-gray-200"
-          style={{ width: size.width, height: size.height, minWidth: MIN_WIDTH, minHeight: MIN_HEIGHT, maxWidth: MAX_WIDTH, maxHeight: MAX_HEIGHT, boxShadow: '0 8px 32px 0 rgba(0,0,0,0.22)' }}
+          style={{
+            width: size.width,
+            height: size.height,
+            minWidth: MIN_WIDTH,
+            minHeight: MIN_HEIGHT,
+            maxWidth: MAX_WIDTH,
+            maxHeight: MAX_HEIGHT,
+            boxShadow: '0 8px 32px 0 rgba(0,0,0,0.22)',
+          }}
         >
           {/* Header */}
           <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 bg-gradient-to-r from-blue-600 to-blue-500 rounded-t-2xl">
             <div className="flex items-center gap-2">
               <MessageCircle className="h-5 w-5 text-white" />
               <span className="text-white font-semibold text-lg">Sales Agent AI</span>
-              <span className="ml-2 px-2 py-0.5 text-xs rounded bg-yellow-400 text-gray-900 font-semibold" title="This module is in development">In development</span>
+              <span
+                className="ml-2 px-2 py-0.5 text-xs rounded bg-yellow-400 text-gray-900 font-semibold"
+                title="This module is in development"
+              >
+                In development
+              </span>
             </div>
-            <button onClick={() => setOpen(false)} className="text-white hover:text-gray-200 p-1 rounded-full">
+            <button
+              onClick={() => setOpen(false)}
+              className="text-white hover:text-gray-200 p-1 rounded-full"
+            >
               <X className="h-5 w-5" />
             </button>
           </div>
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto px-4 py-3 bg-gray-50" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <div
+            className="flex-1 overflow-y-auto px-4 py-3 bg-gray-50"
+            style={{ fontFamily: 'Inter, sans-serif' }}
+          >
             {messages.map((msg, idx) => (
-              <div key={idx} className={`mb-3 flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div
+                key={idx}
+                className={`mb-3 flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
                 <div
                   className={`max-w-[80%] px-4 py-2 rounded-xl shadow-sm text-base leading-relaxed break-words ${
                     msg.sender === 'user'
@@ -130,7 +152,9 @@ export const FloatingChatWidget: React.FC = () => {
               placeholder="Type your message..."
               value={input}
               onChange={e => setInput(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') handleSend(); }}
+              onKeyDown={e => {
+                if (e.key === 'Enter') handleSend();
+              }}
               aria-label="Type your message"
               autoFocus
             />
@@ -159,7 +183,14 @@ export const FloatingChatWidget: React.FC = () => {
             }}
             title="Resize"
           >
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 17L17 3M10 17H17V10" stroke="#60A5FA" strokeWidth="2" strokeLinecap="round"/></svg>
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path
+                d="M3 17L17 3M10 17H17V10"
+                stroke="#60A5FA"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
           </div>
         </div>
       )}

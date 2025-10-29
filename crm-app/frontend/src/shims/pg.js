@@ -8,7 +8,7 @@ class EventEmitter {
   constructor() {
     this._events = {};
   }
-  
+
   on(event, listener) {
     if (!this._events[event]) {
       this._events[event] = [];
@@ -16,7 +16,7 @@ class EventEmitter {
     this._events[event].push(listener);
     return this; // For chaining
   }
-  
+
   off(event, listener) {
     if (!this._events[event]) return this;
     if (listener) {
@@ -26,11 +26,11 @@ class EventEmitter {
     }
     return this;
   }
-  
+
   removeListener(event, listener) {
     return this.off(event, listener);
   }
-  
+
   removeAllListeners(event) {
     if (event) {
       delete this._events[event];
@@ -39,7 +39,7 @@ class EventEmitter {
     }
     return this;
   }
-  
+
   emit(event, ...args) {
     if (!this._events[event]) return false;
     for (const listener of this._events[event]) {
@@ -47,7 +47,7 @@ class EventEmitter {
     }
     return true;
   }
-  
+
   once(event, listener) {
     const onceWrapper = (...args) => {
       this.off(event, onceWrapper);
@@ -64,35 +64,35 @@ export class Pool extends EventEmitter {
     this.config = config;
     console.warn('PostgreSQL Pool is not available in browser environment');
   }
-  
+
   async connect() {
     throw new Error('Cannot connect to PostgreSQL from browser');
   }
-  
+
   async query() {
     throw new Error('Cannot query PostgreSQL from browser');
   }
-  
+
   async end() {
     return true;
   }
-  
+
   async release() {
     return;
   }
-  
+
   async acquire() {
     throw new Error('Cannot acquire client from PostgreSQL pool in browser');
   }
-  
+
   totalCount() {
     return 0;
   }
-  
+
   idleCount() {
     return 0;
   }
-  
+
   waitingCount() {
     return 0;
   }
@@ -105,15 +105,15 @@ export class Client extends EventEmitter {
     this.config = config;
     console.warn('PostgreSQL Client is not available in browser environment');
   }
-  
+
   async connect() {
     throw new Error('Cannot connect to PostgreSQL from browser');
   }
-  
+
   async query() {
     throw new Error('Cannot query PostgreSQL from browser');
   }
-  
+
   async end() {
     return true;
   }
@@ -125,11 +125,11 @@ export class PoolClient extends EventEmitter {
     super();
     console.warn('PostgreSQL PoolClient is not available in browser environment');
   }
-  
+
   async query() {
     throw new Error('Cannot query PostgreSQL from browser');
   }
-  
+
   async release() {
     return;
   }
@@ -145,12 +145,12 @@ export const types = {
     DATE: 1082,
     JSON: 114,
     JSONB: 3802,
-  }
+  },
 };
 
 // Export default
 export default {
   Pool,
   Client,
-  types
+  types,
 };

@@ -7,7 +7,7 @@ import {
   BarChart3,
   PieChart,
   Zap,
-  TrendingUp
+  TrendingUp,
 } from 'lucide-react';
 
 // Services
@@ -43,7 +43,7 @@ const MemoizedDoughnutChart = memo(DoughnutChart);
 
 export function AdminDashboard() {
   const { user, isAuthenticated } = useAuthStore();
-  
+
   // State management
   const [leads, setLeads] = useState<Lead[]>([]);
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -53,7 +53,7 @@ export function AdminDashboard() {
   const [equipment, setEquipment] = useState<Equipment[]>([]);
   const [deals, setDeals] = useState<Deal[]>([]);
   const [error, setError] = useState<string | null>(null);
-  
+
   useEffect(() => {
     const fetchData = async () => {
       if (!isAuthenticated || !user) {
@@ -61,36 +61,62 @@ export function AdminDashboard() {
         setIsLoading(false);
         return;
       }
-      
+
       try {
         console.log('🔄 AdminDashboard: Starting data fetch...');
         setError(null);
-        
-        const [leadsResponse, jobsResponse, equipmentResponse, operatorsResponse, dealsResponse] = await Promise.all([
-          getLeads().catch((err: any) => { console.error('Leads error:', err); return []; }),
-          getJobs().catch((err: any) => { console.error('Jobs error:', err); return []; }),
-          getEquipment().catch((err: any) => { console.error('Equipment error:', err); return []; }),
-          getAllOperators().catch((err: any) => { console.error('Operators error:', err); return []; }),
-          getDeals().catch((err: any) => { console.error('Deals error:', err); return []; }),
-        ]);
-        
+
+        const [leadsResponse, jobsResponse, equipmentResponse, operatorsResponse, dealsResponse] =
+          await Promise.all([
+            getLeads().catch((err: any) => {
+              console.error('Leads error:', err);
+              return [];
+            }),
+            getJobs().catch((err: any) => {
+              console.error('Jobs error:', err);
+              return [];
+            }),
+            getEquipment().catch((err: any) => {
+              console.error('Equipment error:', err);
+              return [];
+            }),
+            getAllOperators().catch((err: any) => {
+              console.error('Operators error:', err);
+              return [];
+            }),
+            getDeals().catch((err: any) => {
+              console.error('Deals error:', err);
+              return [];
+            }),
+          ]);
+
         const extractData = (response: any) => {
           if (Array.isArray(response)) {
             return response;
-          } else if (response && typeof response === 'object' && response.data && Array.isArray(response.data)) {
+          } else if (
+            response &&
+            typeof response === 'object' &&
+            response.data &&
+            Array.isArray(response.data)
+          ) {
             return response.data;
-          } else if (response && typeof response === 'object' && response.success && Array.isArray(response.data)) {
+          } else if (
+            response &&
+            typeof response === 'object' &&
+            response.success &&
+            Array.isArray(response.data)
+          ) {
             return response.data;
           }
           return [];
         };
-        
+
         const leadsData = extractData(leadsResponse);
         const jobsData = extractData(jobsResponse);
         const equipmentData = extractData(equipmentResponse);
         const operatorsData = extractData(operatorsResponse);
         const dealsData = extractData(dealsResponse);
-        
+
         setLeads(leadsData);
         setJobs(jobsData);
         setEquipmentCount(equipmentData.length);
@@ -104,10 +130,10 @@ export function AdminDashboard() {
         setIsLoading(false);
       }
     };
-    
+
     fetchData();
   }, [isAuthenticated, user]);
-  
+
   // Memoized calculations for performance
   const totalRevenue = useMemo(() => {
     if (Array.isArray(deals) && deals.length > 0) {
@@ -121,10 +147,10 @@ export function AdminDashboard() {
     try {
       if (Array.isArray(equipment) && equipment.length > 0) {
         const availableCount = equipment.filter(eq => eq && eq.status === 'available').length;
-        console.log('Equipment calculation:', { 
-          total: equipment.length, 
+        console.log('Equipment calculation:', {
+          total: equipment.length,
           available: availableCount,
-          statuses: equipment.map(eq => eq?.status).filter(Boolean)
+          statuses: equipment.map(eq => eq?.status).filter(Boolean),
         });
         return availableCount;
       }
@@ -137,7 +163,9 @@ export function AdminDashboard() {
   const activeJobsCount = useMemo(() => {
     try {
       if (Array.isArray(jobs) && jobs.length > 0) {
-        return jobs.filter(job => job && (job.status === 'in_progress' || job.status === 'scheduled')).length;
+        return jobs.filter(
+          job => job && (job.status === 'in_progress' || job.status === 'scheduled')
+        ).length;
       }
     } catch (error) {
       console.error('Error calculating active jobs:', error);
@@ -145,94 +173,96 @@ export function AdminDashboard() {
     return 0;
   }, [jobs]);
 
-  const equipmentUtilization = useMemo(() => (
-    Array.isArray(jobs)
-      ? jobs.filter(job => job.status === 'in_progress' || job.status === 'scheduled').length / (equipmentCount || 1) * 100
-      : 0
-  ), [jobs, equipmentCount]);
+  const equipmentUtilization = useMemo(
+    () =>
+      Array.isArray(jobs)
+        ? (jobs.filter(job => job.status === 'in_progress' || job.status === 'scheduled').length /
+            (equipmentCount || 1)) *
+          100
+        : 0,
+    [jobs, equipmentCount]
+  );
 
   // Chart data with enhanced styling
-  const monthlyRevenueData = useMemo(() => ({
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-    datasets: [
-      {
-        label: 'Monthly Revenue',
-        data: [150000, 200000, 180000, 220000, 250000, totalRevenue > 0 ? totalRevenue : 300000],
-        backgroundColor: 'rgba(56, 81, 159, 0.1)',
-        borderColor: '#38519F',
-        pointBackgroundColor: '#FFCC3F',
-        pointBorderColor: '#38519F',
-        pointHoverBackgroundColor: '#38519F',
-        pointHoverBorderColor: '#FFCC3F',
-        borderWidth: 3,
-        tension: 0.4,
-        fill: true,
-      },
-    ],
-  }), [totalRevenue]);
+  const monthlyRevenueData = useMemo(
+    () => ({
+      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+      datasets: [
+        {
+          label: 'Monthly Revenue',
+          data: [150000, 200000, 180000, 220000, 250000, totalRevenue > 0 ? totalRevenue : 300000],
+          backgroundColor: 'rgba(56, 81, 159, 0.1)',
+          borderColor: '#38519F',
+          pointBackgroundColor: '#FFCC3F',
+          pointBorderColor: '#38519F',
+          pointHoverBackgroundColor: '#38519F',
+          pointHoverBorderColor: '#FFCC3F',
+          borderWidth: 3,
+          tension: 0.4,
+          fill: true,
+        },
+      ],
+    }),
+    [totalRevenue]
+  );
 
-  const equipmentStatusData = useMemo(() => ({
-    labels: ['Available', 'In Use', 'Maintenance'],
-    datasets: [
-      {
-        data: [
-          Array.isArray(equipment) ? equipment.filter(e => e.status === 'available').length : 0,
-          Array.isArray(equipment) ? equipment.filter(e => e.status === 'in_use').length : 0,
-          Array.isArray(equipment) ? equipment.filter(e => e.status === 'maintenance').length : 0,
-        ],
-        backgroundColor: [
-          '#22C55E',
-          '#38519F',
-          '#FFCC3F',
-        ],
-        borderColor: [
-          '#16A34A',
-          '#38519F',
-          '#FFCC3F',
-        ],
-        borderWidth: 2,
-        hoverBorderWidth: 4,
-      },
-    ],
-  }), [equipment]);
+  const equipmentStatusData = useMemo(
+    () => ({
+      labels: ['Available', 'In Use', 'Maintenance'],
+      datasets: [
+        {
+          data: [
+            Array.isArray(equipment) ? equipment.filter(e => e.status === 'available').length : 0,
+            Array.isArray(equipment) ? equipment.filter(e => e.status === 'in_use').length : 0,
+            Array.isArray(equipment) ? equipment.filter(e => e.status === 'maintenance').length : 0,
+          ],
+          backgroundColor: ['#22C55E', '#38519F', '#FFCC3F'],
+          borderColor: ['#16A34A', '#38519F', '#FFCC3F'],
+          borderWidth: 2,
+          hoverBorderWidth: 4,
+        },
+      ],
+    }),
+    [equipment]
+  );
 
-  const jobStatusData = useMemo(() => ({
-    labels: ['Scheduled', 'In Progress', 'Completed', 'Cancelled'],
-    datasets: [
-      {
-        label: 'Jobs by Status',
-        data: [
-          Array.isArray(jobs) ? jobs.filter(j => j.status === 'scheduled').length : 0,
-          Array.isArray(jobs) ? jobs.filter(j => j.status === 'in_progress').length : 0,
-          Array.isArray(jobs) ? jobs.filter(j => j.status === 'completed').length : 0,
-          Array.isArray(jobs) ? jobs.filter(j => j.status === 'cancelled').length : 0,
-        ],
-        backgroundColor: [
-          'rgba(56, 81, 159, 0.8)',
-          'rgba(34, 197, 94, 0.8)',
-          'rgba(64, 64, 64, 0.8)',
-          'rgba(239, 68, 68, 0.8)',
-        ],
-        borderColor: [
-          '#38519F',
-          '#22C55E',
-          '#404040',
-          '#EF4444',
-        ],
-        borderWidth: 2,
-        borderRadius: 8,
-      },
-    ],
-  }), [jobs]);
-  
+  const jobStatusData = useMemo(
+    () => ({
+      labels: ['Scheduled', 'In Progress', 'Completed', 'Cancelled'],
+      datasets: [
+        {
+          label: 'Jobs by Status',
+          data: [
+            Array.isArray(jobs) ? jobs.filter(j => j.status === 'scheduled').length : 0,
+            Array.isArray(jobs) ? jobs.filter(j => j.status === 'in_progress').length : 0,
+            Array.isArray(jobs) ? jobs.filter(j => j.status === 'completed').length : 0,
+            Array.isArray(jobs) ? jobs.filter(j => j.status === 'cancelled').length : 0,
+          ],
+          backgroundColor: [
+            'rgba(56, 81, 159, 0.8)',
+            'rgba(34, 197, 94, 0.8)',
+            'rgba(64, 64, 64, 0.8)',
+            'rgba(239, 68, 68, 0.8)',
+          ],
+          borderColor: ['#38519F', '#22C55E', '#404040', '#EF4444'],
+          borderWidth: 2,
+          borderRadius: 8,
+        },
+      ],
+    }),
+    [jobs]
+  );
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/20 p-6">
         <div className="flex flex-col items-center justify-center h-96">
           <div className="relative">
             <div className="h-20 w-20 border-4 border-brand-blue/20 border-t-brand-blue rounded-full animate-spin" />
-            <div className="absolute inset-0 h-20 w-20 border-4 border-transparent border-t-brand-gold rounded-full animate-spin animate-reverse" 
-                 style={{ animationDelay: '0.2s', animationDuration: '1.5s' }} />
+            <div
+              className="absolute inset-0 h-20 w-20 border-4 border-transparent border-t-brand-gold rounded-full animate-spin animate-reverse"
+              style={{ animationDelay: '0.2s', animationDuration: '1.5s' }}
+            />
           </div>
           <div className="mt-6 text-center">
             <h3 className="text-lg font-semibold text-brand-blue">Loading Dashboard</h3>
@@ -277,7 +307,9 @@ export function AdminDashboard() {
               <h1 className="text-3xl font-bold bg-gradient-to-r from-brand-blue to-brand-blue/80 bg-clip-text text-transparent">
                 Welcome back, {user?.name || 'Admin'}
               </h1>
-              <p className="text-gray-600 mt-1">Here's what's happening with your business today.</p>
+              <p className="text-gray-600 mt-1">
+                Here's what's happening with your business today.
+              </p>
             </div>
             <div className="hidden md:flex items-center space-x-4">
               <div className="text-right">
@@ -291,7 +323,7 @@ export function AdminDashboard() {
         </div>
 
         {/* KPI Cards */}
-        <section 
+        <section
           className="grid gap-6 auto-fit-grid"
           style={{
             gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
@@ -349,7 +381,7 @@ export function AdminDashboard() {
         </section>
 
         {/* Charts Section */}
-        <section 
+        <section
           className="grid grid-cols-1 lg:grid-cols-3 gap-6"
           role="region"
           aria-label="Analytics Charts"
@@ -408,7 +440,7 @@ export function AdminDashboard() {
           <div className="lg:col-span-2">
             <RecentActivities className="h-full" />
           </div>
-          
+
           <div className="space-y-6">
             {/* Equipment Summary */}
             <Card variant="gradient" className="h-fit">
@@ -425,19 +457,25 @@ export function AdminDashboard() {
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">Available Equipment:</span>
                     <span className="text-sm font-semibold text-green-600">
-                      {Array.isArray(equipment) ? equipment.filter(e => e.status === 'available').length : 0}
+                      {Array.isArray(equipment)
+                        ? equipment.filter(e => e.status === 'available').length
+                        : 0}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">In Use:</span>
                     <span className="text-sm font-semibold text-blue-600">
-                      {Array.isArray(equipment) ? equipment.filter(e => e.status === 'in_use').length : 0}
+                      {Array.isArray(equipment)
+                        ? equipment.filter(e => e.status === 'in_use').length
+                        : 0}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">Under Maintenance:</span>
                     <span className="text-sm font-semibold text-orange-600">
-                      {Array.isArray(equipment) ? equipment.filter(e => e.status === 'maintenance').length : 0}
+                      {Array.isArray(equipment)
+                        ? equipment.filter(e => e.status === 'maintenance').length
+                        : 0}
                     </span>
                   </div>
                   <div className="pt-3 border-t border-gray-200">
@@ -484,7 +522,12 @@ export function AdminDashboard() {
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium text-gray-900">Conversion Rate:</span>
                       <span className="text-sm font-semibold text-brand-blue">
-                        {leads.length > 0 ? Math.round((Array.isArray(deals) ? deals.length : 0) / leads.length * 100) : 0}%
+                        {leads.length > 0
+                          ? Math.round(
+                              ((Array.isArray(deals) ? deals.length : 0) / leads.length) * 100
+                            )
+                          : 0}
+                        %
                       </span>
                     </div>
                   </div>

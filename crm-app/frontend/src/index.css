@@ -2,25 +2,27 @@
 @tailwind components;
 @tailwind utilities;
 /* Make all table text darker for better readability */
-table, th, td {
+table,
+th,
+td {
   color: #222 !important;
 }
 
 /* Enhanced CSS Variables for Futuristic Theme */
 :root {
-  --color-bg: #F2EEE7;
+  --color-bg: #f2eee7;
   --color-surface: #fff;
-  --color-primary: #38519F;
+  --color-primary: #38519f;
   --color-secondary: #404040;
-  --color-accent: #FFCC3F;
+  --color-accent: #ffcc3f;
   --color-text: #404040;
-  
+
   /* Futuristic gradients */
-  --gradient-primary: linear-gradient(135deg, #38519F 0%, #4A5FB8 100%);
+  --gradient-primary: linear-gradient(135deg, #38519f 0%, #4a5fb8 100%);
   --gradient-secondary: linear-gradient(135deg, #404040 0%, #525252 100%);
-  --gradient-accent: linear-gradient(135deg, #FFCC3F 0%, #FFD700 100%);
+  --gradient-accent: linear-gradient(135deg, #ffcc3f 0%, #ffd700 100%);
   --gradient-surface: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-  
+
   /* Enhanced shadows */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
@@ -32,9 +34,15 @@ table, th, td {
 
 /* Enhanced base styles */
 body {
-  background: linear-gradient(135deg, #F2EEE7 0%, #f8fafc 100%);
+  background: linear-gradient(135deg, #f2eee7 0%, #f8fafc 100%);
   color: var(--color-text);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    'Roboto',
+    sans-serif;
   min-height: 100vh;
   transition: all 0.3s ease;
   font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
@@ -43,19 +51,36 @@ body {
 }
 
 /* Enhanced typography */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   color: var(--color-secondary);
   font-weight: 600;
   line-height: 1.2;
   letter-spacing: -0.025em;
 }
 
-h1 { font-size: 2.25rem; }
-h2 { font-size: 1.875rem; }
-h3 { font-size: 1.5rem; }
-h4 { font-size: 1.25rem; }
-h5 { font-size: 1.125rem; }
-h6 { font-size: 1rem; }
+h1 {
+  font-size: 2.25rem;
+}
+h2 {
+  font-size: 1.875rem;
+}
+h3 {
+  font-size: 1.5rem;
+}
+h4 {
+  font-size: 1.25rem;
+}
+h5 {
+  font-size: 1.125rem;
+}
+h6 {
+  font-size: 1rem;
+}
 
 /* Enhanced link styles */
 a {
@@ -84,14 +109,17 @@ a:hover::before {
   left: 100%;
 }
 
-a:hover, a:focus {
+a:hover,
+a:focus {
   color: var(--color-accent);
   background: rgba(56, 81, 159, 0.05);
   transform: translateY(-1px);
 }
 
 /* Enhanced card styles */
-.card, .panel, .surface {
+.card,
+.panel,
+.surface {
   background: var(--gradient-surface);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 1rem;
@@ -101,7 +129,9 @@ a:hover, a:focus {
   overflow: hidden;
 }
 
-.card::before, .panel::before, .surface::before {
+.card::before,
+.panel::before,
+.surface::before {
   content: '';
   position: absolute;
   top: 0;
@@ -111,14 +141,18 @@ a:hover, a:focus {
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
 }
 
-.card:hover, .panel:hover, .surface:hover {
+.card:hover,
+.panel:hover,
+.surface:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-xl);
   border-color: rgba(56, 81, 159, 0.2);
 }
 
 /* Force text visibility in all contexts */
-.card *, .panel *, .surface * {
+.card *,
+.panel *,
+.surface * {
   color: inherit;
 }
 
@@ -144,11 +178,11 @@ a:hover, a:focus {
 }
 
 /* Remove overly aggressive text hiding */
-[class*="Card"] p,
-[class*="Card"] span,
-[class*="CardContent"] p,
-[class*="CardContent"] span,
-[class*="CardHeader"] * {
+[class*='Card'] p,
+[class*='Card'] span,
+[class*='CardContent'] p,
+[class*='CardContent'] span,
+[class*='CardHeader'] * {
   color: #111827 !important;
   opacity: 1 !important;
   visibility: visible !important;
@@ -228,17 +262,19 @@ a:hover, a:focus {
 
 /* Enhanced form styles */
 @layer base {
-  input[type="number"]::-webkit-inner-spin-button,
-  input[type="number"]::-webkit-outer-spin-button {
+  input[type='number']::-webkit-inner-spin-button,
+  input[type='number']::-webkit-outer-spin-button {
     -webkit-appearance: none;
     margin: 0;
   }
 
-  input[type="number"] {
+  input[type='number'] {
     -moz-appearance: textfield;
   }
-  
-  input, select, textarea {
+
+  input,
+  select,
+  textarea {
     background: rgba(255, 255, 255, 0.8);
     border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: 0.75rem;
@@ -247,36 +283,38 @@ a:hover, a:focus {
     transition: all 0.2s ease;
     backdrop-filter: blur(10px);
   }
-  
-  input:focus, select:focus, textarea:focus {
+
+  input:focus,
+  select:focus,
+  textarea:focus {
     outline: none;
     border-color: var(--color-primary);
     box-shadow: 0 0 0 3px rgba(56, 81, 159, 0.1);
     background: rgba(255, 255, 255, 0.95);
   }
-  
+
   ::placeholder {
     color: rgba(0, 0, 0, 0.4);
     opacity: 1;
   }
-  
+
   /* Enhanced required field styling */
   input:required:not(:focus):not(:placeholder-shown):invalid {
-    border-color: #EF4444;
+    border-color: #ef4444;
     background: rgba(239, 68, 68, 0.05);
   }
-  
+
   input:required:not(:focus):not(:placeholder-shown):valid {
-    border-color: #22C55E;
+    border-color: #22c55e;
     background: rgba(34, 197, 94, 0.05);
   }
-  
+
   /* Force text visibility on form inputs */
-  input[type="text"], 
-  input[type="email"], 
-  input[type="tel"], 
-  input[type="number"], 
-  input[type="password"],
+  input[type='text'],
+  input[type='email'],
+  input[type='tel'],
+  input[type='number'],
+  input[type='password'],
   select,
   textarea {
     color: #1a202c !important;
@@ -284,33 +322,33 @@ a:hover, a:focus {
     background-color: #ffffff !important;
     opacity: 1 !important;
   }
-  
-  input[type="text"]:focus, 
-  input[type="email"]:focus, 
-  input[type="tel"]:focus, 
-  input[type="number"]:focus, 
-  input[type="password"]:focus,
+
+  input[type='text']:focus,
+  input[type='email']:focus,
+  input[type='tel']:focus,
+  input[type='number']:focus,
+  input[type='password']:focus,
   select:focus,
   textarea:focus {
     color: #1a202c !important;
     -webkit-text-fill-color: #1a202c !important;
     background-color: #ffffff !important;
   }
-  
+
   /* Extra strong rules for template builder inputs */
-  input[type="text"]::placeholder,
-  input[type="email"]::placeholder,
-  input[type="tel"]::placeholder,
-  input[type="number"]::placeholder,
-  input[type="password"]::placeholder,
+  input[type='text']::placeholder,
+  input[type='email']::placeholder,
+  input[type='tel']::placeholder,
+  input[type='number']::placeholder,
+  input[type='password']::placeholder,
   textarea::placeholder {
     color: #9ca3af !important;
     -webkit-text-fill-color: #9ca3af !important;
     opacity: 0.6 !important;
   }
-  
+
   /* Ensure color inputs work properly */
-  input[type="color"] {
+  input[type='color'] {
     min-height: 40px;
     border: 1px solid #d1d5db;
   }
@@ -324,19 +362,23 @@ a:hover, a:focus {
     --color-text: #f1f5f9;
     --gradient-surface: linear-gradient(135deg, #1e293b 0%, #334155 100%);
   }
-  
+
   .dark body {
     background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
     color: var(--color-text);
   }
-  
-  .dark .card, .dark .panel, .dark .surface {
+
+  .dark .card,
+  .dark .panel,
+  .dark .surface {
     background: var(--gradient-surface);
     border-color: rgba(255, 255, 255, 0.1);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   }
-  
-  .dark .card:hover, .dark .panel:hover, .dark .surface:hover {
+
+  .dark .card:hover,
+  .dark .panel:hover,
+  .dark .surface:hover {
     border-color: rgba(255, 204, 63, 0.3);
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
   }
@@ -344,23 +386,42 @@ a:hover, a:focus {
 
 /* Enhanced animations */
 @keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 @keyframes pulse-glow {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-5px); }
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
 }
 
 @keyframes gradient-x {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
 }
 
 @keyframes fadeIn {

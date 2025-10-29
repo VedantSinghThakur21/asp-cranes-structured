@@ -21,18 +21,14 @@ export async function getCustomers(): Promise<Customer[]> {
     headers: getHeaders(),
     credentials: 'include',
   });
-  
+
   if (!response.ok) {
     throw new Error('Failed to fetch customers');
   }
-  
+
   const result = await response.json();
   // Support both array and {data: array} responses
-  const customers = Array.isArray(result)
-    ? result
-    : Array.isArray(result.data)
-      ? result.data
-      : [];
+  const customers = Array.isArray(result) ? result : Array.isArray(result.data) ? result.data : [];
   return customers;
 }
 
@@ -46,11 +42,11 @@ export async function getCustomerById(customerId: string): Promise<Customer> {
     headers: getHeaders(),
     credentials: 'include',
   });
-  
+
   if (!response.ok) {
     throw new Error('Failed to fetch customer');
   }
-  
+
   const result = await response.json();
   return result.data || result;
 }
@@ -66,11 +62,11 @@ export async function createCustomer(customer: Partial<Customer>): Promise<Custo
     body: JSON.stringify(customer),
     credentials: 'include',
   });
-  
+
   if (!response.ok) {
     throw new Error('Failed to create customer');
   }
-  
+
   const result = await response.json();
   return result.data || result;
 }
@@ -78,7 +74,10 @@ export async function createCustomer(customer: Partial<Customer>): Promise<Custo
 /**
  * Update an existing customer
  */
-export async function updateCustomer(customerId: string, updates: Partial<Customer>): Promise<Customer> {
+export async function updateCustomer(
+  customerId: string,
+  updates: Partial<Customer>
+): Promise<Customer> {
   const apiUrl = import.meta.env.VITE_API_URL || '/api';
   const response = await fetch(`${apiUrl}/customers/${customerId}`, {
     method: 'PATCH',
@@ -86,11 +85,11 @@ export async function updateCustomer(customerId: string, updates: Partial<Custom
     body: JSON.stringify(updates),
     credentials: 'include',
   });
-  
+
   if (!response.ok) {
     throw new Error('Failed to update customer');
   }
-  
+
   const result = await response.json();
   return result.data || result;
 }
@@ -105,7 +104,7 @@ export async function deleteCustomer(customerId: string): Promise<void> {
     headers: getHeaders(),
     credentials: 'include',
   });
-  
+
   if (!response.ok) {
     throw new Error('Failed to delete customer');
   }

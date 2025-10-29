@@ -2,7 +2,7 @@
 // In production, JWT operations should be handled by the backend
 export const sign = (payload: any, secret?: string) => {
   console.warn('JWT signing should be handled by backend');
-  return "";
+  return '';
 };
 
 export const verify = (token: string, secret?: string) => {
@@ -18,5 +18,5 @@ export const decode = (token: string) => {
 export default {
   sign,
   verify,
-  decode
+  decode,
 };

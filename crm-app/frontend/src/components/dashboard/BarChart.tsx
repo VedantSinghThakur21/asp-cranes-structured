@@ -8,20 +8,12 @@ import {
   Legend,
   Filler,
   ChartData,
-  ChartOptions
+  ChartOptions,
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 
 // Register ChartJS components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-);
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, Filler);
 
 interface BarChartProps {
   data: ChartData<'bar'>;

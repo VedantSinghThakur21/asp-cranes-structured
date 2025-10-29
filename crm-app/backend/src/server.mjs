@@ -67,7 +67,9 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const isProduction = process.env.NODE_ENV === 'production';
 
-console.log(`Environment check: NODE_ENV=${process.env.NODE_ENV || 'undefined'}, isProduction=${isProduction}`);
+console.log(
+  `Environment check: NODE_ENV=${process.env.NODE_ENV || 'undefined'}, isProduction=${isProduction}`
+);
 console.log(`ALLOWED_ORIGINS env var: "${process.env.ALLOWED_ORIGINS}"`);
 
 // Set allowed origin for CORS
@@ -75,35 +77,50 @@ const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || 'http://103.224.243.242:3
 
 // Security middleware
 if (isProduction) {
-  app.use(helmet({
-    // Disable problematic headers for iframe compatibility
-    crossOriginOpenerPolicy: false,
-    originAgentCluster: false,
-    contentSecurityPolicy: {
-      directives: {
-        frameAncestors: ["'self'"]
-      }
-    }
-  }));
+  app.use(
+    helmet({
+      // Disable problematic headers for iframe compatibility
+      crossOriginOpenerPolicy: false,
+      originAgentCluster: false,
+      contentSecurityPolicy: {
+        directives: {
+          frameAncestors: ["'self'"],
+        },
+      },
+    })
+  );
   app.use(compression());
 }
 
 // CORS configuration - allow credentials and set origin to frontend
-app.use(cors({
-  origin: function (origin, callback) {
-    // Allow same-origin and iframe requests
-    if (!origin || origin === FRONTEND_ORIGIN || origin === 'http://localhost:3000' || origin === "http://localhost:5173") {
-      callback(null, true);
-    } else {
-      console.log('🚫 CORS blocked origin:', origin);
-      callback(null, false);
-    }
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'x-bypass-auth', 'x-application-type'],
-  optionsSuccessStatus: 200
-}));
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Allow same-origin and iframe requests
+      if (
+        !origin ||
+        origin === FRONTEND_ORIGIN ||
+        origin === 'http://localhost:3000' ||
+        origin === 'http://localhost:5173'
+      ) {
+        callback(null, true);
+      } else {
+        console.log('🚫 CORS blocked origin:', origin);
+        callback(null, false);
+      }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Requested-With',
+      'x-bypass-auth',
+      'x-application-type',
+    ],
+    optionsSuccessStatus: 200,
+  })
+);
 
 // Log all request headers for debugging
 app.use((req, res, next) => {
@@ -117,16 +134,13 @@ if (isProduction) {
   // Create logs directory if it doesn't exist
   const __dirname = path.dirname(fileURLToPath(import.meta.url));
   const logDir = path.join(__dirname, '../logs');
-  
+
   if (!fs.existsSync(logDir)) {
     fs.mkdirSync(logDir, { recursive: true });
   }
-  
+
   // Setup access logging to file
-  const accessLogStream = fs.createWriteStream(
-    path.join(logDir, 'access.log'),
-    { flags: 'a' }
-  );
+  const accessLogStream = fs.createWriteStream(path.join(logDir, 'access.log'), { flags: 'a' });
   app.use(morgan('combined', { stream: accessLogStream }));
 } else {
   // Development logging to console
@@ -157,8 +171,8 @@ app.get('/api', (req, res) => {
       users: '/api/users',
       jobs: '/api/jobs',
       operators: '/api/operators',
-      ai: '/api/ai'
-    }
+      ai: '/api/ai',
+    },
   });
 });
 
@@ -169,10 +183,10 @@ app.get('/api/health', (req, res) => {
 
 // API status check
 app.get('/api/check', (req, res) => {
-  res.json({ 
-    status: 'ok', 
+  res.json({
+    status: 'ok',
     environment: process.env.NODE_ENV || 'development',
-    apiVersion: '1.0.0'
+    apiVersion: '1.0.0',
   });
 });
 
@@ -235,15 +249,15 @@ app.use((req, res) => {
 app.use((err, req, res, next) => {
   const statusCode = err.status || err.statusCode || 500;
   const logError = statusCode >= 500;
-  
+
   if (logError) {
     console.error(`Server error (${req.method} ${req.originalUrl}):`, err);
   }
-  
-  res.status(statusCode).json({ 
+
+  res.status(statusCode).json({
     error: err.message || 'Internal Server Error',
     stack: isProduction ? undefined : err.stack,
-    path: req.originalUrl
+    path: req.originalUrl,
   });
 });
 
@@ -251,7 +265,7 @@ app.use((err, req, res, next) => {
 const server = app.listen(PORT, async () => {
   console.log(`🚀 API server running at http://localhost:${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-  
+
   // Initialize Notification Engine
   try {
     await notificationEngine.initialize(server);
@@ -260,7 +274,7 @@ const server = app.listen(PORT, async () => {
   } catch (error) {
     console.error('❌ Failed to initialize Notification Engine:', error.message);
   }
-  
+
   if (!isProduction) {
     console.log('\nAvailable endpoints:');
     console.log(`- Health check: http://localhost:${PORT}/api/health`);

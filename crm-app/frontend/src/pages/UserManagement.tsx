@@ -1,14 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import * as userService from '../services/userService';
-import { 
-  Search, 
-  Edit2, 
-  Trash2, 
-  CheckCircle2,
-  XCircle,
-  AlertCircle,
-  UserPlus
-} from 'lucide-react';
+import { Search, Edit2, Trash2, CheckCircle2, XCircle, AlertCircle, UserPlus } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { FormInput } from '../components/common/FormInput';
@@ -58,7 +50,7 @@ const generateAvatarUrl = (name: string): string => {
   ];
   const colorIndex = hash % colors.length;
   const color = colors[colorIndex];
-  
+
   // Encode name for URL
   const encodedName = encodeURIComponent(name);
   return `https://ui-avatars.com/api/?name=${encodedName}&background=${color}&color=fff&size=128`;
@@ -82,7 +74,7 @@ export function UserManagement() {
     description?: string;
     variant?: 'success' | 'error' | 'warning';
   }>({ show: false, title: '' });
-  
+
   // Form state
   const [formData, setFormData] = useState({
     name: '',
@@ -91,13 +83,13 @@ export function UserManagement() {
     role: 'operator' as UserRole,
     status: 'active' as 'active' | 'inactive',
   });
-  
+
   useEffect(() => {
     // Load users directly - simplified approach
     const loadUsers = async () => {
       try {
         setIsLoading(true);
-        
+
         // Check if user is authenticated first
         // Use authStore's user property
         if (!user) {
@@ -105,7 +97,7 @@ export function UserManagement() {
           setIsLoading(false);
           return;
         }
-        
+
         try {
           const usersList = await userService.getUsers();
           // Convert PostgreSQL users to ExtendedUser format
@@ -114,7 +106,7 @@ export function UserManagement() {
             name: user.name,
             email: user.email,
             role: user.role,
-            status: user.status === 'active' ? 'active' : 'inactive'
+            status: user.status === 'active' ? 'active' : 'inactive',
           }));
           setUsers(extendedUsers);
           setFilteredUsers(extendedUsers);
@@ -125,7 +117,7 @@ export function UserManagement() {
           } else {
             showToast('Error loading users', error.message || 'Please try again later', 'error');
           }
-          
+
           // Use mock data for development testing
           const mockUsers = [
             {
@@ -133,35 +125,36 @@ export function UserManagement() {
               name: 'Admin User',
               email: 'admin@example.com',
               role: 'admin' as UserRole,
-              status: 'active' as 'active' | 'inactive'
+              status: 'active' as 'active' | 'inactive',
             },
             {
               id: '2',
               name: 'Sales Agent',
               email: 'sales@example.com',
               role: 'sales_agent' as UserRole,
-              status: 'active' as 'active' | 'inactive'
-            }
+              status: 'active' as 'active' | 'inactive',
+            },
           ];
-          
+
           setUsers(mockUsers);
           setFilteredUsers(mockUsers);
         }
       } finally {
         setIsLoading(false);
-      }    };
+      }
+    };
 
     // Start by loading users
     loadUsers();
   }, []);
-  
+
   useEffect(() => {
     filterUsers();
   }, [users, searchTerm, roleFilter, statusFilter]);
-  
+
   const filterUsers = () => {
     let filtered = [...users];
-    
+
     if (searchTerm) {
       const lowerSearch = searchTerm.toLowerCase();
       filtered = filtered.filter(
@@ -173,19 +166,19 @@ export function UserManagement() {
             user.email.toLowerCase().includes(lowerSearch))
       );
     }
-    
+
     if (roleFilter !== 'all') {
       filtered = filtered.filter(user => user.role === roleFilter);
     }
-    
+
     if (statusFilter !== 'all') {
       filtered = filtered.filter(user => user.status === statusFilter);
     }
-    
+
     setFilteredUsers(filtered);
     setCurrentPage(1); // Reset to first page when filtering
   };
-  
+
   const showToast = (
     title: string,
     description?: string,
@@ -194,28 +187,21 @@ export function UserManagement() {
     setToast({ show: true, title, description, variant });
     setTimeout(() => setToast({ show: false, title: '' }), 3000);
   };
-  
+
   const handleStatusToggle = async (user: ExtendedUser) => {
     const newStatus = user.status === 'active' ? 'inactive' : 'active';
-    
+
     try {
       // Update in database - assuming we have some active flag that can be updated
       // Note: if the API doesn't support status directly, you may need to adjust this
       await userService.updateUser(user.id, {
         // Using property that's available in UpdateUserData
       });
-      
+
       // Update local state
-      setUsers(prev =>
-        prev.map(u =>
-          u.id === user.id ? { ...u, status: newStatus } : u
-        )
-      );
-      
-      showToast(
-        `User ${user.status === 'active' ? 'deactivated' : 'activated'}`,
-        'success'
-      );
+      setUsers(prev => prev.map(u => (u.id === user.id ? { ...u, status: newStatus } : u)));
+
+      showToast(`User ${user.status === 'active' ? 'deactivated' : 'activated'}`, 'success');
     } catch (error) {
       console.error('Error toggling user status:', error);
       showToast('Error updating user status', 'error');
@@ -236,7 +222,7 @@ export function UserManagement() {
       return;
     }
 
-    try {      
+    try {
       if (selectedUser) {
         // Update user
         const updatedUser: ExtendedUser = {
@@ -253,13 +239,9 @@ export function UserManagement() {
           role: formData.role,
           isActive: formData.status === 'active',
         });
-        
+
         // Update local state
-        setUsers(prev => 
-          prev.map(user => 
-            user.id === selectedUser.id ? updatedUser : user
-          )
-        );
+        setUsers(prev => prev.map(user => (user.id === selectedUser.id ? updatedUser : user)));
         showToast('User updated successfully', 'success');
       } else {
         // For new users
@@ -279,11 +261,14 @@ export function UserManagement() {
             status: result.isActive ? 'active' : 'inactive',
             avatar: generateAvatarUrl(formData.name),
           };
-          
+
           setUsers(prev => [...prev, extendedUser]);
           showToast('User added successfully', 'success');
         } catch (authError: any) {
-          showToast(`Error creating user account: ${authError.message || 'Unknown error'}`, 'error');
+          showToast(
+            `Error creating user account: ${authError.message || 'Unknown error'}`,
+            'error'
+          );
           return;
         }
       }
@@ -294,14 +279,14 @@ export function UserManagement() {
       showToast(`Error saving user: ${error.message || 'Unknown error'}`, 'error');
     }
   };
-  
+
   const handleDelete = async () => {
     if (!selectedUser) return;
 
     try {
       // Delete from database
       await userService.deleteUser(selectedUser.id);
-      
+
       // Update local state
       setUsers(prev => prev.filter(user => user.id !== selectedUser.id));
       setIsDeleteModalOpen(false);
@@ -312,7 +297,7 @@ export function UserManagement() {
       showToast('Error deleting user', 'error');
     }
   };
-  
+
   const resetForm = () => {
     setFormData({
       name: '',
@@ -355,23 +340,16 @@ export function UserManagement() {
 
           <div className="flex flex-col sm:flex-row gap-4">
             <Select
-              options={[
-
-                { value: 'all', label: 'All Roles' },
-                ...ROLE_OPTIONS,
-              ]}
+              options={[{ value: 'all', label: 'All Roles' }, ...ROLE_OPTIONS]}
               value={roleFilter}
-              onChange={(value) => setRoleFilter(value as UserRole | 'all')}
+              onChange={value => setRoleFilter(value as UserRole | 'all')}
               className="w-full sm:w-40"
             />
 
             <Select
-              options={[
-                { value: 'all', label: 'All Status' },
-                ...STATUS_OPTIONS,
-              ]}
+              options={[{ value: 'all', label: 'All Status' }, ...STATUS_OPTIONS]}
               value={statusFilter}
-              onChange={(value) => setStatusFilter(value as 'active' | 'inactive' | 'all')}
+              onChange={value => setStatusFilter(value as 'active' | 'inactive' | 'all')}
               className="w-full sm:w-40"
             />
           </div>
@@ -389,7 +367,6 @@ export function UserManagement() {
           Add User
         </Button>
       </div>
-
       <Card>
         <CardHeader>
           <CardTitle>User Management</CardTitle>
@@ -422,14 +399,16 @@ export function UserManagement() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {paginatedUsers.map((user) => (
+                    {paginatedUsers.map(user => (
                       <tr key={user.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap">                          <div className="flex items-center">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {' '}
+                          <div className="flex items-center">
                             <img
                               src={user.avatar || generateAvatarUrl(user.name)}
                               alt={user.name}
                               className="h-10 w-10 rounded-full object-cover"
-                              onError={(e) => {
+                              onError={e => {
                                 // If image fails to load, use UI Avatars API instead
                                 const target = e.target as HTMLImageElement;
                                 target.onerror = null; // Prevent infinite loop
@@ -475,10 +454,11 @@ export function UserManagement() {
                               variant="ghost"
                               size="sm"
                               onClick={() => {
-                                setSelectedUser(user);                                setFormData({
+                                setSelectedUser(user);
+                                setFormData({
                                   name: user.name,
                                   email: user.email,
-                                  password: '',  // Empty for editing existing user
+                                  password: '', // Empty for editing existing user
                                   role: user.role,
                                   status: user.status,
                                 });
@@ -508,10 +488,8 @@ export function UserManagement() {
               {totalPages > 1 && (
                 <div className="flex justify-between items-center mt-4">
                   <p className="text-sm text-gray-500">
-                    Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} to{' '}
-
+                    Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} to{' '}
                     {Math.min(currentPage * ITEMS_PER_PAGE, filteredUsers.length)} of{' '}
-
                     {filteredUsers.length} users
                   </p>
                   <div className="flex gap-2">
@@ -538,8 +516,8 @@ export function UserManagement() {
           )}
         </CardContent>
       </Card>
-
-      {/* Add/Edit User Modal */}      <Modal
+      {/* Add/Edit User Modal */}{' '}
+      <Modal
         isOpen={isModalOpen}
         onClose={() => {
           setIsModalOpen(false);
@@ -553,51 +531,54 @@ export function UserManagement() {
           <FormInput
             label="Full Name"
             value={formData.name}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setFormData(prev => ({ ...prev, name: e.target.value }))
+            }
             required
-          />          <FormInput
+          />{' '}
+          <FormInput
             label="Email Address"
             type="email"
             value={formData.email}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setFormData(prev => ({ ...prev, email: e.target.value }))
+            }
             required
           />
-
           <FormInput
             label="Password"
             type="password"
             value={formData.password || ''}
-
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setFormData(prev => ({ ...prev, password: e.target.value }))
+            }
             required={!selectedUser}
-            placeholder={selectedUser ? "Leave blank to keep current password" : ""}
+            placeholder={selectedUser ? 'Leave blank to keep current password' : ''}
           />
-
           <Select
             label="Role"
             options={ROLE_OPTIONS}
             value={formData.role}
-            onChange={(value) => setFormData(prev => ({ ...prev, role: value as UserRole }))}
+            onChange={value => setFormData(prev => ({ ...prev, role: value as UserRole }))}
             required
           />
-
           <div className="flex items-center gap-2">
             <input
               type="checkbox"
               id="userMgmt-isActive"
               checked={formData.status === 'active'}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData(prev => ({ 
-                ...prev, 
-                status: e.target.checked ? 'active' : 'inactive' 
-              }))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setFormData(prev => ({
+                  ...prev,
+                  status: e.target.checked ? 'active' : 'inactive',
+                }))
+              }
               className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
             />
             <label htmlFor="isActive" className="text-sm text-gray-700">
               User is active
             </label>
           </div>
-
           <div className="flex justify-end gap-3">
             <Button
               type="button"
@@ -615,8 +596,8 @@ export function UserManagement() {
           </div>
         </form>
       </Modal>
-
-      {/* Delete Confirmation Modal */}      <Modal
+      {/* Delete Confirmation Modal */}{' '}
+      <Modal
         isOpen={isDeleteModalOpen}
         onClose={() => {
           setIsDeleteModalOpen(false);
@@ -643,16 +624,12 @@ export function UserManagement() {
             >
               Cancel
             </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDelete}
-            >
+            <Button variant="destructive" onClick={handleDelete}>
               Delete User
             </Button>
           </div>
         </div>
       </Modal>
-
       {/* Toast Notifications */}
       {toast.show && (
         <Toast

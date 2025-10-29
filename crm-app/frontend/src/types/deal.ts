@@ -17,7 +17,8 @@ export interface Deal {
   value: number;
   stage: DealStage;
   createdAt: string;
-  updatedAt: string;  createdBy?: string;
+  updatedAt: string;
+  createdBy?: string;
   assignedTo: string;
   assignedToName?: string;
   probability: number;

@@ -21,23 +21,22 @@ export const DatabaseConfig = () => {
     database: 'asp_crm',
     user: 'postgres',
     password: '',
-    ssl: false
+    ssl: false,
   });
-  
+
   const [loading, setLoading] = useState(true);
   const [testing, setTesting] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState<'untested' | 'success' | 'failed'>('untested');
-  
+  const [connectionStatus, setConnectionStatus] = useState<'untested' | 'success' | 'failed'>(
+    'untested'
+  );
+
   const [toast, setToast] = useState<{
     show: boolean;
     title: string;
     variant?: 'success' | 'error' | 'warning';
   }>({ show: false, title: '' });
-  const showToast = (
-    title: string,
-    variant: 'success' | 'error' | 'warning' = 'success'
-  ) => {
+  const showToast = (title: string, variant: 'success' | 'error' | 'warning' = 'success') => {
     setToast({ show: true, title, variant });
     // Longer timeout for success messages regarding configuration changes
     const timeout = variant === 'success' ? 5000 : 3000;
@@ -53,15 +52,15 @@ export const DatabaseConfig = () => {
       // Fetch database configuration from our API endpoint
       const response = await fetch('/api/dbconfig', {
         method: 'GET',
-        headers: getHeaders()
+        headers: getHeaders(),
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch database configuration');
       }
-      
+
       const data = await response.json();
-      
+
       if (data.success && data.data) {
         setConfig({
           host: data.data.host || 'localhost',
@@ -69,7 +68,7 @@ export const DatabaseConfig = () => {
           database: data.data.database || 'asp_crm',
           user: data.data.user || 'postgres',
           password: '', // Don't set password from API for security reasons
-          ssl: data.data.ssl || false
+          ssl: data.data.ssl || false,
         });
       }
     } catch (error) {
@@ -84,31 +83,39 @@ export const DatabaseConfig = () => {
     const { name, value, type, checked } = e.target;
     setConfig(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : (type === 'number' ? parseInt(value) || 0 : value)
+      [name]: type === 'checkbox' ? checked : type === 'number' ? parseInt(value) || 0 : value,
     }));
-  };  const handleSave = async () => {
+  };
+  const handleSave = async () => {
     setSaving(true);
     try {
       // Save directly to our enhanced API endpoint
       const response = await fetch('/api/dbconfig', {
         method: 'PUT',
         headers: getHeaders(),
-        body: JSON.stringify(config)
+        body: JSON.stringify(config),
       });
-      
+
       const data = await response.json();
-      
+
       if (response.ok && data.success) {
         // Show success message with a note about server restart
-        showToast('Database configuration saved successfully. Please restart the server for changes to take effect.', 'success');
-        
+        showToast(
+          'Database configuration saved successfully. Please restart the server for changes to take effect.',
+          'success'
+        );
+
         // Reset connection status since configuration has changed
         setConnectionStatus('untested');
       } else {
         throw new Error(data.message || 'Unknown error');
       }
-    } catch (error) {      console.error('Failed to save database config:', error);
-      showToast(`Failed to save database configuration: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error');
+    } catch (error) {
+      console.error('Failed to save database config:', error);
+      showToast(
+        `Failed to save database configuration: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        'error'
+      );
     } finally {
       setSaving(false);
     }
@@ -116,20 +123,23 @@ export const DatabaseConfig = () => {
   const testConnection = async () => {
     setTesting(true);
     setConnectionStatus('untested');
-    
+
     try {
       // Use our enhanced API endpoint to test the connection with current settings
       const response = await fetch('/api/dbconfig/test', {
         method: 'POST',
         headers: getHeaders(),
-        body: JSON.stringify(config)
+        body: JSON.stringify(config),
       });
-      
+
       const data = await response.json();
-      
+
       if (response.ok && data.success) {
         setConnectionStatus('success');
-        showToast(`Connection successful! PostgreSQL ${data.data?.version?.split(' ')[1] || 'server'} is running.`, 'success');
+        showToast(
+          `Connection successful! PostgreSQL ${data.data?.version?.split(' ')[1] || 'server'} is running.`,
+          'success'
+        );
       } else {
         setConnectionStatus('failed');
         showToast(`Connection failed: ${data.message || 'Unknown error'}`, 'error');
@@ -152,10 +162,11 @@ export const DatabaseConfig = () => {
       <div>
         <h3 className="font-medium mb-2">Database Connection Settings</h3>
         <p className="text-sm text-gray-500 mb-4">
-          Configure the PostgreSQL database connection parameters. Changes will take effect after server restart.
+          Configure the PostgreSQL database connection parameters. Changes will take effect after
+          server restart.
         </p>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Host</label>
@@ -167,7 +178,7 @@ export const DatabaseConfig = () => {
             leftIcon={<Server className="h-4 w-4" />}
           />
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Port</label>
           <Input
@@ -178,7 +189,7 @@ export const DatabaseConfig = () => {
             placeholder="5432"
           />
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Database Name</label>
           <Input
@@ -189,17 +200,12 @@ export const DatabaseConfig = () => {
             leftIcon={<Database className="h-4 w-4" />}
           />
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
-          <Input
-            name="user"
-            value={config.user}
-            onChange={handleChange}
-            placeholder="postgres"
-          />
+          <Input name="user" value={config.user} onChange={handleChange} placeholder="postgres" />
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
           <Input
@@ -210,7 +216,7 @@ export const DatabaseConfig = () => {
             placeholder="Leave blank to keep existing password"
           />
         </div>
-        
+
         <div className="flex items-center space-x-2 mt-8">
           <input
             type="checkbox"
@@ -225,26 +231,32 @@ export const DatabaseConfig = () => {
           </label>
         </div>
       </div>
-        <div className="flex justify-between pt-4 border-t">
-        <Button 
-          variant="outline" 
+      <div className="flex justify-between pt-4 border-t">
+        <Button
+          variant="outline"
           onClick={testConnection}
           disabled={testing}
           leftIcon={testing ? <RefreshCw className="h-4 w-4 animate-spin" /> : undefined}
-          rightIcon={connectionStatus === 'success' ? <CheckCircle className="h-4 w-4 text-green-500" /> : undefined}
+          rightIcon={
+            connectionStatus === 'success' ? (
+              <CheckCircle className="h-4 w-4 text-green-500" />
+            ) : undefined
+          }
         >
           {testing ? 'Testing...' : 'Test Connection'}
         </Button>
-        
-        <Button 
+
+        <Button
           onClick={handleSave}
           disabled={saving}
-          leftIcon={saving ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+          leftIcon={
+            saving ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />
+          }
         >
           {saving ? 'Saving...' : 'Save Configuration'}
         </Button>
       </div>
-      
+
       {toast.show && (
         <Toast
           title={toast.title}

@@ -20,7 +20,7 @@ export async function generateQuotationTemplate(quotation, companyInfo) {
   try {
     // Generate HTML content
     const html = generateQuotationHTML(quotation, companyInfo);
-    
+
     // Configure PDF options
     const pdfOptions = {
       format: 'A4',
@@ -30,16 +30,16 @@ export async function generateQuotationTemplate(quotation, companyInfo) {
         top: '15mm',
         right: '15mm',
         bottom: '15mm',
-        left: '15mm'
+        left: '15mm',
       },
       displayHeaderFooter: false,
       printBackground: true,
-      preferCSSPageSize: true
+      preferCSSPageSize: true,
     };
-    
+
     // Generate actual PDF using AdvancedPDFGenerator
     const pdfBuffer = await pdfGenerator.generatePDF(html, pdfOptions);
-    
+
     return pdfBuffer;
   } catch (error) {
     console.error('Error generating PDF:', error);
@@ -302,7 +302,7 @@ function generateQuotationHTML(quotation, companyInfo) {
               </div>
               <div class="detail-item">
                 <span class="detail-label">Valid Until:</span>
-                <span class="detail-value">${new Date(Date.now() + 30*24*60*60*1000).toLocaleDateString()}</span>
+                <span class="detail-value">${new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString()}</span>
               </div>
               <div class="detail-item">
                 <span class="detail-label">GST Rate:</span>
@@ -322,7 +322,9 @@ function generateQuotationHTML(quotation, companyInfo) {
               </tr>
             </thead>
             <tbody>
-              ${quotation.items.map((item, index) => `
+              ${quotation.items
+                .map(
+                  (item, index) => `
                 <tr>
                   <td class="text-center">${index + 1}</td>
                   <td>${item.description}</td>
@@ -330,7 +332,9 @@ function generateQuotationHTML(quotation, companyInfo) {
                   <td class="text-right">₹${item.price.toLocaleString('en-IN')}</td>
                   <td class="text-right">₹${(item.qty * item.price).toLocaleString('en-IN')}</td>
                 </tr>
-              `).join('')}
+              `
+                )
+                .join('')}
             </tbody>
           </table>
           
@@ -349,14 +353,18 @@ function generateQuotationHTML(quotation, companyInfo) {
             </div>
           </div>
           
-          ${quotation.terms && quotation.terms.length > 0 ? `
+          ${
+            quotation.terms && quotation.terms.length > 0
+              ? `
             <div class="terms">
               <h3>Terms & Conditions</h3>
               <ul>
                 ${quotation.terms.map(term => `<li>${term}</li>`).join('')}
               </ul>
             </div>
-          ` : ''}
+          `
+              : ''
+          }
           
           <div class="signature-area">
             <p><strong>For ${companyInfo.name}</strong></p>
@@ -381,5 +389,5 @@ function generateQuotationHTML(quotation, companyInfo) {
  * @returns {number} Subtotal
  */
 function calculateSubtotal(items) {
-  return items.reduce((sum, item) => sum + (item.qty * item.price), 0);
+  return items.reduce((sum, item) => sum + item.qty * item.price, 0);
 }

@@ -34,9 +34,7 @@ interface BadgeProps
 }
 
 function Badge({ className, variant, size, ...props }: BadgeProps) {
-  return (
-    <div className={badgeVariants({ variant, size, className })} {...props} />
-  );
+  return <div className={badgeVariants({ variant, size, className })} {...props} />;
 }
 
 export { Badge };

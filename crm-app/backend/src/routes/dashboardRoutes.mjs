@@ -45,8 +45,8 @@ try {
 /**
  * Async handler for route error handling
  */
-const asyncHandler = (fn) => (req, res, next) => {
-  Promise.resolve(fn(req, res, next)).catch((error) => {
+const asyncHandler = fn => (req, res, next) => {
+  Promise.resolve(fn(req, res, next)).catch(error => {
     console.error(`Dashboard API Error: ${error.message}`, error);
     res.status(500).json({
       success: false,
@@ -60,69 +60,69 @@ const asyncHandler = (fn) => (req, res, next) => {
  * GET /api/dashboard/analytics
  * Get comprehensive dashboard analytics data
  */
-router.get('/analytics', authenticateToken, asyncHandler(async (req, res) => {
-  const { timeRange = '30' } = req.query; // days
-  const days = parseInt(timeRange, 10);
-  
-  console.log(`📊 Dashboard analytics request - timeRange: ${days} days, user: ${req.user?.uid}`);
-  
-  try {
-    // Get date range
-    const endDate = new Date();
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
+router.get(
+  '/analytics',
+  authenticateToken,
+  asyncHandler(async (req, res) => {
+    const { timeRange = '30' } = req.query; // days
+    const days = parseInt(timeRange, 10);
 
-    // Parallel queries for better performance
-    const [
-      revenueData,
-      leadsData,
-      dealsData,
-      customersData,
-      quotationsData,
-      recentActivities
-    ] = await Promise.all([
-      getRevenueMetrics(pool, startDate, endDate),
-      getLeadsMetrics(pool, startDate, endDate),
-      getDealsMetrics(pool, startDate, endDate),
-      getCustomersMetrics(pool, startDate, endDate),
-      getQuotationsMetrics(pool, startDate, endDate),
-      getRecentActivities(pool, 10)
-    ]);
+    console.log(`📊 Dashboard analytics request - timeRange: ${days} days, user: ${req.user?.uid}`);
 
-    const analytics = {
-      timeRange: days,
-      startDate: startDate.toISOString(),
-      endDate: endDate.toISOString(),
-      revenue: revenueData,
-      leads: leadsData,
-      deals: dealsData,
-      customers: customersData,
-      quotations: quotationsData,
-      recentActivities
-    };
+    try {
+      // Get date range
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - days);
 
-    res.json({
-      success: true,
-      data: analytics
-    });
+      // Parallel queries for better performance
+      const [revenueData, leadsData, dealsData, customersData, quotationsData, recentActivities] =
+        await Promise.all([
+          getRevenueMetrics(pool, startDate, endDate),
+          getLeadsMetrics(pool, startDate, endDate),
+          getDealsMetrics(pool, startDate, endDate),
+          getCustomersMetrics(pool, startDate, endDate),
+          getQuotationsMetrics(pool, startDate, endDate),
+          getRecentActivities(pool, 10),
+        ]);
 
-  } catch (error) {
-    console.error('Dashboard analytics error:', error);
-    throw error;
-  }
-}));
+      const analytics = {
+        timeRange: days,
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+        revenue: revenueData,
+        leads: leadsData,
+        deals: dealsData,
+        customers: customersData,
+        quotations: quotationsData,
+        recentActivities,
+      };
+
+      res.json({
+        success: true,
+        data: analytics,
+      });
+    } catch (error) {
+      console.error('Dashboard analytics error:', error);
+      throw error;
+    }
+  })
+);
 
 /**
  * GET /api/dashboard/revenue-chart
  * Get revenue chart data by month
  */
-router.get('/revenue-chart', authenticateToken, asyncHandler(async (req, res) => {
-  const { months = '12' } = req.query;
-  const monthsCount = parseInt(months, 10);
+router.get(
+  '/revenue-chart',
+  authenticateToken,
+  asyncHandler(async (req, res) => {
+    const { months = '12' } = req.query;
+    const monthsCount = parseInt(months, 10);
 
-  console.log(`📈 Revenue chart request - months: ${monthsCount}, user: ${req.user?.uid}`);
+    console.log(`📈 Revenue chart request - months: ${monthsCount}, user: ${req.user?.uid}`);
 
-  const query = `
+    const query = `
     SELECT 
       DATE_TRUNC('month', created_at) as month,
       COUNT(*) as deals_count,
@@ -134,29 +134,36 @@ router.get('/revenue-chart', authenticateToken, asyncHandler(async (req, res) =>
     ORDER BY month DESC
   `;
 
-  const result = await pool.query(query);
-  
-  const chartData = result.rows.map(row => ({
-    month: row.month,
-    monthName: new Date(row.month).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
-    revenue: parseFloat(row.total_revenue),
-    deals: parseInt(row.deals_count)
-  }));
+    const result = await pool.query(query);
 
-  res.json({
-    success: true,
-    data: chartData
-  });
-}));
+    const chartData = result.rows.map(row => ({
+      month: row.month,
+      monthName: new Date(row.month).toLocaleDateString('en-US', {
+        month: 'short',
+        year: 'numeric',
+      }),
+      revenue: parseFloat(row.total_revenue),
+      deals: parseInt(row.deals_count),
+    }));
+
+    res.json({
+      success: true,
+      data: chartData,
+    });
+  })
+);
 
 /**
  * GET /api/dashboard/pipeline-overview
  * Get sales pipeline overview
  */
-router.get('/pipeline-overview', authenticateToken, asyncHandler(async (req, res) => {
-  console.log(`🔄 Pipeline overview request - user: ${req.user?.uid}`);
-  
-  const query = `
+router.get(
+  '/pipeline-overview',
+  authenticateToken,
+  asyncHandler(async (req, res) => {
+    console.log(`🔄 Pipeline overview request - user: ${req.user?.uid}`);
+
+    const query = `
     SELECT 
       stage,
       COUNT(*) as count,
@@ -174,19 +181,20 @@ router.get('/pipeline-overview', authenticateToken, asyncHandler(async (req, res
       END
   `;
 
-  const result = await pool.query(query);
-  
-  const pipelineData = result.rows.map(row => ({
-    stage: row.stage,
-    count: parseInt(row.count),
-    value: parseFloat(row.total_value)
-  }));
+    const result = await pool.query(query);
 
-  res.json({
-    success: true,
-    data: pipelineData
-  });
-}));
+    const pipelineData = result.rows.map(row => ({
+      stage: row.stage,
+      count: parseInt(row.count),
+      value: parseFloat(row.total_value),
+    }));
+
+    res.json({
+      success: true,
+      data: pipelineData,
+    });
+  })
+);
 
 // Helper functions for data aggregation
 
@@ -201,7 +209,7 @@ async function getRevenueMetrics(pool, startDate, endDate) {
       AND created_at >= $1 
       AND created_at <= $2
   `;
-  
+
   const result = await pool.query(query, [startDate, endDate]);
   const current = result.rows[0];
 
@@ -218,20 +226,19 @@ async function getRevenueMetrics(pool, startDate, endDate) {
       AND created_at >= $1 
       AND created_at < $2
   `;
-  
+
   const prevResult = await pool.query(prevQuery, [prevStartDate, prevEndDate]);
   const previousRevenue = parseFloat(prevResult.rows[0].total_revenue);
   const currentRevenue = parseFloat(current.total_revenue);
-  
-  const growth = previousRevenue > 0 
-    ? ((currentRevenue - previousRevenue) / previousRevenue) * 100 
-    : 0;
+
+  const growth =
+    previousRevenue > 0 ? ((currentRevenue - previousRevenue) / previousRevenue) * 100 : 0;
 
   return {
     total: currentRevenue,
     growth: growth,
     dealsCount: parseInt(current.deals_count),
-    avgDealSize: parseFloat(current.avg_deal_size)
+    avgDealSize: parseFloat(current.avg_deal_size),
   };
 }
 
@@ -244,20 +251,20 @@ async function getLeadsMetrics(pool, startDate, endDate) {
     FROM leads 
     WHERE created_at >= $1 AND created_at <= $2
   `;
-  
+
   const result = await pool.query(query, [startDate, endDate]);
   const data = result.rows[0];
-  
+
   const total = parseInt(data.total_leads);
   const qualified = parseInt(data.qualified_leads);
   const converted = parseInt(data.converted_leads);
-  
+
   return {
     total,
     qualified,
     converted,
     qualificationRate: total > 0 ? (qualified / total) * 100 : 0,
-    conversionRate: qualified > 0 ? (converted / qualified) * 100 : 0
+    conversionRate: qualified > 0 ? (converted / qualified) * 100 : 0,
   };
 }
 
@@ -275,20 +282,20 @@ async function getDealsMetrics(pool, startDate, endDate) {
     FROM deals 
     WHERE created_at >= $1 AND created_at <= $2
   `;
-  
+
   const result = await pool.query(query, [startDate, endDate]);
   const data = result.rows[0];
-  
+
   const total = parseInt(data.total_deals);
   const won = parseInt(data.won_deals);
   const lost = parseInt(data.lost_deals);
-  
+
   return {
     total,
     won,
     lost,
-    winRate: (won + lost) > 0 ? (won / (won + lost)) * 100 : 0,
-    avgCycleDays: Math.round(parseFloat(data.avg_cycle_days))
+    winRate: won + lost > 0 ? (won / (won + lost)) * 100 : 0,
+    avgCycleDays: Math.round(parseFloat(data.avg_cycle_days)),
   };
 }
 
@@ -299,7 +306,7 @@ async function getCustomersMetrics(pool, startDate, endDate) {
     FROM customers 
     WHERE created_at >= $1 AND created_at <= $2
   `;
-  
+
   // Get active customers (those with recent deals or leads in last 90 days)
   const activeQuery = `
     SELECT COUNT(DISTINCT c.id) as active_customers
@@ -310,15 +317,15 @@ async function getCustomersMetrics(pool, startDate, endDate) {
         OR EXISTS (SELECT 1 FROM leads l WHERE l.customer_id = c.id AND l.created_at >= NOW() - INTERVAL '90 days')
       )
   `;
-  
+
   const [totalResult, activeResult] = await Promise.all([
     pool.query(totalQuery, [startDate, endDate]),
-    pool.query(activeQuery, [startDate, endDate])
+    pool.query(activeQuery, [startDate, endDate]),
   ]);
-  
+
   return {
     total: parseInt(totalResult.rows[0].total_customers),
-    active: parseInt(activeResult.rows[0].active_customers)
+    active: parseInt(activeResult.rows[0].active_customers),
   };
 }
 
@@ -335,18 +342,18 @@ async function getQuotationsMetrics(pool, startDate, endDate) {
     FROM quotations 
     WHERE created_at >= $1 AND created_at <= $2
   `;
-  
+
   const result = await pool.query(query, [startDate, endDate]);
   const data = result.rows[0];
-  
+
   const total = parseInt(data.total_quotations);
   const approved = parseInt(data.approved_quotations);
-  
+
   return {
     total,
     approved,
     approvalRate: total > 0 ? (approved / total) * 100 : 0,
-    approvedValue: parseFloat(data.approved_value)
+    approvedValue: parseFloat(data.approved_value),
   };
 }
 
@@ -376,16 +383,16 @@ async function getRecentActivities(pool, limit = 10) {
     ORDER BY created_at DESC 
     LIMIT $1
   `;
-  
+
   const result = await pool.query(query, [limit]);
-  
+
   return result.rows.map(row => ({
     type: row.type,
     id: row.id,
     title: row.title,
     status: row.status,
     createdAt: row.created_at,
-    createdBy: row.created_by
+    createdBy: row.created_by,
   }));
 }
 

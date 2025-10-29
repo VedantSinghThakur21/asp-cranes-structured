@@ -9,17 +9,33 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   id?: string;
 }
 
-export function Input({ label, error, className = '', leftIcon, rightIcon, name, id, ...props }: InputProps) {
+export function Input({
+  label,
+  error,
+  className = '',
+  leftIcon,
+  rightIcon,
+  name,
+  id,
+  ...props
+}: InputProps) {
   const inputProps = { ...props };
 
-  const inputName = name || id || props.placeholder?.toLowerCase().replace(/\s+/g, '_') || 'input_field';
+  const inputName =
+    name || id || props.placeholder?.toLowerCase().replace(/\s+/g, '_') || 'input_field';
 
   return (
     <div className="space-y-1.5">
-      {label && (        <label className={`block text-xs sm:text-sm font-medium ${props.required ? 'text-blue-700' : 'text-green-700'}`}>
+      {label && (
+        <label
+          className={`block text-xs sm:text-sm font-medium ${props.required ? 'text-blue-700' : 'text-green-700'}`}
+        >
           {label}
-          {props.required ? <span className="text-error-500 ml-1 font-bold">*</span> : 
-           !props.disabled && <span className="text-green-500 ml-1 text-xs">(Optional)</span>}
+          {props.required ? (
+            <span className="text-error-500 ml-1 font-bold">*</span>
+          ) : (
+            !props.disabled && <span className="text-green-500 ml-1 text-xs">(Optional)</span>
+          )}
         </label>
       )}
       <div className="relative">
@@ -44,16 +60,16 @@ export function Input({ label, error, className = '', leftIcon, rightIcon, name,
             ${rightIcon ? 'pr-8 sm:pr-10' : ''}
             ${className}
           `}
-          style={{ 
-            color: '#1a202c !important', 
-            WebkitTextFillColor: '#1a202c !important', 
-            background: '#ffffff !important', 
+          style={{
+            color: '#1a202c !important',
+            WebkitTextFillColor: '#1a202c !important',
+            background: '#ffffff !important',
             backgroundColor: '#ffffff !important',
-            borderColor: '#e2e8f0', 
+            borderColor: '#e2e8f0',
             fontWeight: 500,
             position: 'relative',
             opacity: '1 !important',
-            backdropFilter: 'none !important'
+            backdropFilter: 'none !important',
           }}
           placeholder={props.placeholder ? `${props.placeholder}${props.required ? ' *' : ''}` : ''}
           {...inputProps}
@@ -64,9 +80,7 @@ export function Input({ label, error, className = '', leftIcon, rightIcon, name,
           </div>
         )}
       </div>
-      {error && (
-        <p className="mt-1 text-xs sm:text-sm text-red-600">{error}</p>
-      )}
+      {error && <p className="mt-1 text-xs sm:text-sm text-red-600">{error}</p>}
     </div>
   );
 }

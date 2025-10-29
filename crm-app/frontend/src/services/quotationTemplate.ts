@@ -52,4 +52,4 @@ export interface TemplateVariable {
   label: string;
   type: 'string' | 'number' | 'date' | 'currency' | 'array';
   defaultValue?: any;
-} 
+}

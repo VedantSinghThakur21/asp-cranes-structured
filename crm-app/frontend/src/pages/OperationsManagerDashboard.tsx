@@ -1,12 +1,5 @@
 import { useState, useEffect } from 'react';
-import { 
-  Calendar, 
-  CheckCircle2, 
-  Cog, 
-  Truck,
-  Users,
-  WrenchIcon
-} from 'lucide-react';
+import { Calendar, CheckCircle2, Cog, Truck, Users, WrenchIcon } from 'lucide-react';
 import { StatCard } from '../components/dashboard/StatCard';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/common/Card';
 import { Button } from '../components/common/Button';
@@ -24,7 +17,7 @@ export function OperationsManagerDashboard() {
   const [equipmentCount, setEquipmentCount] = useState(0);
   const [operatorCount, setOperatorCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -34,7 +27,7 @@ export function OperationsManagerDashboard() {
           getEquipment(),
           getAllOperators(),
         ]);
-        
+
         setLeads(leadsData);
         setJobs(jobsData);
         setEquipmentCount(equipmentData.length);
@@ -45,17 +38,17 @@ export function OperationsManagerDashboard() {
         setIsLoading(false);
       }
     };
-    
+
     fetchData();
   }, []);
-  
+
   // Count jobs by status
   const scheduledJobsCount = jobs.filter(job => job.status === 'scheduled').length;
-  
+
   if (isLoading) {
     return <div className="flex justify-center py-10">Loading dashboard...</div>;
   }
-  
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -78,7 +71,7 @@ export function OperationsManagerDashboard() {
           variant="success"
         />
       </div>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           <Card>
@@ -86,7 +79,9 @@ export function OperationsManagerDashboard() {
               <div className="flex justify-between items-center">
                 <CardTitle>Recent Won Leads</CardTitle>
                 <Link to="/jobs">
-                  <Button variant="outline" size="sm">Schedule Jobs</Button>
+                  <Button variant="outline" size="sm">
+                    Schedule Jobs
+                  </Button>
                 </Link>
               </div>
             </CardHeader>
@@ -113,7 +108,7 @@ export function OperationsManagerDashboard() {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {leads.slice(0, 5).map((lead) => (
+                      {leads.slice(0, 5).map(lead => (
                         <tr key={lead.id} className="hover:bg-gray-50">
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="font-medium text-gray-900">{lead.customerName}</div>
@@ -136,7 +131,7 @@ export function OperationsManagerDashboard() {
             </CardContent>
           </Card>
         </div>
-        
+
         <div>
           <Card className="h-full">
             <CardHeader>
@@ -149,31 +144,36 @@ export function OperationsManagerDashboard() {
                     Manage Equipment
                   </Button>
                 </Link>
-                
+
                 <Link to="/config/operators">
                   <Button variant="outline" size="sm" fullWidth leftIcon={<Users size={16} />}>
                     Manage Operators
                   </Button>
                 </Link>
-                
+
                 <Link to="/jobs">
                   <Button variant="outline" size="sm" fullWidth leftIcon={<Calendar size={16} />}>
                     View Job Calendar
                   </Button>
                 </Link>
-                
+
                 <Link to="/feedback">
-                  <Button variant="outline" size="sm" fullWidth leftIcon={<CheckCircle2 size={16} />}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    fullWidth
+                    leftIcon={<CheckCircle2 size={16} />}
+                  >
                     Review Completed Jobs
                   </Button>
                 </Link>
-                
+
                 <Link to="/config">
                   <Button variant="outline" size="sm" fullWidth leftIcon={<Cog size={16} />}>
                     System Configuration
                   </Button>
                 </Link>
-                
+
                 <Link to="/config/maintenance">
                   <Button variant="outline" size="sm" fullWidth leftIcon={<WrenchIcon size={16} />}>
                     Schedule Maintenance
@@ -184,7 +184,7 @@ export function OperationsManagerDashboard() {
           </Card>
         </div>
       </div>
-      
+
       <Card>
         <CardHeader>
           <CardTitle>Recent Job Activity</CardTitle>
@@ -212,7 +212,7 @@ export function OperationsManagerDashboard() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {jobs.map((job) => (
+                  {jobs.map(job => (
                     <tr key={job.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="font-medium text-gray-900">{job.customerName}</div>
@@ -226,7 +226,11 @@ export function OperationsManagerDashboard() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <StatusBadge status={job.status === 'scheduled' ? 'pending' : job.status as JobStatus} />
+                        <StatusBadge
+                          status={
+                            job.status === 'scheduled' ? 'pending' : (job.status as JobStatus)
+                          }
+                        />
                       </td>
                     </tr>
                   ))}

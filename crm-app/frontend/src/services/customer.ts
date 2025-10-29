@@ -1,6 +1,9 @@
 import { getHeaders } from './apiHeaders';
 // Update a customer by ID via backend API
-export async function updateCustomer(customerId: string, updates: Partial<Customer>): Promise<Customer> {
+export async function updateCustomer(
+  customerId: string,
+  updates: Partial<Customer>
+): Promise<Customer> {
   const apiUrl = import.meta.env.VITE_API_URL || '/api';
   const response = await fetch(`${apiUrl}/customers/${customerId}`, {
     method: 'PATCH',
@@ -68,7 +71,9 @@ export async function getCustomers(): Promise<Customer[]> {
   return await res.json();
 }
 // Create a customer via backend API
-export async function createCustomer(customer: Omit<Customer, 'id' | 'createdAt' | 'updatedAt'>): Promise<Customer> {
+export async function createCustomer(
+  customer: Omit<Customer, 'id' | 'createdAt' | 'updatedAt'>
+): Promise<Customer> {
   const apiUrl = import.meta.env.VITE_API_URL || '/api';
   const res = await fetch(`${apiUrl}/customers`, {
     method: 'POST',
@@ -96,4 +101,9 @@ export interface Customer {
   updatedAt: string;
 }
 
-export type CustomerType = 'construction' | 'property_developer' | 'manufacturing' | 'government' | 'other';
+export type CustomerType =
+  | 'construction'
+  | 'property_developer'
+  | 'manufacturing'
+  | 'government'
+  | 'other';

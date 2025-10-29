@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  ArrowLeft, 
-  Search, 
+import {
+  ArrowLeft,
+  Search,
   Filter,
   Building,
   Calendar,
@@ -11,7 +11,7 @@ import {
   CheckCircle,
   FileText,
   AlertCircle,
-  Users
+  Users,
 } from 'lucide-react';
 import { getDeals, Deal } from '../services/deal';
 
@@ -31,15 +31,15 @@ const DealSelectionPage: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       console.log('Fetching deals for quotation creation...');
-      
+
       // Use the proper deal service to get deals in eligible stages
       const eligibleStages = ['qualification', 'proposal', 'negotiation'];
       const dealsData = await getDeals(eligibleStages);
-      
+
       console.log('Fetched deals:', dealsData);
-      
+
       // Ensure we have an array
       if (Array.isArray(dealsData)) {
         setDeals(dealsData);
@@ -58,8 +58,8 @@ const DealSelectionPage: React.FC = () => {
 
   const handleSelectDeal = (deal: Deal) => {
     // Navigate to quotation creation page with the selected deal data
-    navigate('/quotation-creation', { 
-      state: { 
+    navigate('/quotation-creation', {
+      state: {
         selectedDeal: deal,
         deal: deal,
         dealId: deal.id,
@@ -67,19 +67,22 @@ const DealSelectionPage: React.FC = () => {
         customerEmail: deal.customer?.email || '',
         customerPhone: deal.customer?.phone || '',
         customerCompany: deal.customer?.company || '',
-        customerAddress: deal.customer?.address || ''
-      }
+        customerAddress: deal.customer?.address || '',
+      },
     });
   };
 
   const filteredDeals = deals.filter(deal => {
-    const matchesSearch = deal.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (deal.customer?.name || '').toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStage = stageFilter === 'all' || 
-                        stageFilter === 'eligible' && ['qualification', 'proposal', 'negotiation'].includes(deal.stage?.toLowerCase()) ||
-                        deal.stage?.toLowerCase() === stageFilter;
-    
+    const matchesSearch =
+      deal.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (deal.customer?.name || '').toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesStage =
+      stageFilter === 'all' ||
+      (stageFilter === 'eligible' &&
+        ['qualification', 'proposal', 'negotiation'].includes(deal.stage?.toLowerCase())) ||
+      deal.stage?.toLowerCase() === stageFilter;
+
     return matchesSearch && matchesStage;
   });
 
@@ -95,18 +98,24 @@ const DealSelectionPage: React.FC = () => {
     return new Date(dateString).toLocaleDateString('en-IN', {
       day: '2-digit',
       month: 'short',
-      year: 'numeric'
+      year: 'numeric',
     });
   };
 
   const getStageColor = (stage: string) => {
     switch (stage?.toLowerCase()) {
-      case 'qualification': return 'bg-blue-100 text-blue-800';
-      case 'proposal': return 'bg-yellow-100 text-yellow-800';
-      case 'negotiation': return 'bg-orange-100 text-orange-800';
-      case 'closed-won': return 'bg-green-100 text-green-800';
-      case 'closed-lost': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'qualification':
+        return 'bg-blue-100 text-blue-800';
+      case 'proposal':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'negotiation':
+        return 'bg-orange-100 text-orange-800';
+      case 'closed-won':
+        return 'bg-green-100 text-green-800';
+      case 'closed-lost':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -158,7 +167,7 @@ const DealSelectionPage: React.FC = () => {
               type="text"
               placeholder="Search deals by title or customer..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={e => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
@@ -166,7 +175,7 @@ const DealSelectionPage: React.FC = () => {
             <Filter className="h-5 w-5 text-gray-400" />
             <select
               value={stageFilter}
-              onChange={(e) => setStageFilter(e.target.value)}
+              onChange={e => setStageFilter(e.target.value)}
               className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="eligible">Eligible for Quotation</option>
@@ -201,7 +210,9 @@ const DealSelectionPage: React.FC = () => {
             <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No Deals Found</h3>
             <p className="text-gray-500 mb-4">
-              {searchTerm ? 'Try adjusting your search criteria.' : 'No deals are currently eligible for quotations.'}
+              {searchTerm
+                ? 'Try adjusting your search criteria.'
+                : 'No deals are currently eligible for quotations.'}
             </p>
             {searchTerm && (
               <button
@@ -214,7 +225,7 @@ const DealSelectionPage: React.FC = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredDeals.map((deal) => (
+            {filteredDeals.map(deal => (
               <div
                 key={deal.id}
                 onClick={() => handleSelectDeal(deal)}
@@ -227,7 +238,9 @@ const DealSelectionPage: React.FC = () => {
                     </h3>
                     <p className="text-sm text-gray-500 mt-1">Deal #{deal.id}</p>
                   </div>
-                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStageColor(deal.stage)}`}>
+                  <span
+                    className={`px-2 py-1 text-xs font-medium rounded-full ${getStageColor(deal.stage)}`}
+                  >
                     {deal.stage}
                   </span>
                 </div>
@@ -249,9 +262,7 @@ const DealSelectionPage: React.FC = () => {
 
                   <div className="flex items-center space-x-2">
                     <TrendingUp className="h-4 w-4 text-gray-400" />
-                    <span className="text-sm text-gray-600">
-                      {deal.probability}% probability
-                    </span>
+                    <span className="text-sm text-gray-600">{deal.probability}% probability</span>
                   </div>
 
                   <div className="flex items-center space-x-2">

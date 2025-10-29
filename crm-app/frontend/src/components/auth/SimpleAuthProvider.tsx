@@ -8,7 +8,7 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const { isAuthenticated, user, setUser } = useAuthStore();
-  
+
   useEffect(() => {
     // Auto-login check - try to get current user from API/local storage
     const checkAuthStatus = async () => {
@@ -24,11 +24,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         console.error('Error checking authentication status:', error);
       }
     };
-    
+
     checkAuthStatus();
   }, [isAuthenticated, user, setUser]);
-  
-  return (
-    <>{children}</>
-  );
+
+  return <>{children}</>;
 };

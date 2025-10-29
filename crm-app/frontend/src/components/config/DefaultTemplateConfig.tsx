@@ -4,7 +4,10 @@ import { Select } from '../common/Select';
 import { Button } from '../common/Button';
 import { Toast } from '../common/Toast';
 import { Card, CardHeader, CardTitle, CardContent } from '../common/Card';
-import { getDefaultTemplateConfig, updateDefaultTemplateConfig } from '../../services/configService';
+import {
+  getDefaultTemplateConfig,
+  updateDefaultTemplateConfig,
+} from '../../services/configService';
 
 // Generate sample preview for default template configuration
 const generateSamplePreview = (templateId: string) => {
@@ -75,7 +78,6 @@ export function DefaultTemplateConfig({ onSave }: DefaultTemplateConfigProps) {
           // Generate preview locally instead of calling backend
           const html = generateSamplePreview(selectedTemplate.id);
           setPreviewHtml(html);
-          
         } catch (err) {
           console.error('Preview generation error:', err);
           setPreviewHtml(`<div style="color:#f59e0b; padding: 20px; border: 1px solid #fbbf24; border-radius: 8px; background-color: #fef3c7;">
@@ -109,31 +111,31 @@ export function DefaultTemplateConfig({ onSave }: DefaultTemplateConfigProps) {
     try {
       setIsLoading(true);
       console.log('Loading Enhanced Templates and config...');
-      
+
       // Load Enhanced Templates instead of old templates
       const token = localStorage.getItem('jwt-token');
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
-        'X-Bypass-Auth': 'development-only-123'
+        'X-Bypass-Auth': 'development-only-123',
       };
-      
+
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
       }
-      
+
       const response = await fetch('/api/templates/enhanced/list', {
-        headers
+        headers,
       });
 
       console.log('Enhanced Templates response status:', response.status);
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const result = await response.json();
       console.log('Enhanced Templates response:', result);
-      
+
       if (!result.success) {
         throw new Error(result.error || 'Failed to load Enhanced Templates');
       }
@@ -141,11 +143,11 @@ export function DefaultTemplateConfig({ onSave }: DefaultTemplateConfigProps) {
       const allTemplates = result.data || result.templates || [];
       console.log('Loaded Enhanced Templates:', allTemplates);
       setTemplates(allTemplates);
-      
+
       // Get current default template config
       const defaultConfig = await getDefaultTemplateConfig();
       console.log('Default config:', defaultConfig);
-      
+
       if (defaultConfig && defaultConfig.defaultTemplateId) {
         setSelectedTemplateId(defaultConfig.defaultTemplateId);
       } else if (allTemplates.length > 0) {
@@ -154,23 +156,25 @@ export function DefaultTemplateConfig({ onSave }: DefaultTemplateConfigProps) {
       }
     } catch (error) {
       console.error('Error loading Enhanced Templates and config:', error);
-      
+
       // Provide fallback templates if backend is unreachable
-      const fallbackTemplates = [{
-        id: 'fallback_template',
-        name: 'Fallback Template (Backend Unreachable)',
-        description: 'Basic template used when backend is not available',
-        theme: 'PROFESSIONAL',
-        category: 'quotation',
-        is_default: true,
-        is_active: true
-      }];
-      
+      const fallbackTemplates = [
+        {
+          id: 'fallback_template',
+          name: 'Fallback Template (Backend Unreachable)',
+          description: 'Basic template used when backend is not available',
+          theme: 'PROFESSIONAL',
+          category: 'quotation',
+          is_default: true,
+          is_active: true,
+        },
+      ];
+
       setTemplates(fallbackTemplates);
       setSelectedTemplateId(fallbackTemplates[0].id);
-      
+
       showToast(
-        `Error loading templates: ${error instanceof Error ? error.message : String(error)}. Using fallback template.`, 
+        `Error loading templates: ${error instanceof Error ? error.message : String(error)}. Using fallback template.`,
         'warning'
       );
     } finally {
@@ -191,18 +195,21 @@ export function DefaultTemplateConfig({ onSave }: DefaultTemplateConfigProps) {
 
     try {
       setIsSaving(true);
-      
+
       // Update the default template configuration using the proper config service
       await updateDefaultTemplateConfig(selectedTemplateId);
-      
+
       // Refresh templates and config
       await loadTemplatesAndConfig();
-      
+
       showToast('Default template configuration saved successfully');
       onSave?.();
     } catch (error) {
       console.error('Error saving default template config:', error);
-      showToast('Error saving configuration: ' + (error instanceof Error ? error.message : String(error)), 'error');
+      showToast(
+        'Error saving configuration: ' + (error instanceof Error ? error.message : String(error)),
+        'error'
+      );
     } finally {
       setIsSaving(false);
     }
@@ -212,8 +219,8 @@ export function DefaultTemplateConfig({ onSave }: DefaultTemplateConfigProps) {
     { value: '', label: 'No default template selected' },
     ...templates.map(template => ({
       value: template.id,
-      label: template.name
-    }))
+      label: template.name,
+    })),
   ];
 
   if (isLoading) {
@@ -255,9 +262,7 @@ export function DefaultTemplateConfig({ onSave }: DefaultTemplateConfigProps) {
                 <div className="flex items-start gap-3">
                   <FileText className="h-5 w-5 text-blue-500 mt-0.5" />
                   <div>
-                    <h4 className="text-sm font-medium text-blue-900">
-                      Selected Template
-                    </h4>
+                    <h4 className="text-sm font-medium text-blue-900">Selected Template</h4>
                     <p className="text-sm text-blue-700 mt-1">
                       {templates.find(t => t.id === selectedTemplateId)?.name}
                     </p>
@@ -274,9 +279,7 @@ export function DefaultTemplateConfig({ onSave }: DefaultTemplateConfigProps) {
                 <div className="flex items-start gap-3">
                   <RefreshCw className="h-5 w-5 text-yellow-500 mt-0.5" />
                   <div>
-                    <h4 className="text-sm font-medium text-yellow-900">
-                      No Templates Available
-                    </h4>
+                    <h4 className="text-sm font-medium text-yellow-900">No Templates Available</h4>
                     <p className="text-sm text-yellow-700 mt-1">
                       Create quotation templates first to set a default template.
                     </p>

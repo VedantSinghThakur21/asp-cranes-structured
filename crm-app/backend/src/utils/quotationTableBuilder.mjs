@@ -1,6 +1,6 @@
 /**
  * Quotation Table Builder - Inspired by Twenty CRM's dynamic table generation
- * 
+ *
  * This module follows Twenty's metadata-driven approach to generate quotation tables
  * that can be directly printed or exported. No separate print routes needed.
  */
@@ -14,7 +14,7 @@ export const quotationTableMetadata = {
   displayName: 'Quotation',
   nameSingular: 'quotation',
   namePlural: 'quotations',
-  
+
   // Table structure definition
   tableStructure: {
     sections: [
@@ -25,8 +25,8 @@ export const quotationTableMetadata = {
         fields: [
           { key: 'company_name', label: 'Company', type: 'text', size: 'large', style: 'bold' },
           { key: 'company_address', label: 'Address', type: 'text', size: 'medium' },
-          { key: 'company_contact', label: 'Contact', type: 'text', size: 'medium' }
-        ]
+          { key: 'company_contact', label: 'Contact', type: 'text', size: 'medium' },
+        ],
       },
       {
         id: 'quotation_details',
@@ -36,13 +36,13 @@ export const quotationTableMetadata = {
         leftColumn: [
           { key: 'quotation_number', label: 'Quotation #', type: 'text', required: true },
           { key: 'quotation_date', label: 'Date', type: 'date', format: 'long' },
-          { key: 'valid_until', label: 'Valid Until', type: 'date', format: 'long' }
+          { key: 'valid_until', label: 'Valid Until', type: 'date', format: 'long' },
         ],
         rightColumn: [
           { key: 'customer_name', label: 'Customer', type: 'text', required: true },
           { key: 'customer_company', label: 'Company', type: 'text' },
-          { key: 'customer_address', label: 'Address', type: 'textarea' }
-        ]
+          { key: 'customer_address', label: 'Address', type: 'textarea' },
+        ],
       },
       {
         id: 'items_table',
@@ -52,14 +52,27 @@ export const quotationTableMetadata = {
           { key: 'serial', label: '#', type: 'number', width: '50px', align: 'center' },
           { key: 'description', label: 'Description', type: 'text', width: 'auto', align: 'left' },
           { key: 'quantity', label: 'Qty', type: 'number', width: '80px', align: 'right' },
-          { key: 'unit_price', label: 'Unit Price', type: 'currency', width: '120px', align: 'right' },
-          { key: 'total', label: 'Total', type: 'currency', width: '120px', align: 'right', weight: 'bold' }
+          {
+            key: 'unit_price',
+            label: 'Unit Price',
+            type: 'currency',
+            width: '120px',
+            align: 'right',
+          },
+          {
+            key: 'total',
+            label: 'Total',
+            type: 'currency',
+            width: '120px',
+            align: 'right',
+            weight: 'bold',
+          },
         ],
         totalsRow: true,
         subtotalCalculation: {
           field: 'total',
-          type: 'sum'
-        }
+          type: 'sum',
+        },
       },
       {
         id: 'totals_summary',
@@ -69,18 +82,31 @@ export const quotationTableMetadata = {
         width: '300px',
         rows: [
           { key: 'subtotal', label: 'Subtotal', type: 'currency', source: 'calculated' },
-          { key: 'tax_amount', label: 'Tax', type: 'currency', source: 'calculated', condition: 'tax_rate > 0' },
-          { key: 'total_amount', label: 'Total', type: 'currency', source: 'calculated', style: 'bold', highlight: true }
-        ]
+          {
+            key: 'tax_amount',
+            label: 'Tax',
+            type: 'currency',
+            source: 'calculated',
+            condition: 'tax_rate > 0',
+          },
+          {
+            key: 'total_amount',
+            label: 'Total',
+            type: 'currency',
+            source: 'calculated',
+            style: 'bold',
+            highlight: true,
+          },
+        ],
       },
       {
         id: 'terms',
         type: 'terms_section',
         displayName: 'Terms & Conditions',
         content: 'dynamic', // Can be loaded from template or database
-        format: 'list'
-      }
-    ]
+        format: 'list',
+      },
+    ],
   },
 
   // Styling definitions - Twenty CRM style
@@ -95,29 +121,29 @@ export const quotationTableMetadata = {
       text: {
         primary: '#1e293b',
         secondary: '#64748b',
-        muted: '#94a3b8'
-      }
+        muted: '#94a3b8',
+      },
     },
     typography: {
       fontFamily: "'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
       sizes: {
-        xs: '12px',
-        sm: '14px',
-        base: '16px',
-        lg: '18px',
-        xl: '20px',
+        'xs': '12px',
+        'sm': '14px',
+        'base': '16px',
+        'lg': '18px',
+        'xl': '20px',
         '2xl': '24px',
-        '3xl': '30px'
-      }
+        '3xl': '30px',
+      },
     },
     spacing: {
-      xs: '4px',
-      sm: '8px',
-      md: '16px',
-      lg: '24px',
-      xl: '32px',
-      '2xl': '48px'
-    }
+      'xs': '4px',
+      'sm': '8px',
+      'md': '16px',
+      'lg': '24px',
+      'xl': '32px',
+      '2xl': '48px',
+    },
   },
 
   // Print-specific configurations
@@ -128,26 +154,26 @@ export const quotationTableMetadata = {
       top: '20mm',
       right: '15mm',
       bottom: '20mm',
-      left: '15mm'
+      left: '15mm',
     },
     header: {
-      enabled: false
+      enabled: false,
     },
     footer: {
       enabled: true,
       content: {
         left: 'Generated by ASP Cranes CRM',
         center: '',
-        right: 'Page {page} of {pages}'
+        right: 'Page {page} of {pages}',
       },
       style: {
         fontSize: '10px',
-        color: '#64748b'
-      }
+        color: '#64748b',
+      },
     },
     breakBefore: ['items_table'], // Page break before items table if needed
-    keepTogether: ['totals_summary'] // Keep summary section together
-  }
+    keepTogether: ['totals_summary'], // Keep summary section together
+  },
 };
 
 /**
@@ -161,7 +187,7 @@ export class QuotationTableBuilder {
     this.options = {
       theme: 'professional',
       printMode: false,
-      responsive: true
+      responsive: true,
     };
   }
 
@@ -248,7 +274,9 @@ export class QuotationTableBuilder {
         description: item.description || item.name || '',
         quantity: item.quantity || 1,
         unit_price: parseFloat(item.unit_price) || parseFloat(item.price) || 0,
-        total: parseFloat(item.total) || ((item.quantity || 1) * (parseFloat(item.unit_price) || parseFloat(item.price) || 0))
+        total:
+          parseFloat(item.total) ||
+          (item.quantity || 1) * (parseFloat(item.unit_price) || parseFloat(item.price) || 0),
       })),
 
       // Calculated totals
@@ -259,7 +287,7 @@ export class QuotationTableBuilder {
 
       // Metadata
       generated_date: new Date().toLocaleDateString(),
-      generated_time: new Date().toLocaleTimeString()
+      generated_time: new Date().toLocaleTimeString(),
     };
   }
 
@@ -270,7 +298,7 @@ export class QuotationTableBuilder {
   generateDocumentStart() {
     const styling = this.metadata.styling;
     const printCSS = this.options.printMode ? this.generatePrintCSS() : '';
-    
+
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -308,7 +336,7 @@ export class QuotationTableBuilder {
       info_grid: () => this.generateInfoGridSection(section),
       data_table: () => this.generateDataTableSection(section),
       summary_table: () => this.generateSummaryTableSection(section),
-      terms_section: () => this.generateTermsSection(section)
+      terms_section: () => this.generateTermsSection(section),
     };
 
     const generator = generators[section.type];
@@ -347,21 +375,21 @@ export class QuotationTableBuilder {
    */
   generateInfoGridSection(section) {
     let html = `<div class="info-grid ${section.layout}">`;
-    
+
     if (section.layout === 'two_column') {
       html += '<div class="info-column">';
       section.leftColumn.forEach(field => {
         html += this.generateInfoField(field);
       });
       html += '</div>';
-      
+
       html += '<div class="info-column">';
       section.rightColumn.forEach(field => {
         html += this.generateInfoField(field);
       });
       html += '</div>';
     }
-    
+
     html += '</div>';
     return html;
   }
@@ -374,7 +402,7 @@ export class QuotationTableBuilder {
   generateInfoField(field) {
     const value = this.data[field.key] || '';
     const formattedValue = this.formatFieldValue(value, field.type, field.format);
-    
+
     return `
     <div class="info-field">
         <label class="info-label">${field.label}:</label>
@@ -393,16 +421,16 @@ export class QuotationTableBuilder {
         <table class="data-table">
             <thead>
                 <tr>`;
-    
+
     section.columns.forEach(column => {
       html += `<th class="column-${column.key}" style="width: ${column.width}; text-align: ${column.align}">${column.label}</th>`;
     });
-    
+
     html += `
                 </tr>
             </thead>
             <tbody>`;
-    
+
     this.data.items.forEach(item => {
       html += '<tr>';
       section.columns.forEach(column => {
@@ -413,12 +441,12 @@ export class QuotationTableBuilder {
       });
       html += '</tr>';
     });
-    
+
     html += `
             </tbody>
         </table>
     </div>`;
-    
+
     return html;
   }
 
@@ -431,29 +459,29 @@ export class QuotationTableBuilder {
     let html = `
     <div class="summary-section" style="text-align: ${section.alignment}">
         <table class="summary-table" style="width: ${section.width}">`;
-    
+
     section.rows.forEach(row => {
       // Check condition if specified
       if (row.condition && !this.evaluateCondition(row.condition)) {
         return;
       }
-      
+
       const value = this.data[row.key];
       const formattedValue = this.formatFieldValue(value, row.type);
       const rowClass = row.highlight ? 'highlight-row' : '';
       const cellClass = row.style === 'bold' ? 'bold-cell' : '';
-      
+
       html += `
       <tr class="${rowClass}">
           <td class="summary-label">${row.label}:</td>
           <td class="summary-value ${cellClass}">${formattedValue}</td>
       </tr>`;
     });
-    
+
     html += `
         </table>
     </div>`;
-    
+
     return html;
   }
 
@@ -467,22 +495,22 @@ export class QuotationTableBuilder {
       'Payment is due within 30 days of invoice date.',
       'All equipment remains the property of ASP Cranes until full payment is received.',
       'This quotation is valid for 30 days from the date of issue.',
-      'All prices are in Indian Rupees (INR) and exclude applicable taxes unless stated otherwise.'
+      'All prices are in Indian Rupees (INR) and exclude applicable taxes unless stated otherwise.',
     ];
-    
+
     let html = `
     <div class="terms-section">
         <h3 class="terms-title">${section.displayName}</h3>
         <ul class="terms-list">`;
-    
+
     terms.forEach(term => {
       html += `<li class="terms-item">${term}</li>`;
     });
-    
+
     html += `
         </ul>
     </div>`;
-    
+
     return html;
   }
 
@@ -502,18 +530,18 @@ export class QuotationTableBuilder {
       case 'currency':
         return new Intl.NumberFormat('en-IN', {
           style: 'currency',
-          currency: 'INR'
+          currency: 'INR',
         }).format(parseFloat(value) || 0);
-      
+
       case 'number':
         return parseFloat(value) || 0;
-      
+
       case 'date':
         if (format === 'long') {
           return this.formatDate(value);
         }
         return new Date(value).toLocaleDateString();
-      
+
       case 'text':
       default:
         return String(value);
@@ -527,12 +555,12 @@ export class QuotationTableBuilder {
    */
   formatDate(date) {
     if (!date) return '';
-    
+
     try {
       return new Date(date).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
-        day: 'numeric'
+        day: 'numeric',
       });
     } catch (error) {
       return String(date);

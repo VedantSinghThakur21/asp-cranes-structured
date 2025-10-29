@@ -23,7 +23,7 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
         return 'bg-red-100 text-red-800';
       case 'converted':
         return 'bg-green-100 text-green-800';
-      
+
       // Job statuses
       case 'pending':
         return 'bg-yellow-100 text-yellow-800';
@@ -33,7 +33,7 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
         return 'bg-green-100 text-green-800';
       case 'cancelled':
         return 'bg-red-100 text-red-800';
-      
+
       // Quotation statuses
       case 'draft':
         return 'bg-gray-100 text-gray-800';
@@ -43,7 +43,7 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
         return 'bg-green-100 text-green-800';
       case 'rejected':
         return 'bg-red-100 text-red-800';
-      
+
       default:
         return 'bg-gray-100 text-gray-800';
     }

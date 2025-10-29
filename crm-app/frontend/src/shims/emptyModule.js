@@ -1,7 +1,7 @@
 /**
  * Empty Module Shim
  * Used to replace development-only modules in production builds
- * 
+ *
  * IMPORTANT: This file is used in production to replace development modules.
  * Make sure all exported functions match the original module signatures
  * but return safe null values to prevent any execution of dev code.
@@ -149,14 +149,14 @@ export const mergeTemplate = asyncNull;
 export const mergeQuotationWithTemplate = (quotation, template) => template?.content || '';
 export const getAvailablePlaceholders = () => [];
 export const getHeaders = () => ({});
-export const formatCurrency = (value) => `₹${value || 0}`;
-export const formatDate = (date) => date ? new Date(date).toLocaleDateString() : '';
+export const formatCurrency = value => `₹${value || 0}`;
+export const formatDate = date => (date ? new Date(date).toLocaleDateString() : '');
 export const validateEmail = () => true;
 export const validatePhone = () => true;
 
 // Customer utils functions
-export const extractDataFromApiResponse = (data) => data || {};
-export const getCustomerIdentifier = (customer) => customer?.id || '';
+export const extractDataFromApiResponse = data => data || {};
+export const getCustomerIdentifier = customer => customer?.id || '';
 
 // API client exports
 export const jobApiClient = {
@@ -166,7 +166,7 @@ export const jobApiClient = {
   delete: asyncNull,
   create: asyncNull,
   update: asyncNull,
-  list: asyncEmptyArray
+  list: asyncEmptyArray,
 };
 
 // Type exports (will be empty objects in production)
@@ -189,23 +189,23 @@ export default {
   signIn: asyncError,
   signOutUser: asyncSuccess,
   getCurrentUser: asyncNull,
-  
+
   // Generic CRUD operations
   create: asyncNull,
   read: asyncNull,
   update: asyncNull,
   delete: asyncNull,
   list: asyncEmptyArray,
-  
+
   // Dev functions
   createDevToken: noop,
   initAuthDebug: noop,
   logAuthState: noop,
-  
+
   // Utils
   noop,
   asyncNull,
   asyncEmptyArray,
   asyncSuccess,
-  asyncError
+  asyncError,
 };

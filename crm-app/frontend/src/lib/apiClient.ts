@@ -3,11 +3,11 @@
  */
 export function getHeaders(): Record<string, string> {
   const token = getAuthToken();
-  return token ? { 'Authorization': `Bearer ${token}` } : {};
+  return token ? { Authorization: `Bearer ${token}` } : {};
 }
 /**
  * Enhanced API Client
- * 
+ *
  * Production-ready API client with robust error handling, authentication,
  * retry logic, and fallback mechanisms for development mode
  */
@@ -36,10 +36,12 @@ export interface ApiResponse<T> {
 const getAuthToken = (): string | null => {
   try {
     // Check multiple possible storage keys for compatibility
-    return localStorage.getItem('jwt-token') || 
-           localStorage.getItem('authToken') || 
-           sessionStorage.getItem('jwt-token') ||
-           sessionStorage.getItem('authToken');
+    return (
+      localStorage.getItem('jwt-token') ||
+      localStorage.getItem('authToken') ||
+      sessionStorage.getItem('jwt-token') ||
+      sessionStorage.getItem('authToken')
+    );
   } catch (e) {
     console.error('Error accessing storage for auth token:', e);
     return null;
@@ -50,33 +52,38 @@ const getAuthToken = (): string | null => {
  * Enhanced fetch wrapper with better error handling
  */
 async function apiFetch<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
-  const url = endpoint.startsWith('http') ? endpoint : `${API_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
-  
+  const url = endpoint.startsWith('http')
+    ? endpoint
+    : `${API_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+
   // Add authentication token if available
   const token = getAuthToken();
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
-    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...options.headers,
   };
-  
+
   if (enableDebug) {
     console.log(`🔹 API Request: ${options.method || 'GET'} ${url}`);
     if (options.body) {
       try {
-        console.log('Request Body:', typeof options.body === 'string' ? JSON.parse(options.body) : options.body);
+        console.log(
+          'Request Body:',
+          typeof options.body === 'string' ? JSON.parse(options.body) : options.body
+        );
       } catch (e) {
         console.log('Request Body: [Unable to parse]', options.body);
       }
     }
   }
-  
+
   try {
     const response = await fetch(url, {
       ...options,
-      headers
+      headers,
     });
-    
+
     if (enableDebug) {
       console.log(`🔸 API Response: ${response.status} ${response.statusText} for ${url}`);
       console.log('Response Headers:', {
@@ -84,10 +91,10 @@ async function apiFetch<T>(endpoint: string, options: RequestInit = {}): Promise
         'content-length': response.headers.get('content-length'),
       });
     }
-    
+
     // Clone the response so we can read it twice
     const clonedResponse = response.clone();
-    
+
     // If not ok, try to get error details
     if (!response.ok) {
       try {
@@ -104,22 +111,25 @@ async function apiFetch<T>(endpoint: string, options: RequestInit = {}): Promise
               message: errorData.error || errorData.message || 'API request failed',
               code: errorData.code || String(response.status),
               status: response.status,
-              details: errorData.details || errorData
-            }
+              details: errorData.details || errorData,
+            },
           };
         } else {
           // If not JSON, try to get the text response
           const errorText = await response.text();
           if (enableDebug) {
-            console.error('API Error Response (Text):', errorText.substring(0, 500) + (errorText.length > 500 ? '...' : ''));
+            console.error(
+              'API Error Response (Text):',
+              errorText.substring(0, 500) + (errorText.length > 500 ? '...' : '')
+            );
           }
           return {
             success: false,
             error: {
               message: errorText || 'API request failed with non-JSON response',
               code: String(response.status),
-              status: response.status
-            }
+              status: response.status,
+            },
           };
         }
       } catch (parseError) {
@@ -131,12 +141,12 @@ async function apiFetch<T>(endpoint: string, options: RequestInit = {}): Promise
           error: {
             message: `API request failed: ${response.status} ${response.statusText}`,
             code: String(response.status),
-            status: response.status
-          }
+            status: response.status,
+          },
         };
       }
     }
-    
+
     // For successful responses
     try {
       // If status is 204 No Content, return success with no data
@@ -154,7 +164,10 @@ async function apiFetch<T>(endpoint: string, options: RequestInit = {}): Promise
       } else {
         const text = await response.text();
         if (enableDebug) {
-          console.log('API Success Response (Text):', text.substring(0, 500) + (text.length > 500 ? '...' : ''));
+          console.log(
+            'API Success Response (Text):',
+            text.substring(0, 500) + (text.length > 500 ? '...' : '')
+          );
         }
         // Convert text response to an object for consistent return type
         return { success: true, data: text as unknown as T };
@@ -163,25 +176,28 @@ async function apiFetch<T>(endpoint: string, options: RequestInit = {}): Promise
       if (enableDebug) {
         console.error('Error parsing success response:', parseError);
       }
-      
+
       // Try to get the raw text for debugging
       try {
         const text = await clonedResponse.text();
         if (enableDebug) {
-          console.error('Raw response text:', text.substring(0, 500) + (text.length > 500 ? '...' : ''));
+          console.error(
+            'Raw response text:',
+            text.substring(0, 500) + (text.length > 500 ? '...' : '')
+          );
         }
       } catch (textError) {
         if (enableDebug) {
           console.error('Could not get raw response text:', textError);
         }
       }
-      
-      return { 
-        success: false, 
-        error: { 
+
+      return {
+        success: false,
+        error: {
           message: 'Failed to parse API response',
-          code: 'PARSE_ERROR'
-        }
+          code: 'PARSE_ERROR',
+        },
       };
     }
   } catch (error) {
@@ -192,8 +208,8 @@ async function apiFetch<T>(endpoint: string, options: RequestInit = {}): Promise
       success: false,
       error: {
         message: error instanceof Error ? error.message : 'Unknown API error',
-        code: 'CLIENT_ERROR'
-      }
+        code: 'CLIENT_ERROR',
+      },
     };
   }
 }
@@ -247,23 +263,22 @@ export const api = {
    */
   delete: <T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> => {
     return apiFetch<T>(endpoint, { ...options, method: 'DELETE' });
-  }
+  },
 };
 
 /**
  * Authentication helpers
  */
 export const authApi = {
-  login: <T>(email: string, password: string): Promise<ApiResponse<T>> => 
+  login: <T>(email: string, password: string): Promise<ApiResponse<T>> =>
     api.post<T>('/auth/login', { email, password }),
-  
+
   verifyToken: <T>(token: string): Promise<ApiResponse<T>> => {
     // Always use server verification for tokens
     return api.post<T>('/auth/verify-token', { token });
   },
-  
-  logout: <T>(): Promise<ApiResponse<T>> => 
-    api.post<T>('/auth/logout', {})
+
+  logout: <T>(): Promise<ApiResponse<T>> => api.post<T>('/auth/logout', {}),
 };
 
 // Export api object as default

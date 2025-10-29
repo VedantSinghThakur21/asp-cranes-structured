@@ -6,7 +6,7 @@ import { getRecentActivities } from '../services/activityService.js';
 
 const router = express.Router();
 
-const getErrorMessage = (error) => {
+const getErrorMessage = error => {
   if (error instanceof Error) return error.message;
   return String(error);
 };

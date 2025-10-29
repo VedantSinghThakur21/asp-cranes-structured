@@ -3,37 +3,41 @@ import { Save, RefreshCw, Percent, AlertTriangle, Clock, Moon, Wrench } from 'lu
 import { Input } from '../common/Input';
 import { Button } from '../common/Button';
 import { Toast } from '../common/Toast';
-import { getAdditionalParamsConfig, updateAdditionalParamsConfig } from '../../services/configService';
+import {
+  getAdditionalParamsConfig,
+  updateAdditionalParamsConfig,
+} from '../../services/configService';
 import { Card, CardHeader, CardTitle, CardContent } from '../common/Card';
 
 export function AdditionalParamsConfig() {
   const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);  const [params, setParams] = useState({
+  const [isSaving, setIsSaving] = useState(false);
+  const [params, setParams] = useState({
     riggerAmount: 40000,
     helperAmount: 12000,
     incidentalOptions: [
-      { value: "incident1", label: "Incident 1 - ₹5,000", amount: 5000 },
-      { value: "incident2", label: "Incident 2 - ₹10,000", amount: 10000 },
-      { value: "incident3", label: "Incident 3 - ₹15,000", amount: 15000 }
+      { value: 'incident1', label: 'Incident 1 - ₹5,000', amount: 5000 },
+      { value: 'incident2', label: 'Incident 2 - ₹10,000', amount: 10000 },
+      { value: 'incident3', label: 'Incident 3 - ₹15,000', amount: 15000 },
     ],
     usageFactors: {
       normal: 0,
       medium: 20,
-      heavy: 50
+      heavy: 50,
     },
     riskFactors: {
       low: 0,
       medium: 10,
-      high: 20
+      high: 20,
     },
     shiftFactors: {
       single: 1.0,
-      double: 1.8
+      double: 1.8,
     },
     dayNightFactors: {
       day: 1.0,
-      night: 1.3
-    }
+      night: 1.3,
+    },
   });
 
   const [toast, setToast] = useState<{
@@ -50,7 +54,7 @@ export function AdditionalParamsConfig() {
     try {
       setIsLoading(true);
       const config = await getAdditionalParamsConfig();
-      
+
       // Ensure we have default values for all required fields
       const safeConfig = {
         ...params, // Start with current default values
@@ -58,25 +62,27 @@ export function AdditionalParamsConfig() {
         // Ensure nested objects have defaults if missing
         usageFactors: {
           ...params.usageFactors,
-          ...(config?.usageFactors || {})
+          ...(config?.usageFactors || {}),
         },
         riskFactors: {
           ...params.riskFactors,
-          ...(config?.riskFactors || {})
+          ...(config?.riskFactors || {}),
         },
         shiftFactors: {
           ...params.shiftFactors,
-          ...(config?.shiftFactors || {})
+          ...(config?.shiftFactors || {}),
         },
         dayNightFactors: {
           ...params.dayNightFactors,
-          ...(config?.dayNightFactors || {})
+          ...(config?.dayNightFactors || {}),
         },
         incidentalOptions: config?.incidentalOptions || params.incidentalOptions,
-        riggerAmount: config?.riggerAmount !== undefined ? config.riggerAmount : params.riggerAmount,
-        helperAmount: config?.helperAmount !== undefined ? config.helperAmount : params.helperAmount
+        riggerAmount:
+          config?.riggerAmount !== undefined ? config.riggerAmount : params.riggerAmount,
+        helperAmount:
+          config?.helperAmount !== undefined ? config.helperAmount : params.helperAmount,
       };
-      
+
       setParams(safeConfig);
     } catch (error) {
       // Keep using default values defined in useState
@@ -111,21 +117,19 @@ export function AdditionalParamsConfig() {
     );
   }
 
-  const RateInput = ({ 
-    value, 
-    onChange, 
-    label, 
-    isPercentage = false 
-  }: { 
-    value: number; 
-    onChange: (value: number) => void; 
+  const RateInput = ({
+    value,
+    onChange,
+    label,
+    isPercentage = false,
+  }: {
+    value: number;
+    onChange: (value: number) => void;
     label: string;
     isPercentage?: boolean;
   }) => (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">
-        {label}
-      </label>
+      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
       <div className="relative mt-1">
         {!isPercentage && (
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -135,8 +139,8 @@ export function AdditionalParamsConfig() {
         <Input
           type="number"
           value={value}
-          onChange={(e) => onChange(Number(e.target.value))}
-          className={isPercentage ? "pr-8" : "pl-7"}
+          onChange={e => onChange(Number(e.target.value))}
+          className={isPercentage ? 'pr-8' : 'pl-7'}
           min="0"
         />
         {isPercentage && (
@@ -148,24 +152,22 @@ export function AdditionalParamsConfig() {
     </div>
   );
 
-  const MultiplierInput = ({ 
-    value, 
-    onChange, 
-    label 
-  }: { 
-    value: number; 
-    onChange: (value: number) => void; 
+  const MultiplierInput = ({
+    value,
+    onChange,
+    label,
+  }: {
+    value: number;
+    onChange: (value: number) => void;
     label: string;
   }) => (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">
-        {label}
-      </label>
+      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
       <div className="relative mt-1">
         <Input
           type="number"
           value={value}
-          onChange={(e) => onChange(Number(e.target.value))}
+          onChange={e => onChange(Number(e.target.value))}
           className="pr-8"
           min="0.1"
           step="0.1"
@@ -175,7 +177,9 @@ export function AdditionalParamsConfig() {
         </div>
       </div>
       <p className="text-xs text-gray-500 mt-1">
-        {value === 1.0 ? 'No change' : `${((value - 1) * 100).toFixed(0)}% ${value > 1 ? 'increase' : 'decrease'}`}
+        {value === 1.0
+          ? 'No change'
+          : `${((value - 1) * 100).toFixed(0)}% ${value > 1 ? 'increase' : 'decrease'}`}
       </p>
     </div>
   );
@@ -190,37 +194,43 @@ export function AdditionalParamsConfig() {
               <Wrench className="h-5 w-5 text-primary-500" />
               <CardTitle>Usage Rates</CardTitle>
             </div>
-          </CardHeader>          <CardContent className="space-y-4">
+          </CardHeader>{' '}
+          <CardContent className="space-y-4">
             <RateInput
               label="Normal Usage Factor"
               value={params.usageFactors.normal}
-              onChange={(value) => setParams(prev => ({
-                ...prev,
-                usageFactors: { ...prev.usageFactors, normal: value }
-              }))}
+              onChange={value =>
+                setParams(prev => ({
+                  ...prev,
+                  usageFactors: { ...prev.usageFactors, normal: value },
+                }))
+              }
               isPercentage
             />
             <RateInput
               label="Medium Usage Factor"
               value={params.usageFactors.medium}
-              onChange={(value) => setParams(prev => ({
-                ...prev,
-                usageFactors: { ...prev.usageFactors, medium: value }
-              }))}
+              onChange={value =>
+                setParams(prev => ({
+                  ...prev,
+                  usageFactors: { ...prev.usageFactors, medium: value },
+                }))
+              }
               isPercentage
             />
             <RateInput
               label="Heavy Usage Factor"
               value={params.usageFactors.heavy}
-              onChange={(value) => setParams(prev => ({
-                ...prev,
-                usageFactors: { ...prev.usageFactors, heavy: value }
-              }))}
+              onChange={value =>
+                setParams(prev => ({
+                  ...prev,
+                  usageFactors: { ...prev.usageFactors, heavy: value },
+                }))
+              }
               isPercentage
             />
           </CardContent>
         </Card>
-
         {/* Risk Factors */}
         <Card>
           <CardHeader>
@@ -233,32 +243,39 @@ export function AdditionalParamsConfig() {
             <RateInput
               label="Low Risk"
               value={params.riskFactors.low}
-              onChange={(value) => setParams(prev => ({
-                ...prev,
-                riskFactors: { ...prev.riskFactors, low: value }
-              }))}
+              onChange={value =>
+                setParams(prev => ({
+                  ...prev,
+                  riskFactors: { ...prev.riskFactors, low: value },
+                }))
+              }
               isPercentage
             />
             <RateInput
               label="Medium Risk"
               value={params.riskFactors.medium}
-              onChange={(value) => setParams(prev => ({
-                ...prev,
-                riskFactors: { ...prev.riskFactors, medium: value }
-              }))}
+              onChange={value =>
+                setParams(prev => ({
+                  ...prev,
+                  riskFactors: { ...prev.riskFactors, medium: value },
+                }))
+              }
               isPercentage
             />
             <RateInput
               label="High Risk"
               value={params.riskFactors.high}
-              onChange={(value) => setParams(prev => ({
-                ...prev,
-                riskFactors: { ...prev.riskFactors, high: value }
-              }))}
+              onChange={value =>
+                setParams(prev => ({
+                  ...prev,
+                  riskFactors: { ...prev.riskFactors, high: value },
+                }))
+              }
               isPercentage
             />
           </CardContent>
-        </Card>        {/* Shift Factors */}
+        </Card>{' '}
+        {/* Shift Factors */}
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
@@ -270,23 +287,27 @@ export function AdditionalParamsConfig() {
             <MultiplierInput
               label="Single Shift Factor"
               value={params.shiftFactors.single}
-              onChange={(value) => setParams(prev => ({
-                ...prev,
-                shiftFactors: { ...prev.shiftFactors, single: value }
-              }))}
+              onChange={value =>
+                setParams(prev => ({
+                  ...prev,
+                  shiftFactors: { ...prev.shiftFactors, single: value },
+                }))
+              }
             />
             <MultiplierInput
               label="Double Shift Factor"
               value={params.shiftFactors.double}
-              onChange={(value) => setParams(prev => ({
-                ...prev,
-                shiftFactors: { ...prev.shiftFactors, double: value }
-              }))}
+              onChange={value =>
+                setParams(prev => ({
+                  ...prev,
+                  shiftFactors: { ...prev.shiftFactors, double: value },
+                }))
+              }
             />
           </CardContent>
         </Card>
-
-        {/* Other Factors */}        <Card>
+        {/* Other Factors */}{' '}
+        <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
               <Moon className="h-5 w-5 text-primary-500" />
@@ -297,18 +318,22 @@ export function AdditionalParamsConfig() {
             <MultiplierInput
               label="Day Factor"
               value={params.dayNightFactors.day}
-              onChange={(value) => setParams(prev => ({
-                ...prev,
-                dayNightFactors: { ...prev.dayNightFactors, day: value }
-              }))}
+              onChange={value =>
+                setParams(prev => ({
+                  ...prev,
+                  dayNightFactors: { ...prev.dayNightFactors, day: value },
+                }))
+              }
             />
             <MultiplierInput
               label="Night Factor"
               value={params.dayNightFactors.night}
-              onChange={(value) => setParams(prev => ({
-                ...prev,
-                dayNightFactors: { ...prev.dayNightFactors, night: value }
-              }))}
+              onChange={value =>
+                setParams(prev => ({
+                  ...prev,
+                  dayNightFactors: { ...prev.dayNightFactors, night: value },
+                }))
+              }
             />
           </CardContent>
         </Card>
@@ -335,4 +360,4 @@ export function AdditionalParamsConfig() {
       )}
     </div>
   );
-} 
+}

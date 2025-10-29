@@ -1,6 +1,6 @@
 /**
  * API Headers Utility
- * 
+ *
  * Shared utility for creating API request headers with authentication tokens
  * Production-ready implementation for secure private cloud deployment
  */
@@ -15,7 +15,7 @@ export const getHeaders = (): HeadersInit => {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     'X-Requested-With': 'XMLHttpRequest', // CSRF protection
-    'X-Application-Type': 'asp-cranes-crm'
+    'X-Application-Type': 'asp-cranes-crm',
   };
 
   // Add JWT token if available
@@ -23,13 +23,13 @@ export const getHeaders = (): HeadersInit => {
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   }
-  
+
   // Log header usage in development only
   if (isDev()) {
     const hasToken = !!headers['Authorization'];
     logDebug(`API headers prepared: Auth token ${hasToken ? 'present' : 'missing'}`);
   }
-  
+
   return headers;
 };
 
@@ -38,8 +38,8 @@ export const getHeaders = (): HeadersInit => {
  * Includes stronger protection measures for sensitive operations
  */
 export const getSensitiveOperationHeaders = (): HeadersInit => {
-  const headers = { ...getHeaders() as Record<string, string> };
-  
+  const headers = { ...(getHeaders() as Record<string, string>) };
+
   // Add timestamp to prevent replay attacks
   headers['X-Request-Timestamp'] = Date.now().toString();
 
@@ -57,9 +57,9 @@ export const getFileUploadHeaders = (): HeadersInit => {
   // with the correct multipart boundary
   const uploadHeaders: Record<string, string> = {
     'X-Requested-With': 'XMLHttpRequest',
-    'X-Application-Type': 'asp-cranes-crm'
+    'X-Application-Type': 'asp-cranes-crm',
   };
-  
+
   // Add JWT token if available
   const token = localStorage.getItem('jwt-token');
   if (token) {

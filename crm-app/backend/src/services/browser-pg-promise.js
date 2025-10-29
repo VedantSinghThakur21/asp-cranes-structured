@@ -1,6 +1,6 @@
 /**
  * Browser-safe versions of Node.js modules
- * 
+ *
  * This provides browser-compatible implementations of server-only modules.
  * Import this before any other imports to ensure mocks are available.
  */
@@ -15,7 +15,7 @@ const mockPgPromise = () => {
     oneOrNone: () => Promise.resolve(null),
     many: () => Promise.resolve([]),
     manyOrNone: () => Promise.resolve([]),
-    task: (cb) => Promise.resolve(cb(mockPgPromise()))
+    task: cb => Promise.resolve(cb(mockPgPromise())),
   };
 };
 
@@ -30,7 +30,7 @@ export const client = {
   get: mockPgPromise(),
   query: () => Promise.resolve({ rows: [] }),
   connect: () => Promise.resolve(),
-  end: () => Promise.resolve()
+  end: () => Promise.resolve(),
 };
 
 // Apply mocks to global scope

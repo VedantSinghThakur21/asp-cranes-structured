@@ -35,7 +35,7 @@ const QuotationDetail: React.FC = () => {
   const [availableTemplates, setAvailableTemplates] = useState<any[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<string>('default');
   const [isTemplateLoading, setIsTemplateLoading] = useState(false);
-  
+
   // Ref for the preview iframe
   const previewFrameRef = useRef<HTMLIFrameElement>(null);
 
@@ -51,10 +51,10 @@ const QuotationDetail: React.FC = () => {
       const response = await fetch('/api/templates/enhanced/list', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'X-Bypass-Auth': 'development-only-123'
-        }
+          'X-Bypass-Auth': 'development-only-123',
+        },
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         setAvailableTemplates([
@@ -62,19 +62,19 @@ const QuotationDetail: React.FC = () => {
           ...(data.data || []).map((template: any) => ({
             id: template.id,
             name: template.name,
-            description: template.description || 'Enhanced template'
-          }))
+            description: template.description || 'Enhanced template',
+          })),
         ]);
       } else {
         // If templates endpoint fails, just use default
         setAvailableTemplates([
-          { id: 'default', name: 'Default Template', description: 'Standard ASP Cranes template' }
+          { id: 'default', name: 'Default Template', description: 'Standard ASP Cranes template' },
         ]);
       }
     } catch (error) {
       console.warn('Could not load templates, using default:', error);
       setAvailableTemplates([
-        { id: 'default', name: 'Default Template', description: 'Standard ASP Cranes template' }
+        { id: 'default', name: 'Default Template', description: 'Standard ASP Cranes template' },
       ]);
     }
   };
@@ -85,8 +85,8 @@ const QuotationDetail: React.FC = () => {
       setIsLoading(true);
       const response = await fetch(`/api/quotations/${quotationId}`, {
         headers: {
-          'X-Bypass-Auth': 'development-only-123'
-        }
+          'X-Bypass-Auth': 'development-only-123',
+        },
       });
       console.log('📋 Quotation API response status:', response.status);
       const data = await response.json();
@@ -106,7 +106,7 @@ const QuotationDetail: React.FC = () => {
           number_of_days: data.data.numberOfDays || data.data.number_of_days,
           working_hours: data.data.workingHours || data.data.working_hours,
           total_cost: data.data.totalCost || data.data.total_cost,
-          created_at: data.data.createdAt || data.data.created_at
+          created_at: data.data.createdAt || data.data.created_at,
         };
         console.log('📋 Mapped quotation data:', mappedQuotation);
         setQuotation(mappedQuotation);
@@ -127,23 +127,23 @@ const QuotationDetail: React.FC = () => {
     console.log('🚀 Current state - isPreviewOpen:', isPreviewOpen);
     console.log('🚀 Current quotation:', quotation ? quotation.id : 'null');
     console.log('🚀 Iframe ref exists:', !!previewFrameRef.current);
-    
+
     // Toggle preview state
     const newPreviewState = !isPreviewOpen;
     console.log('🎨 Preview state changing from', isPreviewOpen, 'to', newPreviewState);
     setIsPreviewOpen(newPreviewState);
-    
+
     // If opening preview, load it from backend after iframe is rendered
     if (newPreviewState && quotation) {
       console.log('🎨 Loading preview from backend for quotation:', quotation.id);
       console.log('🎨 Using template:', selectedTemplate);
-      
+
       // Wait for iframe to be rendered before setting src
       setTimeout(() => {
         if (previewFrameRef.current) {
           // Clear any existing content first
           previewFrameRef.current.src = 'about:blank';
-          
+
           // Then load the template after a brief delay
           setTimeout(() => {
             if (previewFrameRef.current) {
@@ -172,15 +172,15 @@ const QuotationDetail: React.FC = () => {
   const handleTemplateChange = (templateId: string) => {
     console.log('🔄 Template changed to:', templateId);
     setSelectedTemplate(templateId);
-    
+
     // If preview is open, refresh it with new template
     if (isPreviewOpen && quotation && previewFrameRef.current) {
       console.log('🔄 Refreshing preview with template:', templateId);
       setIsTemplateLoading(true);
-      
+
       // Clear iframe content first to prevent overlapping
       previewFrameRef.current.src = 'about:blank';
-      
+
       // Small delay to ensure clearing happens, then load new template
       setTimeout(() => {
         if (previewFrameRef.current) {
@@ -191,7 +191,7 @@ const QuotationDetail: React.FC = () => {
           const newSrc = `${base}?${params.toString()}`;
           console.log('🎨 Loading new template URL:', newSrc);
           previewFrameRef.current.src = newSrc;
-          
+
           // Reset loading state after iframe loads (approximate)
           setTimeout(() => setIsTemplateLoading(false), 2000);
         }
@@ -204,7 +204,8 @@ const QuotationDetail: React.FC = () => {
       // Open the iframe preview route in a new tab for printing with selected template
       const base = `/api/quotations-preview/${id}/preview/iframe`;
       const params = new URLSearchParams();
-      if (selectedTemplate && selectedTemplate !== 'default') params.set('templateId', selectedTemplate);
+      if (selectedTemplate && selectedTemplate !== 'default')
+        params.set('templateId', selectedTemplate);
       window.open(`${base}?${params.toString()}`, '_blank');
     }
   };
@@ -212,24 +213,25 @@ const QuotationDetail: React.FC = () => {
   const handleDownload = async () => {
     try {
       if (!id) return;
-      
+
       console.log('📥 Starting PDF download for quotation:', id);
       console.log('🎨 Selected template:', selectedTemplate);
-      
-      const actualTemplateId = (selectedTemplate && selectedTemplate !== 'default') ? selectedTemplate : undefined;
+
+      const actualTemplateId =
+        selectedTemplate && selectedTemplate !== 'default' ? selectedTemplate : undefined;
       console.log('🎯 Sending templateId to backend:', actualTemplateId);
-      
+
       // Use the correct endpoint for PDF generation with selected template
       const response = await fetch(`/api/quotations/print/pdf`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-Bypass-Auth': 'development-only-123'
+          'X-Bypass-Auth': 'development-only-123',
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           quotationId: id,
-          templateId: actualTemplateId
-        })
+          templateId: actualTemplateId,
+        }),
       });
 
       console.log('📥 Download response status:', response.status);
@@ -238,32 +240,37 @@ const QuotationDetail: React.FC = () => {
       if (response.ok) {
         const contentType = response.headers.get('content-type');
         console.log('📄 Content type:', contentType);
-        
+
         if (contentType && contentType.includes('application/pdf')) {
           // Handle PDF response - use proper binary handling
           console.log('📄 Processing PDF response...');
           const arrayBuffer = await response.arrayBuffer();
           const blob = new Blob([arrayBuffer], { type: 'application/pdf' });
-          
+
           // Validate blob size
           if (blob.size === 0) {
             throw new Error('PDF file is empty or corrupted');
           }
-          
+
           console.log('📄 PDF blob size:', blob.size, 'bytes');
-          
+
           // Create download link without using blob URLs over insecure connection
           const filename = `quotation_${id}_${Date.now()}.pdf`;
-          
+
           // For modern browsers, use the download API
-          if ('showSaveFilePicker' in window && typeof (window as any).showSaveFilePicker === 'function') {
+          if (
+            'showSaveFilePicker' in window &&
+            typeof (window as any).showSaveFilePicker === 'function'
+          ) {
             try {
               const fileHandle = await (window as any).showSaveFilePicker({
                 suggestedName: filename,
-                types: [{
-                  description: 'PDF files',
-                  accept: { 'application/pdf': ['.pdf'] }
-                }]
+                types: [
+                  {
+                    description: 'PDF files',
+                    accept: { 'application/pdf': ['.pdf'] },
+                  },
+                ],
               });
               const writable = await fileHandle.createWritable();
               await writable.write(blob);
@@ -274,7 +281,7 @@ const QuotationDetail: React.FC = () => {
               console.log('📥 File System Access API failed, falling back to traditional download');
             }
           }
-          
+
           // Fallback to traditional blob download
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
@@ -283,15 +290,14 @@ const QuotationDetail: React.FC = () => {
           a.style.display = 'none';
           document.body.appendChild(a);
           a.click();
-          
+
           // Clean up after download
           setTimeout(() => {
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
           }, 100);
-          
+
           console.log('✅ PDF download initiated successfully');
-          
         } else if (contentType && contentType.includes('text/html')) {
           // Handle HTML fallback (when PDF generation fails)
           console.log('📄 Processing HTML fallback response...');
@@ -323,35 +329,34 @@ const QuotationDetail: React.FC = () => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: 'INR',
-      minimumFractionDigits: 0
+      minimumFractionDigits: 0,
     }).format(safe);
   };
-
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-IN', {
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
     });
   };
 
   const handleStatusChange = async (newStatus: string) => {
     try {
       if (!id) return;
-      
+
       const response = await fetch(`/api/quotations/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'X-Bypass-Auth': 'development-only-123'
+          'X-Bypass-Auth': 'development-only-123',
         },
-        body: JSON.stringify({ status: newStatus })
+        body: JSON.stringify({ status: newStatus }),
       });
 
       if (response.ok) {
         // Update local state
-        setQuotation(prev => prev ? { ...prev, status: newStatus } : null);
+        setQuotation(prev => (prev ? { ...prev, status: newStatus } : null));
         alert(`Quotation status updated to ${newStatus}`);
       } else {
         throw new Error('Failed to update status');
@@ -364,7 +369,7 @@ const QuotationDetail: React.FC = () => {
 
   const handleCreateDeal = () => {
     if (!quotation) return;
-    
+
     // Navigate to deal creation with quotation data
     navigate('/deals/create', {
       state: {
@@ -372,9 +377,9 @@ const QuotationDetail: React.FC = () => {
         customer: {
           name: quotation.customer_name,
           email: quotation.customer_email,
-          phone: quotation.customer_phone
-        }
-      }
+          phone: quotation.customer_phone,
+        },
+      },
     });
   };
 
@@ -432,7 +437,7 @@ const QuotationDetail: React.FC = () => {
         <div className="bg-white rounded-lg shadow-sm border p-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <Button 
+              <Button
                 onClick={() => navigate('/quotations')}
                 className="flex items-center space-x-2"
               >
@@ -441,20 +446,25 @@ const QuotationDetail: React.FC = () => {
               </Button>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">
-                  {quotation.quotation_number ? `Quotation ${quotation.quotation_number}` : `Quotation #${quotation.id}`}
+                  {quotation.quotation_number
+                    ? `Quotation ${quotation.quotation_number}`
+                    : `Quotation #${quotation.id}`}
                 </h1>
-                <p className="text-gray-600">
-                  Created on {formatDate(quotation.created_at)}
-                </p>
+                <p className="text-gray-600">Created on {formatDate(quotation.created_at)}</p>
               </div>
             </div>
             <div className="flex items-center space-x-2">
-              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                quotation.status === 'approved' ? 'bg-green-100 text-green-800' :
-                quotation.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                quotation.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                'bg-gray-100 text-gray-800'
-              }`}>
+              <span
+                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                  quotation.status === 'approved'
+                    ? 'bg-green-100 text-green-800'
+                    : quotation.status === 'pending'
+                      ? 'bg-yellow-100 text-yellow-800'
+                      : quotation.status === 'rejected'
+                        ? 'bg-red-100 text-red-800'
+                        : 'bg-gray-100 text-gray-800'
+                }`}
+              >
                 {quotation.status.charAt(0).toUpperCase() + quotation.status.slice(1)}
               </span>
               <Button onClick={() => navigate(`/quotation-creation?edit=${quotation.id}`)}>
@@ -505,7 +515,9 @@ const QuotationDetail: React.FC = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Working Hours</label>
-                    <p className="mt-1 text-sm text-gray-900">{quotation.working_hours} hours/day</p>
+                    <p className="mt-1 text-sm text-gray-900">
+                      {quotation.working_hours} hours/day
+                    </p>
                   </div>
                 </div>
 
@@ -521,23 +533,33 @@ const QuotationDetail: React.FC = () => {
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-gray-700">Mob/Demob Cost</span>
-                      <span className="font-medium">{formatCurrency(quotation.mob_demob_cost)}</span>
+                      <span className="font-medium">
+                        {formatCurrency(quotation.mob_demob_cost)}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-gray-700">Food & Accom Cost</span>
-                      <span className="font-medium">{formatCurrency(quotation.food_accom_cost)}</span>
+                      <span className="font-medium">
+                        {formatCurrency(quotation.food_accom_cost)}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-gray-700">Risk Adj.</span>
-                      <span className="font-medium">{formatCurrency(quotation.risk_adjustment)}</span>
+                      <span className="font-medium">
+                        {formatCurrency(quotation.risk_adjustment)}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-gray-700">Usage Load Factor</span>
-                      <span className="font-medium">{formatCurrency(quotation.usage_load_factor)}</span>
+                      <span className="font-medium">
+                        {formatCurrency(quotation.usage_load_factor)}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-gray-700">Risk & Usage Total</span>
-                      <span className="font-medium">{formatCurrency(quotation.risk_usage_total)}</span>
+                      <span className="font-medium">
+                        {formatCurrency(quotation.risk_usage_total)}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-gray-700">GST</span>
@@ -545,7 +567,9 @@ const QuotationDetail: React.FC = () => {
                     </div>
                     <div className="flex items-center justify-between col-span-2 pt-2 mt-2 border-t">
                       <span className="text-gray-900 font-semibold">Total Cost</span>
-                      <span className="text-lg font-bold text-gray-900">{formatCurrency(quotation.total_cost)}</span>
+                      <span className="text-lg font-bold text-gray-900">
+                        {formatCurrency(quotation.total_cost)}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -560,22 +584,31 @@ const QuotationDetail: React.FC = () => {
               </h2>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Current Status</label>
-                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                    quotation.status === 'accepted' ? 'bg-green-100 text-green-800' :
-                    quotation.status === 'sent' ? 'bg-blue-100 text-blue-800' :
-                    quotation.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                    'bg-gray-100 text-gray-800'
-                  }`}>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Current Status
+                  </label>
+                  <span
+                    className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                      quotation.status === 'accepted'
+                        ? 'bg-green-100 text-green-800'
+                        : quotation.status === 'sent'
+                          ? 'bg-blue-100 text-blue-800'
+                          : quotation.status === 'rejected'
+                            ? 'bg-red-100 text-red-800'
+                            : 'bg-gray-100 text-gray-800'
+                    }`}
+                  >
                     {quotation.status.charAt(0).toUpperCase() + quotation.status.slice(1)}
                   </span>
                 </div>
-                
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Update Status</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Update Status
+                  </label>
                   <div className="grid grid-cols-2 gap-2">
                     {quotation.status === 'draft' && (
-                      <Button 
+                      <Button
                         onClick={() => handleStatusChange('sent')}
                         className="bg-blue-600 hover:bg-blue-700 text-white"
                         size="sm"
@@ -585,14 +618,14 @@ const QuotationDetail: React.FC = () => {
                     )}
                     {quotation.status === 'sent' && (
                       <>
-                        <Button 
+                        <Button
                           onClick={() => handleStatusChange('accepted')}
                           className="bg-green-600 hover:bg-green-700 text-white"
                           size="sm"
                         >
                           Mark Accepted
                         </Button>
-                        <Button 
+                        <Button
                           onClick={() => handleStatusChange('rejected')}
                           className="bg-red-600 hover:bg-red-700 text-white"
                           size="sm"
@@ -602,7 +635,7 @@ const QuotationDetail: React.FC = () => {
                       </>
                     )}
                     {(quotation.status === 'accepted' || quotation.status === 'rejected') && (
-                      <Button 
+                      <Button
                         onClick={() => handleStatusChange('draft')}
                         variant="outline"
                         size="sm"
@@ -612,13 +645,14 @@ const QuotationDetail: React.FC = () => {
                     )}
                   </div>
                 </div>
-                
+
                 {quotation.status === 'accepted' && (
                   <div className="bg-green-50 border border-green-200 rounded-lg p-3">
                     <p className="text-sm text-green-700">
-                      ✅ This quotation has been accepted. Consider creating a deal from this quotation.
+                      ✅ This quotation has been accepted. Consider creating a deal from this
+                      quotation.
                     </p>
-                    <Button 
+                    <Button
                       onClick={() => handleCreateDeal()}
                       className="mt-2 bg-green-600 hover:bg-green-700 text-white"
                       size="sm"
@@ -667,18 +701,16 @@ const QuotationDetail: React.FC = () => {
                   </Button>
                 </div>
               </div>
-              
+
               {/* Template Selection */}
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Template
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Template</label>
                 <select
                   value={selectedTemplate}
-                  onChange={(e) => handleTemplateChange(e.target.value)}
+                  onChange={e => handleTemplateChange(e.target.value)}
                   className="block w-48 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 >
-                  {availableTemplates.map((template) => (
+                  {availableTemplates.map(template => (
                     <option key={template.id} value={template.id}>
                       {template.name}
                     </option>
@@ -690,7 +722,7 @@ const QuotationDetail: React.FC = () => {
                   </p>
                 )}
               </div>
-              
+
               {isPreviewOpen ? (
                 <div className="border rounded-lg overflow-hidden relative">
                   {isTemplateLoading && (
@@ -715,7 +747,9 @@ const QuotationDetail: React.FC = () => {
                 <div className="border rounded-lg p-8 text-center bg-gray-50">
                   <Eye className="w-12 h-12 mx-auto text-gray-400 mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 mb-2">Preview Not Active</h3>
-                  <p className="text-gray-500">Click "Show Preview" to view the quotation preview.</p>
+                  <p className="text-gray-500">
+                    Click "Show Preview" to view the quotation preview.
+                  </p>
                 </div>
               )}
             </div>
@@ -747,7 +781,7 @@ const QuotationDetail: React.FC = () => {
               <Download className="h-4 w-4" />
               <span>Download PDF</span>
             </Button>
-            <Button 
+            <Button
               onClick={() => navigate(`/quotation-creation?edit=${quotation.id}`)}
               className="flex items-center justify-center space-x-2"
               variant="outline"

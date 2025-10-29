@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react';
-import { 
-  Clock, 
-  User, 
-  Eye, 
-  FileText, 
+import {
+  Clock,
+  User,
+  Eye,
+  FileText,
   Calendar,
   Monitor,
   MapPin,
   RefreshCw,
   AlertCircle,
-  TrendingUp
+  TrendingUp,
 } from 'lucide-react';
 
 interface AuditRecord {
@@ -53,25 +53,26 @@ export function ConfigAuditTrail() {
     { value: 'additionalParams', label: 'Additional Parameters' },
     { value: 'quotation', label: 'Quotation Settings' },
     { value: 'defaultTemplate', label: 'Default Template' },
-    { value: 'database', label: 'Database Config' }
+    { value: 'database', label: 'Database Config' },
   ];
 
   const fetchAuditData = async () => {
     setIsLoading(true);
     setError('');
-    
+
     try {
       const [historyResponse, summaryResponse] = await Promise.all([
-        fetch(selectedConfig === 'all' 
-          ? `/api/config/audit/all?limit=${limit}`
-          : `/api/config/${selectedConfig}/audit?limit=${limit}`,
+        fetch(
+          selectedConfig === 'all'
+            ? `/api/config/audit/all?limit=${limit}`
+            : `/api/config/${selectedConfig}/audit?limit=${limit}`,
           {
-            headers: { 'x-bypass-auth': 'development-only-123' }
+            headers: { 'x-bypass-auth': 'development-only-123' },
           }
         ),
         fetch(`/api/config/audit/summary?days=${days}`, {
-          headers: { 'x-bypass-auth': 'development-only-123' }
-        })
+          headers: { 'x-bypass-auth': 'development-only-123' },
+        }),
       ]);
 
       if (!historyResponse.ok || !summaryResponse.ok) {
@@ -102,22 +103,26 @@ export function ConfigAuditTrail() {
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
-      second: '2-digit'
+      second: '2-digit',
     });
   };
 
   const getActionColor = (action: string) => {
     switch (action) {
-      case 'CREATE': return 'bg-green-100 text-green-800 border-green-200';
-      case 'UPDATE': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'DELETE': return 'bg-red-100 text-red-800 border-red-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'CREATE':
+        return 'bg-green-100 text-green-800 border-green-200';
+      case 'UPDATE':
+        return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'DELETE':
+        return 'bg-red-100 text-red-800 border-red-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
   const renderJsonValue = (value: any) => {
     if (!value) return 'N/A';
-    
+
     try {
       const parsed = typeof value === 'string' ? JSON.parse(value) : value;
       return (
@@ -160,7 +165,7 @@ export function ConfigAuditTrail() {
             </label>
             <select
               value={selectedConfig}
-              onChange={(e) => setSelectedConfig(e.target.value)}
+              onChange={e => setSelectedConfig(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               {configTypes.map(type => (
@@ -170,14 +175,12 @@ export function ConfigAuditTrail() {
               ))}
             </select>
           </div>
-          
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Records Limit
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Records Limit</label>
             <select
               value={limit}
-              onChange={(e) => setLimit(Number(e.target.value))}
+              onChange={e => setLimit(Number(e.target.value))}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value={25}>25 records</option>
@@ -186,14 +189,12 @@ export function ConfigAuditTrail() {
               <option value={200}>200 records</option>
             </select>
           </div>
-          
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Summary Period
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Summary Period</label>
             <select
               value={days}
-              onChange={(e) => setDays(Number(e.target.value))}
+              onChange={e => setDays(Number(e.target.value))}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value={7}>Last 7 days</option>
@@ -202,13 +203,13 @@ export function ConfigAuditTrail() {
               <option value={365}>Last year</option>
             </select>
           </div>
-          
+
           <div className="flex items-end">
             <button
               onClick={() => setShowSummary(!showSummary)}
               className={`px-4 py-2 rounded-lg border ${
-                showSummary 
-                  ? 'bg-blue-50 border-blue-300 text-blue-700' 
+                showSummary
+                  ? 'bg-blue-50 border-blue-300 text-blue-700'
                   : 'bg-gray-50 border-gray-300 text-gray-700'
               }`}
             >
@@ -231,7 +232,9 @@ export function ConfigAuditTrail() {
               <div key={index} className="border border-gray-200 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-2">
                   <span className="font-medium text-gray-900">{summary.configName}</span>
-                  <span className={`px-2 py-1 rounded text-xs border ${getActionColor(summary.action)}`}>
+                  <span
+                    className={`px-2 py-1 rounded text-xs border ${getActionColor(summary.action)}`}
+                  >
                     {summary.action}
                   </span>
                 </div>
@@ -254,7 +257,7 @@ export function ConfigAuditTrail() {
             Audit History ({auditHistory.length} records)
           </h3>
         </div>
-        
+
         {isLoading ? (
           <div className="p-8 text-center">
             <RefreshCw className="w-8 h-8 animate-spin mx-auto text-blue-600 mb-2" />
@@ -267,18 +270,20 @@ export function ConfigAuditTrail() {
           </div>
         ) : (
           <div className="divide-y divide-gray-200">
-            {auditHistory.map((record) => (
+            {auditHistory.map(record => (
               <div key={record.id} className="p-6 hover:bg-gray-50">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <span className={`px-3 py-1 rounded-full text-sm border ${getActionColor(record.action)}`}>
+                      <span
+                        className={`px-3 py-1 rounded-full text-sm border ${getActionColor(record.action)}`}
+                      >
                         {record.action}
                       </span>
                       <span className="font-medium text-gray-900">{record.configName}</span>
                       <span className="text-sm text-gray-500">#{record.configId}</span>
                     </div>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <User className="w-4 h-4" />
@@ -287,12 +292,12 @@ export function ConfigAuditTrail() {
                           <span className="text-gray-400">({record.changedByEmail})</span>
                         )}
                       </div>
-                      
+
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <Calendar className="w-4 h-4" />
                         <span>{formatDate(record.createdAt)}</span>
                       </div>
-                      
+
                       {record.ipAddress && (
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                           <MapPin className="w-4 h-4" />
@@ -300,14 +305,14 @@ export function ConfigAuditTrail() {
                         </div>
                       )}
                     </div>
-                    
+
                     {record.changeReason && (
                       <div className="mb-4">
                         <span className="text-sm font-medium text-gray-700">Reason: </span>
                         <span className="text-sm text-gray-600">{record.changeReason}</span>
                       </div>
                     )}
-                    
+
                     {record.userAgent && (
                       <div className="mb-4 flex items-center gap-2 text-xs text-gray-500">
                         <Monitor className="w-3 h-3" />
@@ -315,16 +320,18 @@ export function ConfigAuditTrail() {
                       </div>
                     )}
                   </div>
-                  
+
                   <button
-                    onClick={() => setSelectedRecord(selectedRecord?.id === record.id ? null : record)}
+                    onClick={() =>
+                      setSelectedRecord(selectedRecord?.id === record.id ? null : record)
+                    }
                     className="ml-4 px-3 py-1 text-sm text-blue-600 hover:text-blue-700 border border-blue-300 rounded hover:bg-blue-50"
                   >
                     <Eye className="w-4 h-4 mr-1 inline" />
                     {selectedRecord?.id === record.id ? 'Hide' : 'View'} Details
                   </button>
                 </div>
-                
+
                 {selectedRecord?.id === record.id && (
                   <div className="mt-6 pt-4 border-t border-gray-200">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -334,7 +341,7 @@ export function ConfigAuditTrail() {
                           {renderJsonValue(record.oldValue)}
                         </div>
                       )}
-                      
+
                       {record.newValue && (
                         <div>
                           <h4 className="font-medium text-gray-900 mb-2">New Value</h4>

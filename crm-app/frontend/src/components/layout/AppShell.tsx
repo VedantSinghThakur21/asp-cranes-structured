@@ -20,16 +20,18 @@ export const AppShell = memo(function AppShell({ requiredRole, children }: AppSh
   // Add sidebar logout event listener
   useEffect(() => {
     const handleSidebarLogout = () => {
-      logout().then(() => {
-        navigate('/login');
-      }).catch(error => {
-        console.error("Logout error:", error);
-        navigate('/login');
-      });
+      logout()
+        .then(() => {
+          navigate('/login');
+        })
+        .catch(error => {
+          console.error('Logout error:', error);
+          navigate('/login');
+        });
     };
 
     document.addEventListener('sidebar-logout', handleSidebarLogout);
-    
+
     return () => {
       document.removeEventListener('sidebar-logout', handleSidebarLogout);
     };
@@ -83,8 +85,10 @@ export const AppShell = memo(function AppShell({ requiredRole, children }: AppSh
         <div className="text-center">
           <div className="relative mb-4">
             <div className="w-16 h-16 border-4 border-brand-blue/20 border-t-brand-blue rounded-full animate-spin" />
-            <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-brand-gold rounded-full animate-spin" 
-                 style={{ animationDelay: '0.2s', animationDuration: '1.5s' }} />
+            <div
+              className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-brand-gold rounded-full animate-spin"
+              style={{ animationDelay: '0.2s', animationDuration: '1.5s' }}
+            />
           </div>
           <h3 className="text-lg font-semibold text-brand-blue">Loading Application</h3>
           <p className="text-sm text-gray-600 mt-1">Please wait...</p>
@@ -108,21 +112,21 @@ export const AppShell = memo(function AppShell({ requiredRole, children }: AppSh
   return (
     <div className="flex h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/20 overflow-hidden">
       {/* Sidebar */}
-      <Sidebar 
-        isMobileOpen={isMobileSidebarOpen} 
-        onMobileClose={() => setIsMobileSidebarOpen(false)} 
+      <Sidebar
+        isMobileOpen={isMobileSidebarOpen}
+        onMobileClose={() => setIsMobileSidebarOpen(false)}
         isCollapsed={isSidebarCollapsed}
         onCollapseToggle={setIsSidebarCollapsed}
       />
       {/* Main content area */}
-      <div className={`flex flex-col flex-1 overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:ml-16' : 'lg:ml-72'}`}>
+      <div
+        className={`flex flex-col flex-1 overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:ml-16' : 'lg:ml-72'}`}
+      >
         {/* Header */}
         <Header onMobileMenuClick={toggleMobileSidebar} />
         {/* Main content with enhanced styling */}
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-transparent">
-          <div className="min-h-full">
-            {children || <Outlet />}
-          </div>
+          <div className="min-h-full">{children || <Outlet />}</div>
         </main>
       </div>
     </div>

@@ -14,8 +14,8 @@ class PdfService {
         top: '15mm',
         right: '15mm',
         bottom: '15mm',
-        left: '15mm'
-      }
+        left: '15mm',
+      },
     };
     this.browser = null;
   }
@@ -33,8 +33,8 @@ class PdfService {
             '--disable-setuid-sandbox',
             '--disable-dev-shm-usage',
             '--disable-web-security',
-            '--allow-running-insecure-content'
-          ]
+            '--allow-running-insecure-content',
+          ],
         });
       } catch (error) {
         console.warn('⚠️ Puppeteer not available, falling back to HTML');
@@ -50,9 +50,9 @@ class PdfService {
   async generateFromHTML(html, options = {}) {
     try {
       console.log('📄 Generating PDF from HTML using Puppeteer');
-      
+
       const pdfOptions = { ...this.options, ...options };
-      
+
       // Try to use Puppeteer first
       const browser = await this.initBrowser();
       if (!browser) {
@@ -62,16 +62,16 @@ class PdfService {
           success: true,
           fallback: true,
           data: this.wrapHtmlForPrint(html),
-          format: pdfOptions.format
+          format: pdfOptions.format,
         };
       }
 
       const page = await browser.newPage();
-      
+
       // Set content with proper base URL for assets
-      await page.setContent(html, { 
+      await page.setContent(html, {
         waitUntil: 'networkidle0',
-        timeout: 30000
+        timeout: 30000,
       });
 
       // Generate PDF
@@ -79,29 +79,28 @@ class PdfService {
         format: pdfOptions.format || 'A4',
         margin: pdfOptions.margin || pdfOptions.margins,
         printBackground: true,
-        preferCSSPageSize: true
+        preferCSSPageSize: true,
       });
 
       await page.close();
-      
+
       return {
         success: true,
         fallback: false,
         data: pdfBuffer,
         format: pdfOptions.format,
-        size: pdfBuffer.length
+        size: pdfBuffer.length,
       };
-      
     } catch (error) {
       console.error('❌ PDF generation failed:', error);
-      
+
       // Fallback to HTML
       console.warn('⚠️ PDF generation failed, returning HTML fallback');
       return {
         success: true,
         fallback: true,
         data: this.wrapHtmlForPrint(html),
-        format: 'HTML'
+        format: 'HTML',
       };
     }
   }
@@ -168,7 +167,7 @@ class PdfService {
     return {
       formats: ['A4', 'Letter', 'Legal'],
       orientations: ['portrait', 'landscape'],
-      features: ['headers', 'footers', 'page-numbers', 'watermarks']
+      features: ['headers', 'footers', 'page-numbers', 'watermarks'],
     };
   }
 }

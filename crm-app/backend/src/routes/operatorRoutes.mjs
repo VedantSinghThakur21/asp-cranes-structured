@@ -7,7 +7,7 @@ import { authenticateToken } from '../middleware/authMiddleware.mjs';
 
 const router = express.Router();
 
-const getErrorMessage = (error) => {
+const getErrorMessage = error => {
   if (error instanceof Error) return error.message;
   return String(error);
 };

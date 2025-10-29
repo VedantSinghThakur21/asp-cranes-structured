@@ -17,18 +17,16 @@ export const PrintOptionsModal: React.FC<PrintOptionsModalProps> = ({
   isOpen,
   onClose,
   onConfirm,
-  title = "Print Options",
-  options
+  title = 'Print Options',
+  options,
 }) => {
   const [selectedOptions, setSelectedOptions] = useState<string[]>(
     options.map(option => option.id) // Select all by default
   );
 
   const handleOptionToggle = (optionId: string) => {
-    setSelectedOptions(prev => 
-      prev.includes(optionId)
-        ? prev.filter(id => id !== optionId)
-        : [...prev, optionId]
+    setSelectedOptions(prev =>
+      prev.includes(optionId) ? prev.filter(id => id !== optionId) : [...prev, optionId]
     );
   };
 
@@ -45,10 +43,7 @@ export const PrintOptionsModal: React.FC<PrintOptionsModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
           <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
             <X size={24} />
           </button>
         </div>
@@ -58,13 +53,10 @@ export const PrintOptionsModal: React.FC<PrintOptionsModalProps> = ({
           <p className="text-gray-600 mb-4">
             Select the sections you want to include in your quotation:
           </p>
-          
+
           <div className="space-y-3">
-            {options.map((option) => (
-              <label
-                key={option.id}
-                className="flex items-start space-x-3 cursor-pointer"
-              >
+            {options.map(option => (
+              <label key={option.id} className="flex items-start space-x-3 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={selectedOptions.includes(option.id)}
@@ -72,13 +64,9 @@ export const PrintOptionsModal: React.FC<PrintOptionsModalProps> = ({
                   className="mt-1 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                 />
                 <div className="flex-1">
-                  <div className="text-sm font-medium text-gray-900">
-                    {option.label}
-                  </div>
+                  <div className="text-sm font-medium text-gray-900">{option.label}</div>
                   {option.description && (
-                    <div className="text-xs text-gray-500 mt-1">
-                      {option.description}
-                    </div>
+                    <div className="text-xs text-gray-500 mt-1">{option.description}</div>
                   )}
                 </div>
               </label>
@@ -91,7 +79,7 @@ export const PrintOptionsModal: React.FC<PrintOptionsModalProps> = ({
           <div className="text-sm text-gray-500">
             {selectedOptions.length} of {options.length} sections selected
           </div>
-          
+
           <div className="flex space-x-3">
             <button
               onClick={onClose}

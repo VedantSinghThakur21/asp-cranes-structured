@@ -16,7 +16,7 @@ class NotificationEngine {
     this.activeConnections = new Map(); // userId -> WebSocket connection
     this.notificationTemplates = new Map();
     this.notificationRules = new Map();
-    
+
     this.initializeServices();
     this.loadTemplates();
     this.loadRules();
@@ -35,21 +35,17 @@ class NotificationEngine {
           secure: process.env.SMTP_SECURE === 'true',
           auth: {
             user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS
-          }
+            pass: process.env.SMTP_PASS,
+          },
         });
         console.log('✅ Email service initialized');
       }
 
       // Initialize SMS Service
       if (process.env.TWILIO_ACCOUNT_SID) {
-        this.smsClient = twilio(
-          process.env.TWILIO_ACCOUNT_SID,
-          process.env.TWILIO_AUTH_TOKEN
-        );
+        this.smsClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
         console.log('✅ SMS service initialized');
       }
-
     } catch (error) {
       console.error('❌ Error initializing notification services:', error);
     }
@@ -60,11 +56,11 @@ class NotificationEngine {
    */
   initializeWebSocket(server) {
     this.webSocketServer = new WebSocketServer({ server });
-    
+
     this.webSocketServer.on('connection', (ws, req) => {
       console.log('🔌 New WebSocket connection established');
-      
-      ws.on('message', (message) => {
+
+      ws.on('message', message => {
         try {
           const data = JSON.parse(message);
           if (data.type === 'auth' && data.userId) {
@@ -100,16 +96,16 @@ class NotificationEngine {
         WHERE is_active = TRUE
       `;
       const result = await db.query(query);
-      
+
       result.rows.forEach(template => {
         this.notificationTemplates.set(template.template_type, {
           subject: template.subject_template,
           message: template.message_template,
           email: template.email_template,
-          sms: template.sms_template
+          sms: template.sms_template,
         });
       });
-      
+
       console.log(`📋 Loaded ${result.rows.length} notification templates`);
     } catch (error) {
       console.error('Error loading notification templates:', error);
@@ -122,7 +118,7 @@ class NotificationEngine {
    */
   loadDefaultTemplates() {
     const defaultTemplates = {
-      'lead_created': {
+      lead_created: {
         subject: 'New Lead: {{customerName}}',
         message: 'New lead received from {{customerName}} for {{serviceNeeded}}',
         email: `
@@ -136,9 +132,9 @@ class NotificationEngine {
           </ul>
           <p><a href="{{leadUrl}}">View Lead Details</a></p>
         `,
-        sms: 'New lead from {{customerName}} for {{serviceNeeded}}. Check CRM for details.'
+        sms: 'New lead from {{customerName}} for {{serviceNeeded}}. Check CRM for details.',
       },
-      'quotation_created': {
+      quotation_created: {
         subject: 'Quotation Created: {{quotationId}}',
         message: 'Quotation {{quotationId}} created for {{customerName}}',
         email: `
@@ -151,9 +147,9 @@ class NotificationEngine {
           </ul>
           <p><a href="{{quotationUrl}}">View Quotation</a></p>
         `,
-        sms: 'Quotation {{quotationId}} created for {{customerName}} - ₹{{totalCost}}'
+        sms: 'Quotation {{quotationId}} created for {{customerName}} - ₹{{totalCost}}',
       },
-      'job_assigned': {
+      job_assigned: {
         subject: 'Job Assignment: {{jobTitle}}',
         message: 'You have been assigned to job: {{jobTitle}}',
         email: `
@@ -167,9 +163,9 @@ class NotificationEngine {
           </ul>
           <p><a href="{{jobUrl}}">View Job Details</a></p>
         `,
-        sms: 'Job assigned: {{jobTitle}} at {{location}} starting {{startDate}}'
+        sms: 'Job assigned: {{jobTitle}} at {{location}} starting {{startDate}}',
       },
-      'deal_won': {
+      deal_won: {
         subject: 'Deal Closed: {{dealTitle}}',
         message: 'Congratulations! Deal "{{dealTitle}}" worth ₹{{dealValue}} has been won!',
         email: `
@@ -182,9 +178,9 @@ class NotificationEngine {
           </ul>
           <p>Great work on this success!</p>
         `,
-        sms: '🎉 Deal won! {{dealTitle}} - ₹{{dealValue}} from {{customerName}}'
+        sms: '🎉 Deal won! {{dealTitle}} - ₹{{dealValue}} from {{customerName}}',
       },
-      'followup_reminder': {
+      followup_reminder: {
         subject: 'Follow-up Reminder: {{customerName}}',
         message: 'Time to follow up with {{customerName}}',
         email: `
@@ -197,8 +193,8 @@ class NotificationEngine {
           </ul>
           <p><a href="{{leadUrl}}">View Lead Details</a></p>
         `,
-        sms: 'Follow-up reminder: {{customerName}} - {{serviceNeeded}}'
-      }
+        sms: 'Follow-up reminder: {{customerName}} - {{serviceNeeded}}',
+      },
     };
 
     Object.entries(defaultTemplates).forEach(([type, template]) => {
@@ -219,16 +215,16 @@ class NotificationEngine {
         WHERE is_active = TRUE
       `;
       const result = await db.query(query);
-      
+
       result.rows.forEach(rule => {
         this.notificationRules.set(rule.event_type, {
           userRoles: rule.user_roles,
           channels: rule.channels,
           conditions: rule.conditions,
-          isActive: rule.is_active
+          isActive: rule.is_active,
         });
       });
-      
+
       console.log(`📏 Loaded ${result.rows.length} notification rules`);
     } catch (error) {
       console.error('Error loading notification rules:', error);
@@ -241,36 +237,36 @@ class NotificationEngine {
    */
   loadDefaultRules() {
     const defaultRules = {
-      'lead_created': {
+      lead_created: {
         userRoles: ['sales_agent', 'admin'],
         channels: ['in_app', 'email'],
         conditions: {},
-        isActive: true
+        isActive: true,
       },
-      'quotation_created': {
+      quotation_created: {
         userRoles: ['sales_agent', 'admin'],
         channels: ['in_app', 'email'],
         conditions: {},
-        isActive: true
+        isActive: true,
       },
-      'job_assigned': {
+      job_assigned: {
         userRoles: ['operator', 'operations_manager'],
         channels: ['in_app', 'email', 'sms'],
         conditions: {},
-        isActive: true
+        isActive: true,
       },
-      'deal_won': {
+      deal_won: {
         userRoles: ['sales_agent', 'admin'],
         channels: ['in_app', 'email'],
         conditions: {},
-        isActive: true
+        isActive: true,
       },
-      'followup_reminder': {
+      followup_reminder: {
         userRoles: ['sales_agent'],
         channels: ['in_app', 'email'],
         conditions: {},
-        isActive: true
-      }
+        isActive: true,
+      },
     };
 
     Object.entries(defaultRules).forEach(([type, rule]) => {
@@ -289,7 +285,7 @@ class NotificationEngine {
     data = {},
     channels = ['in_app'],
     priority = 'medium',
-    scheduleAt = null
+    scheduleAt = null,
   }) {
     try {
       console.log(`📢 Sending notification: ${type}`);
@@ -297,7 +293,12 @@ class NotificationEngine {
       // If scheduled, save for later execution
       if (scheduleAt) {
         return await this.scheduleNotification({
-          type, recipients, data, channels, priority, scheduleAt
+          type,
+          recipients,
+          data,
+          channels,
+          priority,
+          scheduleAt,
         });
       }
 
@@ -316,7 +317,8 @@ class NotificationEngine {
       }
 
       // Determine recipients based on rules
-      const finalRecipients = recipients.length > 0 ? recipients : await this.getUsersByRoles(rules.userRoles);
+      const finalRecipients =
+        recipients.length > 0 ? recipients : await this.getUsersByRoles(rules.userRoles);
       const finalChannels = channels.length > 0 ? channels : rules.channels;
 
       // Send to each recipient via each channel
@@ -329,15 +331,16 @@ class NotificationEngine {
             template,
             data,
             type,
-            priority
+            priority,
           });
           results.push(result);
         }
       }
 
-      console.log(`✅ Notification sent to ${finalRecipients.length} recipients via ${finalChannels.length} channels`);
+      console.log(
+        `✅ Notification sent to ${finalRecipients.length} recipients via ${finalChannels.length} channels`
+      );
       return results;
-
     } catch (error) {
       console.error('❌ Error sending notification:', error);
       return false;
@@ -352,16 +355,16 @@ class NotificationEngine {
       switch (channel) {
         case 'in_app':
           return await this.sendInAppNotification({ recipient, template, data, type, priority });
-        
+
         case 'email':
           return await this.sendEmailNotification({ recipient, template, data, type });
-        
+
         case 'sms':
           return await this.sendSMSNotification({ recipient, template, data, type });
-        
+
         case 'push':
           return await this.sendPushNotification({ recipient, template, data, type });
-        
+
         default:
           console.error(`❌ Unknown notification channel: ${channel}`);
           return false;
@@ -387,7 +390,7 @@ class NotificationEngine {
         VALUES ($1, $2, $3, $4, $5, $6, $7)
         RETURNING id
       `;
-      
+
       const result = await db.query(query, [
         recipient.id,
         title,
@@ -395,21 +398,23 @@ class NotificationEngine {
         type,
         data.referenceId || null,
         data.referenceType || null,
-        priority
+        priority,
       ]);
 
       // Send real-time notification via WebSocket
       const connection = this.activeConnections.get(recipient.id);
       if (connection && connection.readyState === 1) {
-        connection.send(JSON.stringify({
-          type: 'notification',
-          id: result.rows[0].id,
-          title,
-          message,
-          notificationType: type,
-          priority,
-          timestamp: new Date().toISOString()
-        }));
+        connection.send(
+          JSON.stringify({
+            type: 'notification',
+            id: result.rows[0].id,
+            title,
+            message,
+            notificationType: type,
+            priority,
+            timestamp: new Date().toISOString(),
+          })
+        );
       }
 
       return { success: true, id: result.rows[0].id };
@@ -438,11 +443,11 @@ class NotificationEngine {
         to: recipient.email,
         subject,
         text: textContent,
-        html: htmlContent
+        html: htmlContent,
       };
 
       const result = await this.emailTransporter.sendMail(mailOptions);
-      
+
       // Log email sent
       await this.logNotificationSent({
         userId: recipient.id,
@@ -450,13 +455,13 @@ class NotificationEngine {
         channel: 'email',
         recipient: recipient.email,
         success: true,
-        messageId: result.messageId
+        messageId: result.messageId,
       });
 
       return { success: true, messageId: result.messageId };
     } catch (error) {
       console.error('Error sending email notification:', error);
-      
+
       // Log email failed
       await this.logNotificationSent({
         userId: recipient.id,
@@ -464,7 +469,7 @@ class NotificationEngine {
         channel: 'email',
         recipient: recipient.email,
         success: false,
-        error: error.message
+        error: error.message,
       });
 
       return { success: false, error: error.message };
@@ -491,7 +496,7 @@ class NotificationEngine {
       const result = await this.smsClient.messages.create({
         body: message,
         from: process.env.TWILIO_PHONE_NUMBER,
-        to: recipient.phone
+        to: recipient.phone,
       });
 
       // Log SMS sent
@@ -501,13 +506,13 @@ class NotificationEngine {
         channel: 'sms',
         recipient: recipient.phone,
         success: true,
-        messageId: result.sid
+        messageId: result.sid,
       });
 
       return { success: true, messageId: result.sid };
     } catch (error) {
       console.error('Error sending SMS notification:', error);
-      
+
       // Log SMS failed
       await this.logNotificationSent({
         userId: recipient.id,
@@ -515,7 +520,7 @@ class NotificationEngine {
         channel: 'sms',
         recipient: recipient.phone,
         success: false,
-        error: error.message
+        error: error.message,
       });
 
       return { success: false, error: error.message };
@@ -541,14 +546,14 @@ class NotificationEngine {
         VALUES ($1, $2, $3, $4, $5, $6, 'pending')
         RETURNING id
       `;
-      
+
       const result = await db.query(query, [
         type,
         JSON.stringify(recipients),
         JSON.stringify(data),
         JSON.stringify(channels),
         priority,
-        scheduleAt
+        scheduleAt,
       ]);
 
       console.log(`⏰ Notification scheduled for ${scheduleAt}`);
@@ -571,9 +576,9 @@ class NotificationEngine {
         ORDER BY scheduled_at ASC
         LIMIT 50
       `;
-      
+
       const result = await db.query(query);
-      
+
       for (const notification of result.rows) {
         try {
           await this.sendNotification({
@@ -581,7 +586,7 @@ class NotificationEngine {
             recipients: JSON.parse(notification.recipients),
             data: JSON.parse(notification.data),
             channels: JSON.parse(notification.channels),
-            priority: notification.priority
+            priority: notification.priority,
           });
 
           // Mark as sent
@@ -589,10 +594,9 @@ class NotificationEngine {
             'UPDATE scheduled_notifications SET status = $1, sent_at = NOW() WHERE id = $2',
             ['sent', notification.id]
           );
-
         } catch (error) {
           console.error(`Error processing scheduled notification ${notification.id}:`, error);
-          
+
           // Mark as failed
           await db.query(
             'UPDATE scheduled_notifications SET status = $1, error = $2 WHERE id = $3',
@@ -604,7 +608,6 @@ class NotificationEngine {
       if (result.rows.length > 0) {
         console.log(`📅 Processed ${result.rows.length} scheduled notifications`);
       }
-
     } catch (error) {
       console.error('Error processing scheduled notifications:', error);
     }
@@ -620,7 +623,7 @@ class NotificationEngine {
         FROM users 
         WHERE role = ANY($1)
       `;
-      
+
       const result = await db.query(query, [roles]);
       return result.rows;
     } catch (error) {
@@ -634,9 +637,9 @@ class NotificationEngine {
    */
   renderTemplate(template, data) {
     if (!template) return '';
-    
+
     let rendered = template;
-    
+
     // Replace placeholders
     Object.entries(data).forEach(([key, value]) => {
       const placeholder = new RegExp(`{{${key}}}`, 'g');
@@ -656,7 +659,7 @@ class NotificationEngine {
         (user_id, type, channel, recipient, success, message_id, error, sent_at)
         VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
       `;
-      
+
       await db.query(query, [userId, type, channel, recipient, success, messageId, error]);
     } catch (logError) {
       console.error('Error logging notification:', logError);

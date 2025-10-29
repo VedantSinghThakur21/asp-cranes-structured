@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { 
-  BarChart3, 
-  CalendarClock, 
-  ClipboardList, 
-  CreditCard, 
-  IndianRupee, 
-  Users
+import {
+  BarChart3,
+  CalendarClock,
+  ClipboardList,
+  CreditCard,
+  IndianRupee,
+  Users,
 } from 'lucide-react';
 import { StatCard } from '../components/dashboard/StatCard';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/common/Card';
@@ -23,26 +23,36 @@ export function SalesAgentDashboard() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [quotations, setQuotations] = useState<Quotation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-    useEffect(() => {
+  useEffect(() => {
     const fetchData = async () => {
       try {
         const leadsResponse = await getLeads();
-        
+
         // Extract data from potentially wrapped responses
         const extractData = (response: any) => {
           if (Array.isArray(response)) {
             return response;
-          } else if (response && typeof response === 'object' && response.data && Array.isArray(response.data)) {
+          } else if (
+            response &&
+            typeof response === 'object' &&
+            response.data &&
+            Array.isArray(response.data)
+          ) {
             return response.data;
-          } else if (response && typeof response === 'object' && response.success && Array.isArray(response.data)) {
+          } else if (
+            response &&
+            typeof response === 'object' &&
+            response.success &&
+            Array.isArray(response.data)
+          ) {
             return response.data;
           }
           return [];
         };
-        
+
         const leadsData = extractData(leadsResponse);
         setLeads(leadsData);
-        
+
         // Get the most recent converted lead to fetch its quotations
         const convertedLeads = leadsData.filter((lead: any) => lead.status === 'converted');
         if (convertedLeads.length > 0) {
@@ -50,7 +60,6 @@ export function SalesAgentDashboard() {
           const leadQuotations = await getQuotationsForLead(recentConvertedLead.id);
           setQuotations(leadQuotations);
         }
-        
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
         // Ensure we have empty arrays to prevent undefined errors
@@ -60,31 +69,45 @@ export function SalesAgentDashboard() {
         setIsLoading(false);
       }
     };
-    
+
     fetchData();
   }, []);
   // Count leads by status
-  const newLeadsCount = Array.isArray(leads) ? leads.filter(lead => lead.status === 'new').length : 0;
-  const inProcessLeadsCount = Array.isArray(leads) ? leads.filter(lead => lead.status === 'in_process').length : 0;
-  const qualifiedLeadsCount = Array.isArray(leads) ? leads.filter(lead => lead.status === 'qualified').length : 0;
-  const convertedLeadsCount = Array.isArray(leads) ? leads.filter(lead => lead.status === 'converted').length : 0;
-  
+  const newLeadsCount = Array.isArray(leads)
+    ? leads.filter(lead => lead.status === 'new').length
+    : 0;
+  const inProcessLeadsCount = Array.isArray(leads)
+    ? leads.filter(lead => lead.status === 'in_process').length
+    : 0;
+  const qualifiedLeadsCount = Array.isArray(leads)
+    ? leads.filter(lead => lead.status === 'qualified').length
+    : 0;
+  const convertedLeadsCount = Array.isArray(leads)
+    ? leads.filter(lead => lead.status === 'converted').length
+    : 0;
+
   // Calculate total quotation value
-  const totalQuotationValue = Array.isArray(quotations) ? quotations.reduce((total, quotation) => total + quotation.totalRent, 0) : 0;
-  
+  const totalQuotationValue = Array.isArray(quotations)
+    ? quotations.reduce((total, quotation) => total + quotation.totalRent, 0)
+    : 0;
+
   // Recent leads (limit to 5)
-  const recentLeads = Array.isArray(leads) ? [...leads].sort((a, b) => {
-    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-  }).slice(0, 5) : [];
-  
+  const recentLeads = Array.isArray(leads)
+    ? [...leads]
+        .sort((a, b) => {
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        })
+        .slice(0, 5)
+    : [];
+
   // Prepare data for lead funnel
   const leadFunnelStages = [
     { label: 'New', value: newLeadsCount, color: '#93C5FD' },
     { label: 'In Process', value: inProcessLeadsCount, color: '#60A5FA' },
     { label: 'Qualified', value: qualifiedLeadsCount, color: '#3B82F6' },
-    { label: 'Converted', value: convertedLeadsCount, color: '#2563EB' }
+    { label: 'Converted', value: convertedLeadsCount, color: '#2563EB' },
   ];
-  
+
   // Prepare data for performance chart
   const performanceChartData = {
     labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
@@ -93,14 +116,14 @@ export function SalesAgentDashboard() {
         label: 'New Leads',
         data: [4, 6, 2, 8, 5],
         backgroundColor: 'rgba(99, 102, 241, 0.6)',
-      }
-    ]
+      },
+    ],
   };
-  
+
   if (isLoading) {
     return <div className="flex justify-center py-10">Loading dashboard...</div>;
   }
-    return (
+  return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
@@ -128,7 +151,7 @@ export function SalesAgentDashboard() {
           variant="accent"
         />
       </div>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Lead conversion funnel */}
         <Card>
@@ -136,10 +159,7 @@ export function SalesAgentDashboard() {
             <CardTitle>Lead Conversion Funnel</CardTitle>
           </CardHeader>
           <CardContent className="flex justify-center">
-            <FunnelChart 
-              stages={leadFunnelStages} 
-              height={250}
-            />
+            <FunnelChart stages={leadFunnelStages} height={250} />
           </CardContent>
         </Card>
 
@@ -149,10 +169,7 @@ export function SalesAgentDashboard() {
             <CardTitle>Weekly Lead Generation</CardTitle>
           </CardHeader>
           <CardContent>
-            <BarChart 
-              data={performanceChartData} 
-              height={250}
-            />
+            <BarChart data={performanceChartData} height={250} />
           </CardContent>
         </Card>
       </div>
@@ -163,7 +180,10 @@ export function SalesAgentDashboard() {
             <CardHeader>
               <div className="flex justify-between items-center">
                 <CardTitle>Recent Leads</CardTitle>
-                <Link to="/leads" className="text-sm font-medium text-primary-600 hover:text-primary-800">
+                <Link
+                  to="/leads"
+                  className="text-sm font-medium text-primary-600 hover:text-primary-800"
+                >
                   View All Leads
                 </Link>
               </div>
@@ -191,7 +211,7 @@ export function SalesAgentDashboard() {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {recentLeads.map((lead) => (
+                      {recentLeads.map(lead => (
                         <tr key={lead.id} className="hover:bg-gray-50">
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="font-medium text-gray-900">{lead.customerName}</div>
@@ -214,7 +234,7 @@ export function SalesAgentDashboard() {
             </CardContent>
           </Card>
         </div>
-        
+
         <div>
           <Card className="h-full">
             <CardHeader>
@@ -228,27 +248,33 @@ export function SalesAgentDashboard() {
                   </div>
                   <div>
                     <h4 className="text-sm font-medium text-gray-900">Prepare Quotation</h4>
-                    <p className="text-xs text-gray-500 mt-1">BuildRight Inc. requires updated pricing by tomorrow</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      BuildRight Inc. requires updated pricing by tomorrow
+                    </p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start space-x-3 p-3 bg-green-50 border border-green-100 rounded-md">
                   <div className="flex-shrink-0 mt-1">
                     <CalendarClock className="h-5 w-5 text-green-500" />
                   </div>
                   <div>
                     <h4 className="text-sm font-medium text-gray-900">Client Meeting</h4>
-                    <p className="text-xs text-gray-500 mt-1">Harbor Construction - 2:30 PM Tomorrow</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Harbor Construction - 2:30 PM Tomorrow
+                    </p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start space-x-3 p-3 bg-amber-50 border border-amber-100 rounded-md">
                   <div className="flex-shrink-0 mt-1">
                     <BarChart3 className="h-5 w-5 text-amber-500" />
                   </div>
                   <div>
                     <h4 className="text-sm font-medium text-gray-900">Monthly Report</h4>
-                    <p className="text-xs text-gray-500 mt-1">Submit sales summary by end of week</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Submit sales summary by end of week
+                    </p>
                   </div>
                 </div>
               </div>

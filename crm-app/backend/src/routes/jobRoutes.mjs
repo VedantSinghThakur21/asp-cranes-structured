@@ -3,16 +3,28 @@
  */
 import express from 'express';
 import { authenticateToken } from '../middleware/authMiddleware.mjs';
-import { getJobs, getJobById, createJob, updateJob, deleteJob, getJobEquipment, addJobEquipment, removeJobEquipment, getJobOperators, addJobOperator, removeJobOperator } from '../services/postgres/jobRepository.js';
+import {
+  getJobs,
+  getJobById,
+  createJob,
+  updateJob,
+  deleteJob,
+  getJobEquipment,
+  addJobEquipment,
+  removeJobEquipment,
+  getJobOperators,
+  addJobOperator,
+  removeJobOperator,
+} from '../services/postgres/jobRepository.js';
 import { createJobActivity } from '../services/activityService.js';
-import { 
-  sendJobAssignedNotification, 
-  sendJobCompletedNotification 
+import {
+  sendJobAssignedNotification,
+  sendJobCompletedNotification,
 } from '../services/notificationService.js';
 
 const router = express.Router();
 
-const getErrorMessage = (error) => {
+const getErrorMessage = error => {
   if (error instanceof Error) return error.message;
   return String(error);
 };
@@ -31,10 +43,10 @@ router.get('/', async (_req, res) => {
 router.get('/leads/won-deals', async (req, res) => {
   try {
     console.log('🎯 Fetching leads with won deals for job scheduling...');
-    
+
     // Import required modules
     const { db } = await import('../lib/dbClient.js');
-    
+
     // Query to get leads that have won deals
     const query = `
       SELECT DISTINCT l.id, l.company_name, l.contact_name, l.email, l.phone, l.status,
@@ -45,9 +57,9 @@ router.get('/leads/won-deals', async (req, res) => {
       WHERE d.stage = 'won' AND l.status = 'converted'
       ORDER BY d.closing_date DESC, l.company_name ASC
     `;
-    
+
     const results = await db.any(query);
-    
+
     // Transform for frontend consumption
     const transformedResults = results.map(row => ({
       id: row.id,
@@ -61,22 +73,21 @@ router.get('/leads/won-deals', async (req, res) => {
       dealStage: row.stage,
       closingDate: row.closing_date,
       createdAt: row.created_at,
-      updatedAt: row.updated_at
+      updatedAt: row.updated_at,
     }));
-    
+
     console.log(`✅ Found ${transformedResults.length} leads with won deals`);
-    
+
     res.json({
       success: true,
       data: transformedResults,
-      count: transformedResults.length
+      count: transformedResults.length,
     });
-    
   } catch (error) {
     console.error('❌ Error fetching leads with won deals:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      error: getErrorMessage(error) 
+      error: getErrorMessage(error),
     });
   }
 });
@@ -96,19 +107,15 @@ router.get('/:id', async (req, res) => {
 router.post('/', authenticateToken, async (req, res) => {
   try {
     const job = await createJob(req.body);
-    
+
     // Create activity for job creation
     try {
-      await createJobActivity(
-        job.customerName,
-        'created',
-        job.createdBy || 'System'
-      );
+      await createJobActivity(job.customerName, 'created', job.createdBy || 'System');
     } catch (activityError) {
       console.error('Error creating activity:', activityError);
       // Don't fail the job creation if activity creation fails
     }
-    
+
     // Send notifications for job assignment
     try {
       if (job.operatorIds && job.operatorIds.length > 0) {
@@ -119,7 +126,7 @@ router.post('/', authenticateToken, async (req, res) => {
       console.error('Error sending job assignment notifications:', notificationError);
       // Don't fail the job creation if notification sending fails
     }
-    
+
     res.status(201).json(job);
   } catch (error) {
     res.status(500).json({ error: getErrorMessage(error) });
@@ -131,7 +138,7 @@ router.put('/:id', async (req, res) => {
   try {
     const job = await updateJob(req.params.id, req.body);
     if (!job) return res.status(404).json({ error: 'Job not found' });
-    
+
     // Check if job status changed to completed
     if (req.body.status === 'completed' && job.status === 'completed') {
       try {
@@ -141,7 +148,7 @@ router.put('/:id', async (req, res) => {
         console.error('Error sending job completion notification:', notificationError);
       }
     }
-    
+
     // Check if new operators were assigned
     if (req.body.operatorIds && req.body.operatorIds.length > 0) {
       // Find newly assigned operators (this is a simplified check)
@@ -152,7 +159,7 @@ router.put('/:id', async (req, res) => {
         console.error('Error sending job assignment notifications:', notificationError);
       }
     }
-    
+
     res.json(job);
   } catch (error) {
     res.status(500).json({ error: getErrorMessage(error) });

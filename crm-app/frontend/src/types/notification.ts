@@ -8,7 +8,7 @@ export interface Notification {
   createdAt: string;
   link?: string;
 }
-export type NotificationType = 
+export type NotificationType =
   | 'job_assigned'
   | 'job_rejected'
   | 'job_completed'

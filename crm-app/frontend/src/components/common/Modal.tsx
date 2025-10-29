@@ -19,14 +19,7 @@ const sizeClasses = {
   full: 'max-w-[95%] sm:max-w-6xl',
 };
 
-export function Modal({
-  isOpen,
-  onClose,
-  title,
-  description,
-  children,
-  size = 'md',
-}: ModalProps) {
+export function Modal({ isOpen, onClose, title, description, children, size = 'md' }: ModalProps) {
   return (
     <Transition show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-50" onClose={onClose}>
@@ -53,7 +46,9 @@ export function Modal({
               leaveFrom="opacity-100 translate-y-0 sm:scale-100"
               leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
-              <Dialog.Panel className={`w-full ${sizeClasses[size]} transform overflow-hidden rounded-lg bg-white text-left shadow-modal transition-all my-2 sm:my-8`}>
+              <Dialog.Panel
+                className={`w-full ${sizeClasses[size]} transform overflow-hidden rounded-lg bg-white text-left shadow-modal transition-all my-2 sm:my-8`}
+              >
                 <div className="flex items-center justify-between border-b border-gray-200 px-3 sm:px-6 py-3 sm:py-4">
                   <div>
                     {title && (
@@ -79,7 +74,9 @@ export function Modal({
                     <X className="h-5 w-5" aria-hidden="true" />
                   </button>
                 </div>
-                <div className="px-3 sm:px-6 py-3 sm:py-4 max-h-[80vh] overflow-y-auto">{children}</div>
+                <div className="px-3 sm:px-6 py-3 sm:py-4 max-h-[80vh] overflow-y-auto">
+                  {children}
+                </div>
               </Dialog.Panel>
             </Transition.Child>
           </div>

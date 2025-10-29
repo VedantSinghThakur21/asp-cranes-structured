@@ -13,7 +13,7 @@ export const getJobs = async () => {
   }
 };
 
-export const getJobById = async (id) => {
+export const getJobById = async id => {
   try {
     console.log(`🔍 Fetching job by ID: ${id}`);
     const job = await db.oneOrNone('SELECT * FROM jobs WHERE id = $1', [id]);
@@ -25,7 +25,7 @@ export const getJobById = async (id) => {
   }
 };
 
-export const createJob = async (jobData) => {
+export const createJob = async jobData => {
   try {
     console.log('🆕 Creating new job...');
     const result = await db.one(
@@ -74,7 +74,7 @@ export const updateJob = async (id, jobData) => {
   }
 };
 
-export const deleteJob = async (id) => {
+export const deleteJob = async id => {
   try {
     console.log(`🗑️ Deleting job: ${id}`);
     await db.none('DELETE FROM jobs WHERE id = $1', [id]);
@@ -85,7 +85,7 @@ export const deleteJob = async (id) => {
   }
 };
 
-export const getJobEquipment = async (jobId) => {
+export const getJobEquipment = async jobId => {
   try {
     console.log(`📋 Fetching equipment for job: ${jobId}`);
     const equipment = await db.any('SELECT * FROM job_equipment WHERE job_id = $1', [jobId]);
@@ -115,7 +115,10 @@ export const addJobEquipment = async (jobId, equipmentId) => {
 export const removeJobEquipment = async (jobId, equipmentId) => {
   try {
     console.log(`🗑️ Removing equipment ${equipmentId} from job ${jobId}`);
-    await db.none('DELETE FROM job_equipment WHERE job_id = $1 AND equipment_id = $2', [jobId, equipmentId]);
+    await db.none('DELETE FROM job_equipment WHERE job_id = $1 AND equipment_id = $2', [
+      jobId,
+      equipmentId,
+    ]);
     console.log(`✅ Equipment removed from job successfully`);
   } catch (error) {
     console.error('❌ Error removing job equipment:', error);
@@ -123,7 +126,7 @@ export const removeJobEquipment = async (jobId, equipmentId) => {
   }
 };
 
-export const getJobOperators = async (jobId) => {
+export const getJobOperators = async jobId => {
   try {
     console.log(`👥 Fetching operators for job: ${jobId}`);
     const operators = await db.any('SELECT * FROM job_operators WHERE job_id = $1', [jobId]);
@@ -153,7 +156,10 @@ export const addJobOperator = async (jobId, operatorId) => {
 export const removeJobOperator = async (jobId, operatorId) => {
   try {
     console.log(`🗑️ Removing operator ${operatorId} from job ${jobId}`);
-    await db.none('DELETE FROM job_operators WHERE job_id = $1 AND operator_id = $2', [jobId, operatorId]);
+    await db.none('DELETE FROM job_operators WHERE job_id = $1 AND operator_id = $2', [
+      jobId,
+      operatorId,
+    ]);
     console.log(`✅ Operator removed from job successfully`);
   } catch (error) {
     console.error('❌ Error removing job operator:', error);

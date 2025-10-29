@@ -1,15 +1,15 @@
 import { useState } from 'react';
-import { 
-  Settings, 
-  FileText, 
-  Users, 
-  Wrench, 
-  Calendar, 
+import {
+  Settings,
+  FileText,
+  Users,
+  Wrench,
+  Calendar,
   Shield,
   Zap,
   Palette,
   Activity,
-  BarChart3
+  BarChart3,
 } from 'lucide-react';
 import { QuotationConfig } from '../components/config/QuotationConfig';
 import { ResourceRatesConfig } from '../components/config/ResourceRatesConfig';
@@ -24,7 +24,7 @@ const configTabs = [
     icon: FileText,
     description: 'Manage quotation templates and defaults',
     component: DefaultTemplateConfig,
-    color: 'from-blue-600 to-blue-700'
+    color: 'from-blue-600 to-blue-700',
   },
   {
     id: 'quotations',
@@ -32,7 +32,7 @@ const configTabs = [
     icon: Calendar,
     description: 'Configure quotation order types and settings',
     component: QuotationConfig,
-    color: 'from-indigo-600 to-indigo-700'
+    color: 'from-indigo-600 to-indigo-700',
   },
   {
     id: 'resources',
@@ -40,7 +40,7 @@ const configTabs = [
     icon: Users,
     description: 'Set resource rates and pricing',
     component: ResourceRatesConfig,
-    color: 'from-emerald-600 to-emerald-700'
+    color: 'from-emerald-600 to-emerald-700',
   },
   {
     id: 'parameters',
@@ -48,8 +48,8 @@ const configTabs = [
     icon: Wrench,
     description: 'Additional system parameters',
     component: AdditionalParamsConfig,
-    color: 'from-orange-600 to-orange-700'
-  }
+    color: 'from-orange-600 to-orange-700',
+  },
 ];
 
 export function Config() {
@@ -63,15 +63,16 @@ export function Config() {
           <Shield className="h-16 w-16 text-red-500 mx-auto mb-6" />
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h2>
           <p className="text-gray-600 max-w-md">
-            You don't have the necessary permissions to access the configuration panel. 
-            Please contact your administrator.
+            You don't have the necessary permissions to access the configuration panel. Please
+            contact your administrator.
           </p>
         </div>
       </div>
     );
   }
 
-  const ActiveComponent = configTabs.find(tab => tab.id === activeTab)?.component || DefaultTemplateConfig;
+  const ActiveComponent =
+    configTabs.find(tab => tab.id === activeTab)?.component || DefaultTemplateConfig;
   const activeTabData = configTabs.find(tab => tab.id === activeTab);
 
   return (
@@ -85,12 +86,8 @@ export function Config() {
                 <Settings className="h-5 w-5 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">
-                  Configuration
-                </h1>
-                <p className="text-sm text-gray-600 mt-1">
-                  Manage your CRM system settings
-                </p>
+                <h1 className="text-2xl font-bold text-gray-900">Configuration</h1>
+                <p className="text-sm text-gray-600 mt-1">Manage your CRM system settings</p>
               </div>
             </div>
             <div className="hidden lg:flex items-center space-x-4">
@@ -117,37 +114,43 @@ export function Config() {
                 Modules
               </h3>
               <nav className="space-y-2">
-                {configTabs.map((tab) => {
+                {configTabs.map(tab => {
                   const Icon = tab.icon;
                   const isActive = activeTab === tab.id;
-                  
+
                   return (
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
                       className={`w-full group relative overflow-hidden rounded-lg p-3 transition-all duration-200 ${
-                        isActive 
-                          ? 'bg-blue-50 border border-blue-200' 
+                        isActive
+                          ? 'bg-blue-50 border border-blue-200'
                           : 'hover:bg-gray-50 border border-transparent hover:border-gray-200'
                       }`}
                     >
                       <div className="flex items-center space-x-3">
-                        <div className={`flex-shrink-0 p-2 rounded-md transition-all duration-200 ${
-                          isActive 
-                            ? `bg-gradient-to-r ${tab.color} text-white`
-                            : 'bg-gray-100 text-gray-600 group-hover:bg-gray-200'
-                        }`}>
+                        <div
+                          className={`flex-shrink-0 p-2 rounded-md transition-all duration-200 ${
+                            isActive
+                              ? `bg-gradient-to-r ${tab.color} text-white`
+                              : 'bg-gray-100 text-gray-600 group-hover:bg-gray-200'
+                          }`}
+                        >
                           <Icon className="h-4 w-4" />
                         </div>
                         <div className="flex-1 text-left min-w-0">
-                          <h4 className={`font-medium text-sm transition-colors duration-200 ${
-                            isActive ? 'text-blue-900' : 'text-gray-700 group-hover:text-gray-900'
-                          }`}>
+                          <h4
+                            className={`font-medium text-sm transition-colors duration-200 ${
+                              isActive ? 'text-blue-900' : 'text-gray-700 group-hover:text-gray-900'
+                            }`}
+                          >
                             {tab.label}
                           </h4>
-                          <p className={`text-xs mt-0.5 transition-colors duration-200 truncate ${
-                            isActive ? 'text-blue-600' : 'text-gray-500 group-hover:text-gray-600'
-                          }`}>
+                          <p
+                            className={`text-xs mt-0.5 transition-colors duration-200 truncate ${
+                              isActive ? 'text-blue-600' : 'text-gray-500 group-hover:text-gray-600'
+                            }`}
+                          >
                             {tab.description}
                           </p>
                         </div>
@@ -194,16 +197,16 @@ export function Config() {
                 <div className="flex items-center space-x-3">
                   {activeTabData && (
                     <>
-                      <div className={`p-2 rounded-lg bg-gradient-to-r ${activeTabData.color} text-white`}>
+                      <div
+                        className={`p-2 rounded-lg bg-gradient-to-r ${activeTabData.color} text-white`}
+                      >
                         <activeTabData.icon className="h-5 w-5" />
                       </div>
                       <div>
                         <h2 className="text-xl font-semibold text-gray-900">
                           {activeTabData.label}
                         </h2>
-                        <p className="text-sm text-gray-600 mt-0.5">
-                          {activeTabData.description}
-                        </p>
+                        <p className="text-sm text-gray-600 mt-0.5">{activeTabData.description}</p>
                       </div>
                     </>
                   )}

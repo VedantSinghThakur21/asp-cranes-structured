@@ -20,7 +20,7 @@ const pool = new pg.Pool({
   database: process.env.VITE_DB_NAME || 'asp_crm',
   user: process.env.VITE_DB_USER || 'postgres',
   password: process.env.VITE_DB_PASSWORD || '',
-  ssl: process.env.VITE_DB_SSL === 'true' ? { rejectUnauthorized: false } : false
+  ssl: process.env.VITE_DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
 });
 
 // JWT secret from environment variables
@@ -32,14 +32,14 @@ const authenticateToken = async (req, res, next) => {
     // Get token from authorization header
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
-    
+
     if (!token) {
       return res.status(401).json({ error: 'No token provided' });
     }
-    
+
     // Verify token
     const decoded = jwt.verify(token, JWT_SECRET);
-    
+
     // Add user data to request
     req.user = decoded;
     next();
@@ -58,22 +58,24 @@ router.use(authenticateToken);
 router.post('/query', authenticateToken, async (req, res) => {
   try {
     const { query, values, type } = req.body;
-    
+
     if (!query || !type) {
       return res.status(400).json({ error: 'Query and type are required' });
     }
-    
+
     // Security check: Prevent dangerous operations
-    if (query.toLowerCase().includes('delete') || 
-        query.toLowerCase().includes('drop') || 
-        query.toLowerCase().includes('truncate') ||
-        query.toLowerCase().includes('alter')) {
+    if (
+      query.toLowerCase().includes('delete') ||
+      query.toLowerCase().includes('drop') ||
+      query.toLowerCase().includes('truncate') ||
+      query.toLowerCase().includes('alter')
+    ) {
       return res.status(403).json({ error: 'Forbidden query type' });
     }
-    
+
     // Get database connection
     const client = await pool.connect();
-    
+
     // Execute query based on type
     let result;
     switch (type) {
@@ -101,14 +103,14 @@ router.post('/query', authenticateToken, async (req, res) => {
         const queryResult = await client.query(query, values || []);
         result = {
           rows: queryResult.rows,
-          rowCount: queryResult.rowCount
+          rowCount: queryResult.rowCount,
         };
         break;
       default:
         client.release();
         return res.status(400).json({ error: 'Invalid query type' });
     }
-    
+
     client.release();
     return res.status(200).json(result);
   } catch (error) {

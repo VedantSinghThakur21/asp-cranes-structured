@@ -1,6 +1,6 @@
 /**
  * Config Service (Client Version)
- * 
+ *
  * This service interfaces with the PostgreSQL API for configuration.
  * Frontend-only implementation that doesn't import any server-side code.
  */
@@ -70,8 +70,8 @@ export const DEFAULT_CONFIG: QuotationConfig = {
     micro: { minDays: 1, maxDays: 10 },
     small: { minDays: 11, maxDays: 25 },
     monthly: { minDays: 26, maxDays: 365 },
-    yearly: { minDays: 366, maxDays: 3650 }
-  }
+    yearly: { minDays: 366, maxDays: 3650 },
+  },
 };
 
 /**
@@ -81,13 +81,13 @@ export const getQuotationConfig = async (): Promise<QuotationConfig> => {
   try {
     const response = await fetch('/api/config/quotation', {
       method: 'GET',
-      headers: getHeaders()
+      headers: getHeaders(),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Failed to fetch quotation config: ${response.status}`);
     }
-    
+
     const result = await response.json();
     return result.data || DEFAULT_CONFIG;
   } catch (error) {
@@ -99,19 +99,21 @@ export const getQuotationConfig = async (): Promise<QuotationConfig> => {
 /**
  * Update quotation configuration
  */
-export const updateQuotationConfig = async (config: Partial<QuotationConfig>): Promise<QuotationConfig> => {
+export const updateQuotationConfig = async (
+  config: Partial<QuotationConfig>
+): Promise<QuotationConfig> => {
   try {
     const response = await fetch('/api/config/quotation', {
       method: 'PUT',
       headers: getHeaders(),
-      body: JSON.stringify(config)
+      body: JSON.stringify(config),
     });
-    
+
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.message || 'Failed to update quotation config');
     }
-    
+
     const result = await response.json();
     return result.data;
   } catch (error) {
@@ -127,21 +129,23 @@ export const getDatabaseConfig = async (): Promise<DatabaseConfig> => {
   try {
     const response = await fetch('/api/dbconfig', {
       method: 'GET',
-      headers: getHeaders()
+      headers: getHeaders(),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Failed to fetch database config: ${response.status}`);
     }
-    
+
     const result = await response.json();
-    return result.data || {
-      host: 'localhost',
-      port: 5432,
-      database: 'asp_crm',
-      user: 'postgres',
-      ssl: false
-    };
+    return (
+      result.data || {
+        host: 'localhost',
+        port: 5432,
+        database: 'asp_crm',
+        user: 'postgres',
+        ssl: false,
+      }
+    );
   } catch (error) {
     console.error('Error fetching database config:', error);
     return {
@@ -149,7 +153,7 @@ export const getDatabaseConfig = async (): Promise<DatabaseConfig> => {
       port: 5432,
       database: 'asp_crm',
       user: 'postgres',
-      ssl: false
+      ssl: false,
     };
   }
 };
@@ -157,19 +161,21 @@ export const getDatabaseConfig = async (): Promise<DatabaseConfig> => {
 /**
  * Update database configuration
  */
-export const updateDatabaseConfig = async (config: Partial<DatabaseConfig>): Promise<DatabaseConfig> => {
+export const updateDatabaseConfig = async (
+  config: Partial<DatabaseConfig>
+): Promise<DatabaseConfig> => {
   try {
     const response = await fetch('/api/dbconfig', {
       method: 'PUT',
       headers: getHeaders(),
-      body: JSON.stringify(config)
+      body: JSON.stringify(config),
     });
-    
+
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.message || 'Failed to update database config');
     }
-    
+
     const result = await response.json();
     return result.data;
   } catch (error) {
@@ -185,13 +191,13 @@ export const getConfig = async (configName: string): Promise<any> => {
   try {
     const response = await fetch(`/api/config/${configName}`, {
       method: 'GET',
-      headers: getHeaders()
+      headers: getHeaders(),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Failed to fetch ${configName} config: ${response.status}`);
     }
-    
+
     const result = await response.json();
     return result.data || {};
   } catch (error) {
@@ -208,14 +214,14 @@ export const updateConfig = async (configName: string, configData: any): Promise
     const response = await fetch(`/api/config/${configName}`, {
       method: 'PUT',
       headers: getHeaders(),
-      body: JSON.stringify(configData)
+      body: JSON.stringify(configData),
     });
-    
+
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.message || `Failed to update ${configName} config`);
     }
-    
+
     const result = await response.json();
     return result.data;
   } catch (error) {
@@ -234,7 +240,9 @@ export const getResourceRatesConfig = async (): Promise<ResourceRatesConfig> => 
 /**
  * Update resource rates configuration
  */
-export const updateResourceRatesConfig = async (config: Partial<ResourceRatesConfig>): Promise<ResourceRatesConfig> => {
+export const updateResourceRatesConfig = async (
+  config: Partial<ResourceRatesConfig>
+): Promise<ResourceRatesConfig> => {
   return updateConfig('resourceRates', config);
 };
 
@@ -248,7 +256,9 @@ export const getAdditionalParamsConfig = async (): Promise<AdditionalParamsConfi
 /**
  * Update additional parameters configuration
  */
-export const updateAdditionalParamsConfig = async (config: Partial<AdditionalParamsConfig>): Promise<AdditionalParamsConfig> => {
+export const updateAdditionalParamsConfig = async (
+  config: Partial<AdditionalParamsConfig>
+): Promise<AdditionalParamsConfig> => {
   return updateConfig('additionalParams', config);
 };
 
@@ -259,23 +269,25 @@ export const getDefaultTemplateConfig = async () => {
   try {
     const response = await fetch('/api/config/defaultTemplate', {
       method: 'GET',
-      headers: getHeaders()
+      headers: getHeaders(),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Failed to fetch template config: ${response.status}`);
     }
-    
+
     const result = await response.json();
-    return result.data || {
-      defaultTemplateId: null,
-      defaultTemplate: null
-    };
+    return (
+      result.data || {
+        defaultTemplateId: null,
+        defaultTemplate: null,
+      }
+    );
   } catch (error) {
     console.error('Error fetching default template:', error);
     return {
       defaultTemplateId: null,
-      defaultTemplate: null
+      defaultTemplate: null,
     };
   }
 };
@@ -289,15 +301,15 @@ export const updateDefaultTemplateConfig = async (templateId: string) => {
       method: 'PUT',
       headers: {
         ...getHeaders(),
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ defaultTemplateId: templateId })
+      body: JSON.stringify({ defaultTemplateId: templateId }),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Failed to update default template: ${response.status}`);
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error('Error updating default template:', error);
@@ -312,13 +324,13 @@ export const getTemplateById = async (templateId: string) => {
   try {
     const response = await fetch(`/api/templates/${templateId}`, {
       method: 'GET',
-      headers: getHeaders()
+      headers: getHeaders(),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Failed to fetch template: ${response.status}`);
     }
-    
+
     const result = await response.json();
     return result.data || null;
   } catch (error) {

@@ -8,22 +8,22 @@ export default function serverModuleResolver() {
     resolveId(source) {
       // Handle server-only modules
       const serverOnlyModules = ['pg-promise', 'pg', 'bcryptjs', 'jsonwebtoken'];
-      
+
       if (serverOnlyModules.includes(source)) {
         // Return a virtual module
         return `virtual:${source}-browser`;
       }
-      
+
       return null;
     },
-    
+
     load(id) {
       if (id.startsWith('virtual:')) {
         const moduleName = id.replace('virtual:', '').replace('-browser', '');
-        
+
         // Return browser-compatible stub/mock
         console.log(`Creating browser-compatible mock for ${moduleName}`);
-        
+
         switch (moduleName) {
           case 'pg-promise':
             return `
@@ -44,7 +44,7 @@ export default function serverModuleResolver() {
                 };
               };
             `;
-          
+
           case 'pg':
             return `
               export default {
@@ -74,7 +74,7 @@ export default function serverModuleResolver() {
                 end() { return Promise.resolve(); }
               };
             `;
-          
+
           case 'bcryptjs':
             return `
               export function hash(password) {
@@ -95,7 +95,7 @@ export default function serverModuleResolver() {
                 compareSync: () => false
               };
             `;
-          
+
           case 'jsonwebtoken':
             return `
               export function sign(payload, secret, options) {
@@ -130,7 +130,7 @@ export default function serverModuleResolver() {
                 decode
               };
             `;
-          
+
           default:
             return `
               console.warn('${moduleName} is not supported in browser environment');
@@ -138,8 +138,8 @@ export default function serverModuleResolver() {
             `;
         }
       }
-      
+
       return null;
-    }
+    },
   };
 }

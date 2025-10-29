@@ -7,7 +7,12 @@ import { Toast } from '../components/common/Toast';
 import { useAuthStore } from '../store/authStore';
 import { Equipment, OrderType } from '../types/equipment';
 import { getEquipment, updateEquipment } from '../services/equipmentService';
-import { getQuotationConfig, updateQuotationConfig, getConfig, updateConfig } from '../services/configService';
+import {
+  getQuotationConfig,
+  updateQuotationConfig,
+  getConfig,
+  updateConfig,
+} from '../services/configService';
 import { formatCurrency } from '../utils/formatters';
 
 export function Configuration() {
@@ -20,7 +25,7 @@ export function Configuration() {
     micro: { minDays: 1, maxDays: 10 },
     small: { minDays: 11, maxDays: 25 },
     monthly: { minDays: 26, maxDays: 365 },
-    yearly: { minDays: 366, maxDays: 3650 }
+    yearly: { minDays: 366, maxDays: 3650 },
   });
   const [toast, setToast] = useState<{
     show: boolean;
@@ -28,10 +33,7 @@ export function Configuration() {
     variant?: 'success' | 'error' | 'warning';
   }>({ show: false, title: '' });
 
-  const showToast = (
-    title: string,
-    variant: 'success' | 'error' | 'warning' = 'success'
-  ) => {
+  const showToast = (title: string, variant: 'success' | 'error' | 'warning' = 'success') => {
     setToast({ show: true, title, variant });
     setTimeout(() => setToast({ show: false, title: '' }), 3000);
   };
@@ -57,7 +59,7 @@ export function Configuration() {
     try {
       const data = await getEquipment();
       setEquipment(data);
-      
+
       // Initialize edited rates with current base rates
       const rates: Record<string, Record<OrderType, number>> = {};
       data.forEach(eq => {
@@ -77,19 +79,23 @@ export function Configuration() {
       ...prev,
       [equipmentId]: {
         ...prev[equipmentId],
-        [activeRateType]: numValue
-      }
+        [activeRateType]: numValue,
+      },
     }));
   };
 
-  const handleLimitChange = (orderType: string, limitType: 'minDays' | 'maxDays', value: string) => {
+  const handleLimitChange = (
+    orderType: string,
+    limitType: 'minDays' | 'maxDays',
+    value: string
+  ) => {
     const numValue = parseInt(value) || 0;
     setOrderTypeLimits(prev => ({
       ...prev,
       [orderType]: {
         ...prev[orderType as keyof typeof prev],
-        [limitType]: numValue
-      }
+        [limitType]: numValue,
+      },
     }));
   };
 
@@ -106,16 +112,14 @@ export function Configuration() {
   const handleSave = async (equipmentId: string) => {
     try {
       const updatedEquipment = await updateEquipment(equipmentId, {
-        baseRates: editedRates[equipmentId]
+        baseRates: editedRates[equipmentId],
       });
-      
+
       if (updatedEquipment) {
         showToast('Base rate updated successfully', 'success');
-        
+
         // Update local equipment state
-        setEquipment(prev => prev.map(eq => 
-          eq.id === equipmentId ? updatedEquipment : eq
-        ));
+        setEquipment(prev => prev.map(eq => (eq.id === equipmentId ? updatedEquipment : eq)));
       }
     } catch (error) {
       console.error('Error updating base rate:', error);
@@ -155,21 +159,22 @@ export function Configuration() {
               </Button>
             ))}
           </div>
-          
+
           {isLoading ? (
             <div className="text-center py-4">Loading equipment...</div>
           ) : (
             <div className="space-y-4">
               {equipment.map(eq => (
-                <div 
-                  key={eq.id} 
+                <div
+                  key={eq.id}
                   className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
                 >
                   <div className="space-y-1">
                     <div className="font-medium">{eq.name}</div>
                     <div className="text-sm text-gray-500">{eq.equipmentId}</div>
                     <div className="text-sm text-gray-500">
-                      Current Rate: {formatCurrency(eq.baseRates[activeRateType])}/{activeRateType === 'yearly' || activeRateType === 'monthly' ? 'month' : 'hr'}
+                      Current Rate: {formatCurrency(eq.baseRates[activeRateType])}/
+                      {activeRateType === 'yearly' || activeRateType === 'monthly' ? 'month' : 'hr'}
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -178,7 +183,7 @@ export function Configuration() {
                       <Input
                         type="number"
                         value={editedRates[eq.id]?.[activeRateType] || 0}
-                        onChange={(e) => handleRateChange(eq.id, e.target.value)}
+                        onChange={e => handleRateChange(eq.id, e.target.value)}
                         className="pl-9 w-32"
                         min={0}
                       />
@@ -187,7 +192,9 @@ export function Configuration() {
                       variant="outline"
                       size="sm"
                       onClick={() => handleSave(eq.id)}
-                      disabled={eq.baseRates[activeRateType] === editedRates[eq.id]?.[activeRateType]}
+                      disabled={
+                        eq.baseRates[activeRateType] === editedRates[eq.id]?.[activeRateType]
+                      }
                     >
                       <Save size={16} className="mr-2" />
                       Save
@@ -211,35 +218,29 @@ export function Configuration() {
                 <div className="font-medium capitalize">{orderType}</div>
                 <div className="mt-3 grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Min Days
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Min Days</label>
                     <Input
                       type="number"
                       value={limits.minDays}
-                      onChange={(e) => handleLimitChange(orderType, 'minDays', e.target.value)}
+                      onChange={e => handleLimitChange(orderType, 'minDays', e.target.value)}
                       min={1}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Max Days
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Max Days</label>
                     <Input
                       type="number"
                       value={limits.maxDays}
-                      onChange={(e) => handleLimitChange(orderType, 'maxDays', e.target.value)}
+                      onChange={e => handleLimitChange(orderType, 'maxDays', e.target.value)}
                       min={1}
                     />
                   </div>
                 </div>
               </div>
             ))}
-            
+
             <div className="mt-4 flex justify-end">
-              <Button
-                onClick={handleSaveConfig}
-              >
+              <Button onClick={handleSaveConfig}>
                 <Save size={16} className="mr-2" />
                 Save Configuration
               </Button>
@@ -247,7 +248,7 @@ export function Configuration() {
           </div>
         </CardContent>
       </Card>
-      
+
       {toast.show && (
         <Toast
           title={toast.title}

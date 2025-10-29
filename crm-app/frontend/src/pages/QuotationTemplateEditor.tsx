@@ -22,7 +22,7 @@ export function QuotationTemplateEditor() {
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     createdBy: '',
-    isDefault: false
+    isDefault: false,
   });
 
   useEffect(() => {
@@ -42,7 +42,7 @@ export function QuotationTemplateEditor() {
       showToast({
         title: 'Error',
         message: 'Failed to load template',
-        type: 'error'
+        type: 'error',
       });
       navigate('/templates');
     }
@@ -54,25 +54,25 @@ export function QuotationTemplateEditor() {
       if (template.id) {
         await updateTemplate(template.id, {
           ...template,
-          updatedAt: new Date().toISOString()
+          updatedAt: new Date().toISOString(),
         });
         showToast({
           title: 'Success',
           message: 'Template updated successfully',
-          type: 'success'
+          type: 'success',
         });
       } else {
         const newTemplate = {
           ...template,
           id: `template-${Date.now()}`,
           createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
+          updatedAt: new Date().toISOString(),
         };
         await createTemplate(newTemplate);
         showToast({
           title: 'Success',
           message: 'Template created successfully',
-          type: 'success'
+          type: 'success',
         });
       }
       navigate('/templates');
@@ -81,7 +81,7 @@ export function QuotationTemplateEditor() {
       showToast({
         title: 'Error',
         message: 'Failed to save template',
-        type: 'error'
+        type: 'error',
       });
     } finally {
       setIsLoading(false);
@@ -92,21 +92,13 @@ export function QuotationTemplateEditor() {
     <div className="container mx-auto py-6 space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            onClick={() => navigate('/templates')}
-          >
+          <Button variant="ghost" onClick={() => navigate('/templates')}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Templates
           </Button>
-          <h1 className="text-2xl font-bold">
-            {id ? 'Edit Template' : 'Create Template'}
-          </h1>
+          <h1 className="text-2xl font-bold">{id ? 'Edit Template' : 'Create Template'}</h1>
         </div>
-        <Button
-          onClick={handleSave}
-          disabled={isLoading}
-        >
+        <Button onClick={handleSave} disabled={isLoading}>
           <Save className="h-4 w-4 mr-2" />
           {isLoading ? 'Saving...' : 'Save Template'}
         </Button>
@@ -123,13 +115,13 @@ export function QuotationTemplateEditor() {
                 <Input
                   label="Template Name"
                   value={template.name ?? ''}
-                  onChange={(e) => setTemplate({ ...template, name: e.target.value })}
+                  onChange={e => setTemplate({ ...template, name: e.target.value })}
                   placeholder="Enter template name"
                 />
                 <Input
                   label="Description"
                   value={template.description ?? ''}
-                  onChange={(e) => setTemplate({ ...template, description: e.target.value })}
+                  onChange={e => setTemplate({ ...template, description: e.target.value })}
                   placeholder="Enter template description"
                 />
               </div>
@@ -154,4 +146,4 @@ export function QuotationTemplateEditor() {
       </div>
     </div>
   );
-} 
+}

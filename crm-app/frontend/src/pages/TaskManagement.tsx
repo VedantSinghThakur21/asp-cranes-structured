@@ -8,12 +8,19 @@ import {
   AlertCircle,
   Circle,
   MoreHorizontal,
-  Flag
+  Flag,
 } from 'lucide-react';
 
 export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
 export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled';
-export type TaskType = 'call' | 'meeting' | 'email' | 'follow_up' | 'site_visit' | 'quotation' | 'other';
+export type TaskType =
+  | 'call'
+  | 'meeting'
+  | 'email'
+  | 'follow_up'
+  | 'site_visit'
+  | 'quotation'
+  | 'other';
 
 export interface Task {
   id: string;
@@ -75,7 +82,7 @@ export function TaskManagement() {
       // TODO: Replace with actual API call
       // Simulated data for now
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       const mockTasks: Task[] = [
         {
           id: '1',
@@ -94,9 +101,9 @@ export function TaskManagement() {
           relatedTo: {
             type: 'lead',
             id: 'lead1',
-            name: 'ABC Construction - Crane Rental'
+            name: 'ABC Construction - Crane Rental',
           },
-          notes: 'Important client - expedite follow up'
+          notes: 'Important client - expedite follow up',
         },
         {
           id: '2',
@@ -115,9 +122,9 @@ export function TaskManagement() {
           relatedTo: {
             type: 'deal',
             id: 'deal1',
-            name: 'XYZ Corp - Tower Crane'
+            name: 'XYZ Corp - Tower Crane',
           },
-          notes: 'Bring safety equipment and measurement tools'
+          notes: 'Bring safety equipment and measurement tools',
         },
         {
           id: '3',
@@ -136,12 +143,12 @@ export function TaskManagement() {
           relatedTo: {
             type: 'deal',
             id: 'deal2',
-            name: 'Metro Construction - Tower Crane'
+            name: 'Metro Construction - Tower Crane',
           },
-          notes: 'Include mobilization costs and operator fees'
-        }
+          notes: 'Include mobilization costs and operator fees',
+        },
       ];
-      
+
       setTasks(mockTasks);
     } catch (error) {
       console.error('Failed to fetch tasks:', error);
@@ -151,14 +158,15 @@ export function TaskManagement() {
   };
 
   const filteredTasks = tasks.filter(task => {
-    const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         task.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         task.assignedToName.toLowerCase().includes(searchTerm.toLowerCase());
-    
+    const matchesSearch =
+      task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      task.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      task.assignedToName.toLowerCase().includes(searchTerm.toLowerCase());
+
     const matchesStatus = statusFilter === 'all' || task.status === statusFilter;
     const matchesPriority = priorityFilter === 'all' || task.priority === priorityFilter;
     const matchesType = typeFilter === 'all' || task.type === typeFilter;
-    
+
     return matchesSearch && matchesStatus && matchesPriority && matchesType;
   });
 
@@ -215,7 +223,7 @@ export function TaskManagement() {
           <h1 className="text-2xl font-bold text-gray-900">Task Management</h1>
           <p className="text-gray-600">Manage your tasks and activities</p>
         </div>
-        
+
         <div className="flex items-center gap-3">
           <div className="flex rounded-lg border border-gray-300 overflow-hidden">
             <button
@@ -239,7 +247,7 @@ export function TaskManagement() {
               Calendar
             </button>
           </div>
-          
+
           <button
             onClick={() => setShowCreateModal(true)}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -260,7 +268,7 @@ export function TaskManagement() {
               type="text"
               placeholder="Search tasks..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={e => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
@@ -268,7 +276,7 @@ export function TaskManagement() {
           {/* Status Filter */}
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as TaskStatus | 'all')}
+            onChange={e => setStatusFilter(e.target.value as TaskStatus | 'all')}
             className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="all">All Status</option>
@@ -281,7 +289,7 @@ export function TaskManagement() {
           {/* Priority Filter */}
           <select
             value={priorityFilter}
-            onChange={(e) => setPriorityFilter(e.target.value as TaskPriority | 'all')}
+            onChange={e => setPriorityFilter(e.target.value as TaskPriority | 'all')}
             className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="all">All Priority</option>
@@ -294,7 +302,7 @@ export function TaskManagement() {
           {/* Type Filter */}
           <select
             value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value as TaskType | 'all')}
+            onChange={e => setTypeFilter(e.target.value as TaskType | 'all')}
             className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="all">All Types</option>
@@ -327,7 +335,10 @@ export function TaskManagement() {
             <Circle className="h-12 w-12 text-gray-300 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No tasks found</h3>
             <p className="text-gray-600 mb-4">
-              {searchTerm || statusFilter !== 'all' || priorityFilter !== 'all' || typeFilter !== 'all'
+              {searchTerm ||
+              statusFilter !== 'all' ||
+              priorityFilter !== 'all' ||
+              typeFilter !== 'all'
                 ? 'Try adjusting your filters to see more tasks.'
                 : 'Get started by creating your first task.'}
             </p>
@@ -340,58 +351,66 @@ export function TaskManagement() {
             </button>
           </div>
         ) : (
-          filteredTasks.map((task) => (
+          filteredTasks.map(task => (
             <div
               key={task.id}
               className={`bg-white p-6 rounded-lg shadow-sm border-l-4 ${
                 isOverdue(task.dueDate) && task.status !== 'completed'
                   ? 'border-l-red-500 bg-red-50'
                   : task.priority === 'urgent'
-                  ? 'border-l-red-500'
-                  : task.priority === 'high'
-                  ? 'border-l-orange-500'
-                  : task.priority === 'medium'
-                  ? 'border-l-yellow-500'
-                  : 'border-l-green-500'
+                    ? 'border-l-red-500'
+                    : task.priority === 'high'
+                      ? 'border-l-orange-500'
+                      : task.priority === 'medium'
+                        ? 'border-l-yellow-500'
+                        : 'border-l-green-500'
               } border-r border-t border-b border-gray-200 hover:shadow-md transition-shadow`}
             >
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-4 flex-1">
                   {/* Status Icon */}
-                  <div className="flex-shrink-0 mt-1">
-                    {getTaskIcon(task.status)}
-                  </div>
+                  <div className="flex-shrink-0 mt-1">{getTaskIcon(task.status)}</div>
 
                   {/* Task Content */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-2">
-                      <h3 className="text-lg font-semibold text-gray-900 truncate">
-                        {task.title}
-                      </h3>
+                      <h3 className="text-lg font-semibold text-gray-900 truncate">{task.title}</h3>
                       {getPriorityIcon(task.priority)}
-                      <span className={`text-xs px-2 py-1 rounded-full font-medium border ${TASK_TYPES.find(t => t.value === task.type)?.icon}`}>
+                      <span
+                        className={`text-xs px-2 py-1 rounded-full font-medium border ${TASK_TYPES.find(t => t.value === task.type)?.icon}`}
+                      >
                         {TASK_TYPES.find(t => t.value === task.type)?.label}
                       </span>
                     </div>
-                    
+
                     <p className="text-gray-600 mb-3 line-clamp-2">{task.description}</p>
-                    
+
                     <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
                       <div className="flex items-center gap-1">
                         <Calendar className="h-4 w-4" />
-                        <span className={isOverdue(task.dueDate) && task.status !== 'completed' ? 'text-red-600 font-medium' : ''}>
-                          {new Date(task.dueDate).toLocaleDateString()} at {new Date(task.dueDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        <span
+                          className={
+                            isOverdue(task.dueDate) && task.status !== 'completed'
+                              ? 'text-red-600 font-medium'
+                              : ''
+                          }
+                        >
+                          {new Date(task.dueDate).toLocaleDateString()} at{' '}
+                          {new Date(task.dueDate).toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
                         </span>
                         {isOverdue(task.dueDate) && task.status !== 'completed' && (
                           <span className="text-red-600 font-medium ml-1">(Overdue)</span>
                         )}
                       </div>
-                      
+
                       <div className="flex items-center gap-1">
                         <User className="h-4 w-4" />
                         <span>{task.assignedToName}</span>
                       </div>
-                      
+
                       {task.relatedTo && (
                         <div className="flex items-center gap-1">
                           <span className="text-blue-600">Related to: {task.relatedTo.name}</span>
@@ -409,14 +428,14 @@ export function TaskManagement() {
 
                 {/* Actions */}
                 <div className="flex items-center gap-2 ml-4">
-                  <span className={`text-xs px-2 py-1 rounded-full font-medium border ${STATUS_COLORS[task.status]}`}>
+                  <span
+                    className={`text-xs px-2 py-1 rounded-full font-medium border ${STATUS_COLORS[task.status]}`}
+                  >
                     {task.status.replace('_', ' ').toUpperCase()}
                   </span>
-                  
+
                   <div className="relative">
-                    <button
-                      className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
-                    >
+                    <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
                       <MoreHorizontal className="h-4 w-4" />
                     </button>
                   </div>

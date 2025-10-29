@@ -3,7 +3,7 @@ export const devLogin = {
   enabled: true,
   username: 'admin',
   password: 'admin123',
-  
+
   // Auto-login for development
   autoLogin: async () => {
     try {
@@ -16,8 +16,8 @@ export const devLogin = {
             id: 1,
             username: 'admin',
             email: 'admin@example.com',
-            role: 'admin'
-          }
+            role: 'admin',
+          },
         };
       }
       return { success: false };
@@ -25,7 +25,7 @@ export const devLogin = {
       console.error('Development login error:', error);
       return { success: false };
     }
-  }
+  },
 };
 
 /**

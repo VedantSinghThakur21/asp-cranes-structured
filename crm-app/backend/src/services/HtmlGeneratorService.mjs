@@ -7,12 +7,13 @@ class HTMLGeneratorService {
   constructor() {
     this.defaultStyles = {
       body: 'font-family: Arial, sans-serif; margin: 0; padding: 20px; line-height: 1.6; color: #2c2c2c;',
-      header: 'text-align: center; border-bottom: 3px solid #0052CC; padding-bottom: 15px; margin-bottom: 25px; color: #1a1a1a;',
+      header:
+        'text-align: center; border-bottom: 3px solid #0052CC; padding-bottom: 15px; margin-bottom: 25px; color: #1a1a1a;',
       section: 'margin-bottom: 25px; color: #2c2c2c;',
       table: 'width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 14px;',
       th: 'background-color: #f8f9fa; border: 1px solid #ddd; padding: 12px; text-align: left; font-weight: 600; color: #1a1a1a;',
       td: 'border: 1px solid #ddd; padding: 10px; color: #2c2c2c;',
-      totals: 'background-color: #f8f9fa; font-weight: bold; color: #1a1a1a;'
+      totals: 'background-color: #f8f9fa; font-weight: bold; color: #1a1a1a;',
     };
   }
 
@@ -24,7 +25,7 @@ class HTMLGeneratorService {
   async generateHTML(template, quotationData) {
     try {
       console.log('🎨 Generating HTML from Enhanced Template:', template.name);
-      
+
       if (!template || !template.elements) {
         console.log('⚠️ No template elements found, using comprehensive default structure');
         return this.generateComprehensiveHTML(quotationData);
@@ -32,7 +33,7 @@ class HTMLGeneratorService {
 
       // Generate comprehensive HTML with all quotation information
       const sections = [];
-      
+
       for (const element of template.elements) {
         if (element.visible !== false) {
           const section = this.renderComprehensiveElement(element, quotationData);
@@ -41,7 +42,7 @@ class HTMLGeneratorService {
           }
         }
       }
-      
+
       const html = `
         <!DOCTYPE html>
         <html>
@@ -57,10 +58,9 @@ class HTMLGeneratorService {
         </body>
         </html>
       `;
-      
+
       console.log('✅ Comprehensive HTML generated, length:', html.length);
       return html;
-      
     } catch (error) {
       console.error('❌ Error generating comprehensive HTML:', error);
       throw error;
@@ -73,7 +73,7 @@ class HTMLGeneratorService {
   async generateBasicHTML(template, quotationData) {
     try {
       const sections = [];
-      
+
       // Generate basic HTML sections
       if (template.elements && Array.isArray(template.elements)) {
         for (const element of template.elements) {
@@ -96,10 +96,9 @@ class HTMLGeneratorService {
 
       // Wrap in basic HTML document
       const fullHTML = this.wrapInBasicHTML(sections, template, quotationData);
-      
+
       console.log('✅ Basic HTML generated successfully');
       return fullHTML;
-      
     } catch (error) {
       console.error('❌ Error generating basic HTML:', error);
       throw error;
@@ -118,7 +117,7 @@ class HTMLGeneratorService {
             <h2 style="margin: 8px 0 0 0; font-size: 18px; font-weight: normal; color: #2c2c2c;">Professional Equipment Solutions</h2>
           </div>
         `;
-        
+
       case 'customer':
         return `
           <div class="customer-info" style="${this.defaultStyles.section}">
@@ -130,7 +129,7 @@ class HTMLGeneratorService {
             ${quotationData.customer?.email || quotationData.client?.email ? `<div style="color: #2c2c2c; margin-bottom: 6px;">Email: ${quotationData.customer?.email || quotationData.client?.email}</div>` : ''}
           </div>
         `;
-        
+
       case 'field':
         return `
           <div class="quotation-details" style="${this.defaultStyles.section}">
@@ -139,13 +138,13 @@ class HTMLGeneratorService {
             <div style="color: #2c2c2c; margin-bottom: 6px;">Valid Until: ${quotationData.valid_until ? new Date(quotationData.valid_until).toLocaleDateString() : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString()}</div>
           </div>
         `;
-        
+
       case 'table':
         return this.renderBasicTable(quotationData);
-        
+
       case 'total':
         return this.renderBasicTotals(quotationData);
-        
+
       default:
         return `<div class="unknown-element">Element: ${element.type}</div>`;
     }
@@ -156,7 +155,7 @@ class HTMLGeneratorService {
    */
   renderBasicTable(quotationData) {
     const items = quotationData.items || [];
-    
+
     if (items.length === 0) {
       return `
         <div class="items-table" style="${this.defaultStyles.section}">
@@ -177,14 +176,18 @@ class HTMLGeneratorService {
             </tr>
           </thead>
           <tbody>
-            ${items.map(item => `
+            ${items
+              .map(
+                item => `
               <tr>
                 <td style="${this.defaultStyles.td}">${item.description || 'Item'}</td>
                 <td style="${this.defaultStyles.td}">${item.quantity || 1}</td>
                 <td style="${this.defaultStyles.td}">₹${item.unit_price || 0}</td>
                 <td style="${this.defaultStyles.td}">₹${item.total || 0}</td>
               </tr>
-            `).join('')}
+            `
+              )
+              .join('')}
           </tbody>
         </table>
       </div>
@@ -355,7 +358,7 @@ class HTMLGeneratorService {
    */
   renderEquipmentTable(quotationData) {
     const equipment = quotationData.equipment || [];
-    
+
     if (equipment.length === 0) {
       // Create default equipment entry
       equipment.push({
@@ -368,11 +371,13 @@ class HTMLGeneratorService {
         mob: '10,000/- + GST 18%',
         demob: '10,000/- + GST 18%',
         rate: 785000,
-        amount: 785000
+        amount: 785000,
       });
     }
 
-    const tableRows = equipment.map(item => `
+    const tableRows = equipment
+      .map(
+        item => `
       <tr>
         <td>${item.no || 1}</td>
         <td>${item.capacity || 'N/A'}</td>
@@ -382,7 +387,9 @@ class HTMLGeneratorService {
         <td>${item.mob || 'Included'}</td>
         <td>${item.demob || 'Included'}</td>
       </tr>
-    `).join('');
+    `
+      )
+      .join('');
 
     // Calculate total
     const total = equipment.reduce((sum, item) => sum + (item.amount || 0), 0);
@@ -428,7 +435,7 @@ class HTMLGeneratorService {
     }
 
     let chargesRows = '';
-    
+
     additionalCharges.forEach(charge => {
       chargesRows += `
         <tr>

@@ -1,20 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '../ui/button';
-import { 
-  Printer, 
-  Download, 
-  Mail, 
-  Eye, 
+import {
+  Printer,
+  Download,
+  Mail,
+  Eye,
   RefreshCw,
   CheckCircle,
   AlertCircle,
-  Loader2
+  Loader2,
 } from 'lucide-react';
 
 // Generate local template preview without backend call
 const generateLocalQuotationPreview = (quotationId: string, templateId: string) => {
   console.log('🎨 Generating local preview for quotation:', quotationId, 'template:', templateId);
-  
+
   return `
 <!DOCTYPE html>
 <html lang="en">
@@ -103,12 +103,10 @@ interface EmailFormData {
   message: string;
 }
 
-const QuotationPrintSystem: React.FC<QuotationPrintSystemProps> = ({ 
-  quotationId 
-}) => {
+const QuotationPrintSystem: React.FC<QuotationPrintSystemProps> = ({ quotationId }) => {
   // API configuration
   const apiUrl = import.meta.env.VITE_API_URL || '/api';
-  
+
   const [templates, setTemplates] = useState<Template[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [configDefaultTemplateId, setConfigDefaultTemplateId] = useState<string | null>(null);
@@ -118,7 +116,7 @@ const QuotationPrintSystem: React.FC<QuotationPrintSystemProps> = ({
   const [emailForm, setEmailForm] = useState<EmailFormData>({
     to: '',
     subject: `Quotation #${quotationId}`,
-    message: 'Please find the attached quotation for your review.'
+    message: 'Please find the attached quotation for your review.',
   });
   const [operationStatus, setOperationStatus] = useState<{
     type: 'success' | 'error' | 'loading' | null;
@@ -132,7 +130,11 @@ const QuotationPrintSystem: React.FC<QuotationPrintSystemProps> = ({
     loadTemplates();
   }, []);
 
-  const showNotification = (title: string, message: string, type: 'success' | 'error' = 'success') => {
+  const showNotification = (
+    title: string,
+    message: string,
+    type: 'success' | 'error' = 'success'
+  ) => {
     console.log(`${type.toUpperCase()}: ${title} - ${message}`);
     // For now, use console log. Can be replaced with proper toast implementation
   };
@@ -141,30 +143,34 @@ const QuotationPrintSystem: React.FC<QuotationPrintSystemProps> = ({
     try {
       setIsLoading(true);
       const response = await fetch(`${apiUrl}/templates/enhanced/quotation`);
-      
+
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
-      
+
       const data = await response.json();
 
       if (data.success) {
         setTemplates(data.templates);
-        
+
         // Show fallback notice if using fallback templates
         if (data.fallback) {
           console.warn('Using fallback templates - database unavailable');
-          showNotification("Templates Loaded", "Using fallback templates (database unavailable)", "error");
+          showNotification(
+            'Templates Loaded',
+            'Using fallback templates (database unavailable)',
+            'error'
+          );
         }
-        
+
         // First, try to get the default template from config system
         let defaultTemplateId = null;
         try {
           const configResponse = await fetch(`${apiUrl}/config/templates`, {
             headers: {
               'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('jwt-token')}`,
-              'X-Bypass-Auth': 'development-only-123'
-            }
+              'X-Bypass-Auth': 'development-only-123',
+            },
           });
           const configData = await configResponse.json();
           if (configData.success && configData.data.defaultQuotationTemplate) {
@@ -172,9 +178,12 @@ const QuotationPrintSystem: React.FC<QuotationPrintSystemProps> = ({
             setConfigDefaultTemplateId(defaultTemplateId);
           }
         } catch (configError) {
-          console.warn('Could not load template config, falling back to database default:', configError);
+          console.warn(
+            'Could not load template config, falling back to database default:',
+            configError
+          );
         }
-        
+
         // Auto-select default template based on config or database flag
         if (defaultTemplateId) {
           const configTemplate = data.templates.find((t: Template) => t.id === defaultTemplateId);
@@ -208,9 +217,9 @@ const QuotationPrintSystem: React.FC<QuotationPrintSystemProps> = ({
       console.error('Error loading templates:', error);
       setOperationStatus({
         type: 'error',
-        message: 'Failed to load templates. Please try again.'
+        message: 'Failed to load templates. Please try again.',
       });
-      showNotification("Error", "Failed to load quotation templates.", "error");
+      showNotification('Error', 'Failed to load quotation templates.', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -218,7 +227,7 @@ const QuotationPrintSystem: React.FC<QuotationPrintSystemProps> = ({
 
   const generatePreview = async () => {
     if (!selectedTemplate) {
-      showNotification("No Template Selected", "Please select a template first.", "error");
+      showNotification('No Template Selected', 'Please select a template first.', 'error');
       return;
     }
 
@@ -228,10 +237,10 @@ const QuotationPrintSystem: React.FC<QuotationPrintSystemProps> = ({
 
       // Generate preview locally instead of calling backend
       const html = generateLocalQuotationPreview(quotationId, selectedTemplate);
-      
+
       setIsPreviewOpen(true);
       setOperationStatus({ type: 'success', message: 'Preview generated successfully!' });
-      
+
       // Load preview in iframe - check if ref exists
       setTimeout(() => {
         if (previewFrameRef.current) {
@@ -251,15 +260,14 @@ const QuotationPrintSystem: React.FC<QuotationPrintSystemProps> = ({
         }
       }, 100);
 
-      showNotification("Preview Ready", "Quotation preview has been generated successfully.");
-      
+      showNotification('Preview Ready', 'Quotation preview has been generated successfully.');
     } catch (error) {
       console.error('Error generating preview:', error);
       setOperationStatus({
         type: 'error',
-        message: 'Failed to generate preview. Please check your data and try again.'
+        message: 'Failed to generate preview. Please check your data and try again.',
       });
-      showNotification("Preview Error", "Failed to generate quotation preview.", "error");
+      showNotification('Preview Error', 'Failed to generate quotation preview.', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -267,7 +275,7 @@ const QuotationPrintSystem: React.FC<QuotationPrintSystemProps> = ({
 
   const handlePrint = async () => {
     if (!selectedTemplate) {
-      showNotification("No Template Selected", "Please select a template first.", "error");
+      showNotification('No Template Selected', 'Please select a template first.', 'error');
       return;
     }
 
@@ -278,12 +286,12 @@ const QuotationPrintSystem: React.FC<QuotationPrintSystemProps> = ({
       const response = await fetch(`${apiUrl}/quotations/print/print`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           quotationId,
-          templateId: selectedTemplate
-        })
+          templateId: selectedTemplate,
+        }),
       });
 
       const data = await response.json();
@@ -295,9 +303,9 @@ const QuotationPrintSystem: React.FC<QuotationPrintSystemProps> = ({
           printWindow.document.write(data.html);
           printWindow.document.close();
           printWindow.print();
-          
+
           setOperationStatus({ type: 'success', message: 'Print dialog opened!' });
-          showNotification("Print Ready", "Print dialog has been opened with your quotation.");
+          showNotification('Print Ready', 'Print dialog has been opened with your quotation.');
         } else {
           throw new Error('Failed to open print window');
         }
@@ -308,9 +316,9 @@ const QuotationPrintSystem: React.FC<QuotationPrintSystemProps> = ({
       console.error('Error printing:', error);
       setOperationStatus({
         type: 'error',
-        message: 'Failed to prepare print. Please try again.'
+        message: 'Failed to prepare print. Please try again.',
       });
-      showNotification("Print Error", "Failed to prepare quotation for printing.", "error");
+      showNotification('Print Error', 'Failed to prepare quotation for printing.', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -318,7 +326,7 @@ const QuotationPrintSystem: React.FC<QuotationPrintSystemProps> = ({
 
   const handleDownloadPDF = async () => {
     if (!selectedTemplate) {
-      showNotification("No Template Selected", "Please select a template first.", "error");
+      showNotification('No Template Selected', 'Please select a template first.', 'error');
       return;
     }
 
@@ -331,12 +339,12 @@ const QuotationPrintSystem: React.FC<QuotationPrintSystemProps> = ({
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('jwt-token') || ''}`,
-          'X-Bypass-Auth': 'development-only-123'
+          'X-Bypass-Auth': 'development-only-123',
         },
         body: JSON.stringify({
           quotationId,
-          templateId: selectedTemplate
-        })
+          templateId: selectedTemplate,
+        }),
       });
 
       if (response.ok) {
@@ -351,7 +359,7 @@ const QuotationPrintSystem: React.FC<QuotationPrintSystemProps> = ({
         document.body.removeChild(a);
 
         setOperationStatus({ type: 'success', message: 'PDF downloaded successfully!' });
-        showNotification("Download Complete", "Quotation PDF has been downloaded successfully.");
+        showNotification('Download Complete', 'Quotation PDF has been downloaded successfully.');
       } else {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to generate PDF');
@@ -360,9 +368,9 @@ const QuotationPrintSystem: React.FC<QuotationPrintSystemProps> = ({
       console.error('Error downloading PDF:', error);
       setOperationStatus({
         type: 'error',
-        message: 'Failed to generate PDF. Please try again.'
+        message: 'Failed to generate PDF. Please try again.',
       });
-      showNotification("Download Error", "Failed to generate PDF file.", "error");
+      showNotification('Download Error', 'Failed to generate PDF file.', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -370,12 +378,12 @@ const QuotationPrintSystem: React.FC<QuotationPrintSystemProps> = ({
 
   const handleEmailPDF = async () => {
     if (!selectedTemplate) {
-      showNotification("No Template Selected", "Please select a template first.", "error");
+      showNotification('No Template Selected', 'Please select a template first.', 'error');
       return;
     }
 
     if (!emailForm.to.trim()) {
-      showNotification("Email Required", "Please enter a recipient email address.", "error");
+      showNotification('Email Required', 'Please enter a recipient email address.', 'error');
       return;
     }
 
@@ -388,15 +396,15 @@ const QuotationPrintSystem: React.FC<QuotationPrintSystemProps> = ({
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('jwt-token') || ''}`,
-          'X-Bypass-Auth': 'development-only-123'
+          'X-Bypass-Auth': 'development-only-123',
         },
         body: JSON.stringify({
           quotationId,
           templateId: selectedTemplate,
           emailTo: emailForm.to,
           subject: emailForm.subject,
-          message: emailForm.message
-        })
+          message: emailForm.message,
+        }),
       });
 
       const data = await response.json();
@@ -404,7 +412,7 @@ const QuotationPrintSystem: React.FC<QuotationPrintSystemProps> = ({
       if (data.success) {
         setIsEmailDialogOpen(false);
         setOperationStatus({ type: 'success', message: 'Email sent successfully!' });
-        showNotification("Email Sent", `Quotation has been sent to ${emailForm.to}`);
+        showNotification('Email Sent', `Quotation has been sent to ${emailForm.to}`);
       } else {
         throw new Error(data.error || 'Failed to send email');
       }
@@ -412,9 +420,9 @@ const QuotationPrintSystem: React.FC<QuotationPrintSystemProps> = ({
       console.error('Error sending email:', error);
       setOperationStatus({
         type: 'error',
-        message: 'Failed to send email. Please try again.'
+        message: 'Failed to send email. Please try again.',
       });
-      showNotification("Email Error", "Failed to send quotation via email.", "error");
+      showNotification('Email Error', 'Failed to send quotation via email.', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -444,9 +452,7 @@ const QuotationPrintSystem: React.FC<QuotationPrintSystemProps> = ({
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <span className="text-xl font-bold text-gray-900">Quotation Print System</span>
-            <span className="text-sm font-normal text-gray-500">
-              ID: {quotationId}
-            </span>
+            <span className="text-sm font-normal text-gray-500">ID: {quotationId}</span>
           </div>
         </div>
         <div className="p-4">
@@ -456,38 +462,36 @@ const QuotationPrintSystem: React.FC<QuotationPrintSystemProps> = ({
               <label htmlFor="template-select" className="block text-sm font-medium text-gray-700">
                 Template
               </label>
-              <Button
-                onClick={refreshTemplates}
-                disabled={isLoading}
-                className="text-sm"
-              >
+              <Button onClick={refreshTemplates} disabled={isLoading} className="text-sm">
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Refresh
               </Button>
             </div>
-            
+
             <select
               id="template-select"
               value={selectedTemplate || ''}
-              onChange={(e) => setSelectedTemplate(e.target.value || null)}
+              onChange={e => setSelectedTemplate(e.target.value || null)}
               disabled={isLoading}
               className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">Select a template</option>
-              {templates.map((template) => {
-                const isConfigDefault = configDefaultTemplateId && template.id === configDefaultTemplateId;
+              {templates.map(template => {
+                const isConfigDefault =
+                  configDefaultTemplateId && template.id === configDefaultTemplateId;
                 const isDatabaseDefault = template.is_default;
                 let defaultLabel = '';
-                
+
                 if (isConfigDefault) {
                   defaultLabel = ' (Default - Config)';
                 } else if (isDatabaseDefault) {
                   defaultLabel = ' (Default - DB)';
                 }
-                
+
                 return (
                   <option key={template.id} value={template.id}>
-                    {template.name}{defaultLabel}
+                    {template.name}
+                    {defaultLabel}
                   </option>
                 );
               })}
@@ -496,8 +500,9 @@ const QuotationPrintSystem: React.FC<QuotationPrintSystemProps> = ({
             {configDefaultTemplateId && (
               <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-md">
                 <p className="text-xs text-blue-700">
-                  <strong>Template Priority:</strong> "Default - Config" templates are set in Configuration and have highest priority. 
-                  "Default - DB" are fallback defaults. This ensures your configured default template is always used.
+                  <strong>Template Priority:</strong> "Default - Config" templates are set in
+                  Configuration and have highest priority. "Default - DB" are fallback defaults.
+                  This ensures your configured default template is always used.
                 </p>
               </div>
             )}
@@ -527,7 +532,7 @@ const QuotationPrintSystem: React.FC<QuotationPrintSystemProps> = ({
         <div className="p-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {/* Preview Button */}
-            <Button 
+            <Button
               onClick={generatePreview}
               disabled={!selectedTemplate || isLoading}
               className="flex flex-col items-center space-y-2 h-auto py-4"
@@ -537,7 +542,7 @@ const QuotationPrintSystem: React.FC<QuotationPrintSystemProps> = ({
             </Button>
 
             {/* Print Button */}
-            <Button 
+            <Button
               onClick={handlePrint}
               disabled={!selectedTemplate || isLoading}
               className="flex flex-col items-center space-y-2 h-auto py-4"
@@ -547,7 +552,7 @@ const QuotationPrintSystem: React.FC<QuotationPrintSystemProps> = ({
             </Button>
 
             {/* Download PDF Button */}
-            <Button 
+            <Button
               onClick={handleDownloadPDF}
               disabled={!selectedTemplate || isLoading}
               className="flex flex-col items-center space-y-2 h-auto py-4"
@@ -557,7 +562,7 @@ const QuotationPrintSystem: React.FC<QuotationPrintSystemProps> = ({
             </Button>
 
             {/* Email Button */}
-            <Button 
+            <Button
               onClick={() => setIsEmailDialogOpen(true)}
               disabled={!selectedTemplate || isLoading}
               className="flex flex-col items-center space-y-2 h-auto py-4"
@@ -580,9 +585,7 @@ const QuotationPrintSystem: React.FC<QuotationPrintSystemProps> = ({
                   <Printer className="h-4 w-4 mr-2" />
                   Print
                 </Button>
-                <Button onClick={() => setIsPreviewOpen(false)}>
-                  Close
-                </Button>
+                <Button onClick={() => setIsPreviewOpen(false)}>Close</Button>
               </div>
             </div>
             <div className="h-full p-4">
@@ -612,7 +615,7 @@ const QuotationPrintSystem: React.FC<QuotationPrintSystemProps> = ({
                   id="email-to"
                   type="email"
                   value={emailForm.to}
-                  onChange={(e) => setEmailForm({ ...emailForm, to: e.target.value })}
+                  onChange={e => setEmailForm({ ...emailForm, to: e.target.value })}
                   placeholder="recipient@example.com"
                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
@@ -624,7 +627,7 @@ const QuotationPrintSystem: React.FC<QuotationPrintSystemProps> = ({
                 <input
                   id="email-subject"
                   value={emailForm.subject}
-                  onChange={(e) => setEmailForm({ ...emailForm, subject: e.target.value })}
+                  onChange={e => setEmailForm({ ...emailForm, subject: e.target.value })}
                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -635,22 +638,15 @@ const QuotationPrintSystem: React.FC<QuotationPrintSystemProps> = ({
                 <textarea
                   id="email-message"
                   value={emailForm.message}
-                  onChange={(e) => setEmailForm({ ...emailForm, message: e.target.value })}
+                  onChange={e => setEmailForm({ ...emailForm, message: e.target.value })}
                   rows={4}
                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
             </div>
             <div className="p-4 border-t border-gray-200 flex justify-end space-x-2">
-              <Button 
-                onClick={() => setIsEmailDialogOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button 
-                onClick={handleEmailPDF}
-                disabled={isLoading}
-              >
+              <Button onClick={() => setIsEmailDialogOpen(false)}>Cancel</Button>
+              <Button onClick={handleEmailPDF} disabled={isLoading}>
                 {isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 Send Email
               </Button>

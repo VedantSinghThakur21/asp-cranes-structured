@@ -2,13 +2,13 @@
 export * from './template';
 
 // Import and re-export the main functions
-import { 
-  getTemplates as getTemplatesFromTemplate, 
-  getTemplateById, 
-  createTemplate, 
-  updateTemplate, 
+import {
+  getTemplates as getTemplatesFromTemplate,
+  getTemplateById,
+  createTemplate,
+  updateTemplate,
   deleteTemplate,
-  Template
+  Template,
 } from './template';
 
 // Ensure getTemplates is properly exported

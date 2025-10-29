@@ -26,7 +26,7 @@ export interface JobLocation {
   coordinates?: {
     latitude: number;
     longitude: number;
-  }
+  };
 }
 
 export interface Job {

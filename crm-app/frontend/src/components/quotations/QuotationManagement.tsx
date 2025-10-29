@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Search, 
-  Plus, 
-  Filter, 
-  Eye, 
-  Edit, 
+import {
+  Search,
+  Plus,
+  Filter,
+  Eye,
+  Edit,
   MoreVertical,
   Calendar,
   Phone,
@@ -15,9 +15,8 @@ import {
   Download,
   Printer,
   Mail,
-  FileText
+  FileText,
 } from 'lucide-react';
-
 
 interface QuotationListItem {
   id: string;
@@ -64,15 +63,15 @@ const QuotationManagementComplete: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await fetch('/api/quotations');
-      
+
       if (!response.ok) {
         throw new Error(`Failed to fetch quotations: ${response.statusText}`);
       }
-      
+
       const result = await response.json();
-      
+
       if (result.success && Array.isArray(result.data)) {
         // Transform API data to match our interface
         const transformedQuotations: QuotationListItem[] = result.data.map((item: any) => ({
@@ -102,7 +101,7 @@ const QuotationManagementComplete: React.FC = () => {
           gst_amount: item.gstAmount || item.gst_amount || 0,
           total_rent: item.totalRent || item.total_rent || 0,
         }));
-        
+
         setQuotations(transformedQuotations);
       } else {
         console.warn('Invalid response format:', result);
@@ -122,13 +121,15 @@ const QuotationManagementComplete: React.FC = () => {
   }, []);
 
   const filteredQuotations = quotations.filter(quotation => {
-    const matchesSearch = quotation.customer_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         quotation.machine_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         quotation.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (quotation.quotation_number && quotation.quotation_number.toLowerCase().includes(searchTerm.toLowerCase()));
-    
+    const matchesSearch =
+      quotation.customer_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      quotation.machine_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      quotation.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (quotation.quotation_number &&
+        quotation.quotation_number.toLowerCase().includes(searchTerm.toLowerCase()));
+
     const matchesStatus = statusFilter === 'all' || quotation.status === statusFilter;
-    
+
     return matchesSearch && matchesStatus;
   });
 
@@ -140,11 +141,16 @@ const QuotationManagementComplete: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'draft': return 'bg-gray-100 text-gray-800';
-      case 'sent': return 'bg-blue-100 text-blue-800';
-      case 'accepted': return 'bg-green-100 text-green-800';
-      case 'rejected': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'draft':
+        return 'bg-gray-100 text-gray-800';
+      case 'sent':
+        return 'bg-blue-100 text-blue-800';
+      case 'accepted':
+        return 'bg-green-100 text-green-800';
+      case 'rejected':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -183,7 +189,7 @@ const QuotationManagementComplete: React.FC = () => {
       const response = await fetch(`/api/quotations/${quotationId}`, {
         method: 'DELETE',
       });
-      
+
       if (response.ok) {
         setQuotations(prev => prev.filter(q => q.id !== quotationId));
         showNotification('Quotation deleted successfully', 'success');
@@ -204,7 +210,7 @@ const QuotationManagementComplete: React.FC = () => {
       const duplicateData = {
         ...original,
         customer_name: `${original.customer_name} (Copy)`,
-        status: 'draft'
+        status: 'draft',
       };
 
       const response = await fetch('/api/quotations', {
@@ -234,21 +240,23 @@ const QuotationManagementComplete: React.FC = () => {
       const apiUrl = import.meta.env.VITE_API_URL || '/api';
       const response = await fetch(`${apiUrl}/quotations/generate`, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('jwt-token')}`,
-          'X-Bypass-Auth': 'development-only-123'
+          'X-Bypass-Auth': 'development-only-123',
         },
         body: JSON.stringify({
           quotationId: quotation.id,
           customerName: quotation.customer_name,
           customerEmail: quotation.customer_email,
-          items: [{
-            description: quotation.machine_type,
-            qty: quotation.number_of_days,
-            price: quotation.total_cost / quotation.number_of_days
-          }],
-          gstRate: 18
+          items: [
+            {
+              description: quotation.machine_type,
+              qty: quotation.number_of_days,
+              price: quotation.total_cost / quotation.number_of_days,
+            },
+          ],
+          gstRate: 18,
         }),
       });
 
@@ -281,12 +289,12 @@ const QuotationManagementComplete: React.FC = () => {
       const apiUrl = import.meta.env.VITE_API_URL || '/api';
       const response = await fetch(`${apiUrl}/quotations/print`, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('jwt-token')}`,
-          'X-Bypass-Auth': 'development-only-123'
+          'X-Bypass-Auth': 'development-only-123',
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           quotationId: quotationId,
           // templateId will be auto-selected from default config if not provided
         }),
@@ -311,7 +319,7 @@ const QuotationManagementComplete: React.FC = () => {
       printWindow.document.write(result.html);
       printWindow.document.close();
       printWindow.print();
-      
+
       showNotification('Print window opened successfully', 'success');
     } catch (error) {
       console.error('Error printing quotation:', error);
@@ -352,8 +360,6 @@ ASP Cranes Team`;
     // Navigate to deal selection page first, then to quotation creation
     navigate('/select-deal');
   };
-
-
 
   // Loading state
   if (loading) {
@@ -434,17 +440,17 @@ ASP Cranes Team`;
                 type="text"
                 placeholder="Search quotations..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={e => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             <Filter className="h-4 w-4 text-gray-400" />
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              onChange={e => setStatusFilter(e.target.value)}
               className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="all">All Status</option>
@@ -471,7 +477,7 @@ ASP Cranes Team`;
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white rounded-lg shadow-sm border p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -485,7 +491,7 @@ ASP Cranes Team`;
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white rounded-lg shadow-sm border p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -499,7 +505,7 @@ ASP Cranes Team`;
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white rounded-lg shadow-sm border p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -522,7 +528,7 @@ ASP Cranes Team`;
               Quotations ({filteredQuotations.length})
             </h3>
           </div>
-          
+
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50">
@@ -551,7 +557,7 @@ ASP Cranes Team`;
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {currentQuotations.map((quotation) => (
+                {currentQuotations.map(quotation => (
                   <tr key={quotation.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
@@ -564,7 +570,7 @@ ASP Cranes Team`;
                         </div>
                       </div>
                     </td>
-                    
+
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
                         <div className="font-medium text-gray-900">{quotation.customer_name}</div>
@@ -574,7 +580,7 @@ ASP Cranes Team`;
                         </div>
                       </div>
                     </td>
-                    
+
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
                         <div className="font-medium text-gray-900">{quotation.machine_type}</div>
@@ -584,28 +590,30 @@ ASP Cranes Team`;
                         </div>
                       </div>
                     </td>
-                    
+
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
-                        <div className="font-medium text-gray-900">{quotation.number_of_days} days</div>
-                        <div className="text-sm text-gray-500">
-                          {quotation.working_hours}h/day
+                        <div className="font-medium text-gray-900">
+                          {quotation.number_of_days} days
                         </div>
+                        <div className="text-sm text-gray-500">{quotation.working_hours}h/day</div>
                       </div>
                     </td>
-                    
+
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="font-bold text-gray-900">
                         ₹{quotation.total_cost.toLocaleString('en-IN')}
                       </div>
                     </td>
-                    
+
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(quotation.status)}`}>
+                      <span
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(quotation.status)}`}
+                      >
                         {quotation.status.charAt(0).toUpperCase() + quotation.status.slice(1)}
                       </span>
                     </td>
-                    
+
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center space-x-2">
                         <button
@@ -671,12 +679,14 @@ ASP Cranes Team`;
               </tbody>
             </table>
           </div>
-          
+
           {/* Pagination */}
           {totalPages > 1 && (
             <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
               <div className="text-sm text-gray-500">
-                Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filteredQuotations.length)} of {filteredQuotations.length} results
+                Showing {(currentPage - 1) * itemsPerPage + 1} to{' '}
+                {Math.min(currentPage * itemsPerPage, filteredQuotations.length)} of{' '}
+                {filteredQuotations.length} results
               </div>
               <div className="flex items-center space-x-2">
                 <button
@@ -691,8 +701,8 @@ ASP Cranes Team`;
                     key={page}
                     onClick={() => setCurrentPage(page)}
                     className={`px-3 py-1 border rounded ${
-                      currentPage === page 
-                        ? 'bg-blue-600 text-white border-blue-600' 
+                      currentPage === page
+                        ? 'bg-blue-600 text-white border-blue-600'
                         : 'border-gray-300 hover:bg-gray-50'
                     }`}
                   >

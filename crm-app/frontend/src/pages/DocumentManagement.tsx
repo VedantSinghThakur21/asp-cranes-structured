@@ -14,10 +14,17 @@ import {
   Archive,
   Grid,
   List,
-  Star
+  Star,
 } from 'lucide-react';
 
-export type DocumentType = 'contract' | 'proposal' | 'invoice' | 'report' | 'image' | 'video' | 'other';
+export type DocumentType =
+  | 'contract'
+  | 'proposal'
+  | 'invoice'
+  | 'report'
+  | 'image'
+  | 'video'
+  | 'other';
 export type DocumentStatus = 'draft' | 'review' | 'approved' | 'archived';
 
 export interface Document {
@@ -88,29 +95,29 @@ export function DocumentManagement() {
         name: 'Contracts',
         description: 'Customer contracts and agreements',
         documentCount: 15,
-        createdAt: '2024-01-15'
+        createdAt: '2024-01-15',
       },
       {
         id: '2',
         name: 'Proposals',
         description: 'Project proposals and quotes',
         documentCount: 28,
-        createdAt: '2024-02-01'
+        createdAt: '2024-02-01',
       },
       {
         id: '3',
         name: 'Equipment Manuals',
         description: 'Crane and equipment documentation',
         documentCount: 45,
-        createdAt: '2024-01-20'
+        createdAt: '2024-01-20',
       },
       {
         id: '4',
         name: 'Safety Documents',
         description: 'Safety procedures and certifications',
         documentCount: 32,
-        createdAt: '2024-01-10'
-      }
+        createdAt: '2024-01-10',
+      },
     ];
 
     const mockDocuments: Document[] = [
@@ -134,7 +141,7 @@ export function DocumentManagement() {
         version: 2,
         relatedEntityType: 'deal',
         relatedEntityId: 'deal-123',
-        relatedEntityName: 'ABC Construction Project'
+        relatedEntityName: 'ABC Construction Project',
       },
       {
         id: '2',
@@ -156,7 +163,7 @@ export function DocumentManagement() {
         version: 1,
         relatedEntityType: 'quotation',
         relatedEntityId: 'quote-456',
-        relatedEntityName: 'Industrial Corp Quote'
+        relatedEntityName: 'Industrial Corp Quote',
       },
       {
         id: '3',
@@ -175,7 +182,7 @@ export function DocumentManagement() {
         createdAt: '2024-02-28',
         updatedAt: '2024-02-28',
         isStarred: true,
-        version: 1
+        version: 1,
       },
       {
         id: '4',
@@ -194,7 +201,7 @@ export function DocumentManagement() {
         createdAt: '2024-06-01',
         updatedAt: '2024-06-01',
         isStarred: false,
-        version: 1
+        version: 1,
       },
       {
         id: '5',
@@ -211,8 +218,8 @@ export function DocumentManagement() {
         createdAt: '2024-06-05',
         updatedAt: '2024-06-05',
         isStarred: false,
-        version: 1
-      }
+        version: 1,
+      },
     ];
 
     setTimeout(() => {
@@ -223,14 +230,15 @@ export function DocumentManagement() {
   }, []);
 
   const filteredDocuments = documents.filter(doc => {
-    const matchesSearch = doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         doc.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         doc.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesSearch =
+      doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      doc.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      doc.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesType = typeFilter === 'all' || doc.type === typeFilter;
     const matchesStatus = statusFilter === 'all' || doc.status === statusFilter;
     const matchesFolder = !currentFolderId || doc.folderId === currentFolderId;
     const matchesStarred = !showStarredOnly || doc.isStarred;
-    
+
     return matchesSearch && matchesType && matchesStatus && matchesFolder && matchesStarred;
   });
 
@@ -245,10 +253,13 @@ export function DocumentManagement() {
   };
 
   const getFileIcon = (document: Document) => {
-    if (document.mimeType.startsWith('image/')) return <Image size={16} className="text-blue-500" />;
-    if (document.mimeType.startsWith('video/')) return <Video size={16} className="text-purple-500" />;
+    if (document.mimeType.startsWith('image/'))
+      return <Image size={16} className="text-blue-500" />;
+    if (document.mimeType.startsWith('video/'))
+      return <Video size={16} className="text-purple-500" />;
     if (document.mimeType.includes('pdf')) return <FileText size={16} className="text-red-500" />;
-    if (document.mimeType.includes('zip') || document.mimeType.includes('archive')) return <Archive size={16} className="text-gray-500" />;
+    if (document.mimeType.includes('zip') || document.mimeType.includes('archive'))
+      return <Archive size={16} className="text-gray-500" />;
     return <File size={16} className="text-gray-500" />;
   };
 
@@ -267,10 +278,12 @@ export function DocumentManagement() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Document Management</h1>
           <p className="text-gray-600">
-            {currentFolder ? `Browsing: ${currentFolder.name}` : 'Organize and manage your documents'}
+            {currentFolder
+              ? `Browsing: ${currentFolder.name}`
+              : 'Organize and manage your documents'}
           </p>
         </div>
-        
+
         <div className="flex flex-col sm:flex-row gap-3">
           <button
             onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
@@ -279,7 +292,7 @@ export function DocumentManagement() {
             {viewMode === 'grid' ? <List size={18} /> : <Grid size={18} />}
             {viewMode === 'grid' ? 'List View' : 'Grid View'}
           </button>
-          
+
           <button className="flex items-center gap-2 bg-brand-blue text-white px-4 py-2 rounded-lg hover:bg-brand-blue/90">
             <Upload size={18} />
             Upload Document
@@ -305,12 +318,15 @@ export function DocumentManagement() {
       <div className="flex flex-col sm:flex-row gap-4 bg-white p-4 rounded-lg border border-gray-200">
         <div className="flex-1">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+            <Search
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+              size={18}
+            />
             <input
               type="text"
               placeholder="Search documents..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={e => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-blue focus:border-transparent"
             />
           </div>
@@ -318,18 +334,20 @@ export function DocumentManagement() {
 
         <select
           value={typeFilter}
-          onChange={(e) => setTypeFilter(e.target.value as DocumentType | 'all')}
+          onChange={e => setTypeFilter(e.target.value as DocumentType | 'all')}
           className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-blue"
         >
           <option value="all">All Types</option>
           {DOCUMENT_TYPES.map(type => (
-            <option key={type.value} value={type.value}>{type.label}</option>
+            <option key={type.value} value={type.value}>
+              {type.label}
+            </option>
           ))}
         </select>
 
         <select
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value as DocumentStatus | 'all')}
+          onChange={e => setStatusFilter(e.target.value as DocumentStatus | 'all')}
           className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-blue"
         >
           <option value="all">All Statuses</option>
@@ -342,8 +360,8 @@ export function DocumentManagement() {
         <button
           onClick={() => setShowStarredOnly(!showStarredOnly)}
           className={`flex items-center gap-2 px-3 py-2 border rounded-lg ${
-            showStarredOnly 
-              ? 'bg-yellow-50 text-yellow-700 border-yellow-200' 
+            showStarredOnly
+              ? 'bg-yellow-50 text-yellow-700 border-yellow-200'
               : 'border-gray-300 hover:bg-gray-50'
           }`}
         >
@@ -378,35 +396,43 @@ export function DocumentManagement() {
       {viewMode === 'grid' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filteredDocuments.map(document => (
-            <div key={document.id} className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-all">
+            <div
+              key={document.id}
+              className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-all"
+            >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-2">
                   {getFileIcon(document)}
-                  <span className={`text-xs px-2 py-1 rounded-full font-medium border ${STATUS_COLORS[document.status]}`}>
+                  <span
+                    className={`text-xs px-2 py-1 rounded-full font-medium border ${STATUS_COLORS[document.status]}`}
+                  >
                     {document.status.toUpperCase()}
                   </span>
                 </div>
                 <button
                   onClick={() => {
-                    setDocuments(docs => 
-                      docs.map(d => d.id === document.id ? { ...d, isStarred: !d.isStarred } : d)
+                    setDocuments(docs =>
+                      docs.map(d => (d.id === document.id ? { ...d, isStarred: !d.isStarred } : d))
                     );
                   }}
                   className="text-gray-400 hover:text-yellow-500"
                 >
-                  <Star size={16} className={document.isStarred ? 'fill-current text-yellow-500' : ''} />
+                  <Star
+                    size={16}
+                    className={document.isStarred ? 'fill-current text-yellow-500' : ''}
+                  />
                 </button>
               </div>
-              
+
               <h3 className="font-medium text-gray-900 mb-2 line-clamp-2">{document.name}</h3>
               <p className="text-sm text-gray-600 mb-3 line-clamp-2">{document.description}</p>
-              
+
               <div className="space-y-2 text-xs text-gray-500 mb-4">
                 <div>Size: {formatFileSize(document.size)}</div>
                 <div>Modified: {new Date(document.updatedAt).toLocaleDateString()}</div>
                 {document.folderName && <div>Folder: {document.folderName}</div>}
               </div>
-              
+
               <div className="flex gap-1">
                 <button className="flex-1 flex items-center justify-center gap-1 py-1 px-2 text-xs bg-blue-50 text-blue-700 rounded hover:bg-blue-100">
                   <Eye size={12} />
@@ -446,21 +472,29 @@ export function DocumentManagement() {
                         {getFileIcon(document)}
                         <div className="flex-1 min-w-0">
                           <div className="font-medium text-gray-900 truncate">{document.name}</div>
-                          <div className="text-sm text-gray-500 truncate">{document.description}</div>
+                          <div className="text-sm text-gray-500 truncate">
+                            {document.description}
+                          </div>
                         </div>
                         {document.isStarred && (
                           <Star size={14} className="fill-current text-yellow-500" />
                         )}
                       </div>
                     </td>
-                    <td className="py-3 px-4 text-sm">{DOCUMENT_TYPES.find(t => t.value === document.type)?.label}</td>
+                    <td className="py-3 px-4 text-sm">
+                      {DOCUMENT_TYPES.find(t => t.value === document.type)?.label}
+                    </td>
                     <td className="py-3 px-4">
-                      <span className={`text-xs px-2 py-1 rounded-full font-medium border ${STATUS_COLORS[document.status]}`}>
+                      <span
+                        className={`text-xs px-2 py-1 rounded-full font-medium border ${STATUS_COLORS[document.status]}`}
+                      >
                         {document.status.toUpperCase()}
                       </span>
                     </td>
                     <td className="py-3 px-4 text-sm">{formatFileSize(document.size)}</td>
-                    <td className="py-3 px-4 text-sm">{new Date(document.updatedAt).toLocaleDateString()}</td>
+                    <td className="py-3 px-4 text-sm">
+                      {new Date(document.updatedAt).toLocaleDateString()}
+                    </td>
                     <td className="py-3 px-4 text-sm">{document.createdByName}</td>
                     <td className="py-3 px-4 text-right">
                       <div className="flex items-center justify-end gap-1">

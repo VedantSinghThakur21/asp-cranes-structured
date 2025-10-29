@@ -1,6 +1,6 @@
 /**
  * server-module-patch.js
- * 
+ *
  * Patch script to fix server modules in client-side code
  */
 
@@ -31,7 +31,7 @@ export const patchModules = {
         task: (cb) => Promise.resolve(cb())
       };
     };
-  `
+  `,
 };
 
 // Exposed for direct use

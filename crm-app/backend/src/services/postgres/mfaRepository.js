@@ -13,16 +13,13 @@ export async function storeTempMFASecret(userId, secret) {
   const client = await pool.connect();
   try {
     // Remove any existing temp secret for this user
-    await client.query(
-      'DELETE FROM user_mfa_temp_secrets WHERE user_id = $1',
-      [userId]
-    );
+    await client.query('DELETE FROM user_mfa_temp_secrets WHERE user_id = $1', [userId]);
 
     // Store new temp secret
-    await client.query(
-      'INSERT INTO user_mfa_temp_secrets (user_id, temp_secret) VALUES ($1, $2)',
-      [userId, secret]
-    );
+    await client.query('INSERT INTO user_mfa_temp_secrets (user_id, temp_secret) VALUES ($1, $2)', [
+      userId,
+      secret,
+    ]);
   } finally {
     client.release();
   }
@@ -50,10 +47,7 @@ export async function getTempMFASecret(userId) {
 export async function deleteTempMFASecret(userId) {
   const client = await pool.connect();
   try {
-    await client.query(
-      'DELETE FROM user_mfa_temp_secrets WHERE user_id = $1',
-      [userId]
-    );
+    await client.query('DELETE FROM user_mfa_temp_secrets WHERE user_id = $1', [userId]);
   } finally {
     client.release();
   }
@@ -86,10 +80,7 @@ export async function disableMFA(userId) {
     );
 
     // Clean up backup codes
-    await client.query(
-      'DELETE FROM user_mfa_backup_codes WHERE user_id = $1',
-      [userId]
-    );
+    await client.query('DELETE FROM user_mfa_backup_codes WHERE user_id = $1', [userId]);
   } finally {
     client.release();
   }
@@ -119,24 +110,21 @@ export async function storeBackupCodes(userId, codes) {
   try {
     // Hash backup codes before storing
     const hashedCodes = await Promise.all(
-      codes.map(async (code) => ({
+      codes.map(async code => ({
         code_hash: await bcrypt.hash(code, 10),
-        user_id: userId
+        user_id: userId,
       }))
     );
 
     // Remove existing backup codes
-    await client.query(
-      'DELETE FROM user_mfa_backup_codes WHERE user_id = $1',
-      [userId]
-    );
+    await client.query('DELETE FROM user_mfa_backup_codes WHERE user_id = $1', [userId]);
 
     // Insert new backup codes
     for (const { code_hash } of hashedCodes) {
-      await client.query(
-        'INSERT INTO user_mfa_backup_codes (user_id, code_hash) VALUES ($1, $2)',
-        [userId, code_hash]
-      );
+      await client.query('INSERT INTO user_mfa_backup_codes (user_id, code_hash) VALUES ($1, $2)', [
+        userId,
+        code_hash,
+      ]);
     }
   } finally {
     client.release();
@@ -210,10 +198,9 @@ export async function logMFAAttempt(userId, attemptType, success, ipAddress, use
 export async function updateLastMFAUsed(userId) {
   const client = await pool.connect();
   try {
-    await client.query(
-      'UPDATE users SET last_mfa_used = CURRENT_TIMESTAMP WHERE id = $1',
-      [userId]
-    );
+    await client.query('UPDATE users SET last_mfa_used = CURRENT_TIMESTAMP WHERE id = $1', [
+      userId,
+    ]);
   } finally {
     client.release();
   }

@@ -49,7 +49,7 @@ class TokenManager {
    */
   public getTokenInfo(): TokenInfo | null {
     const token = localStorage.getItem(import.meta.env.VITE_JWT_STORAGE_KEY || 'asp_cranes_jwt');
-    
+
     if (!token) {
       return null;
     }
@@ -58,12 +58,12 @@ class TokenManager {
       const payload = JSON.parse(atob(token.split('.')[1]));
       const expiresAt = payload.exp * 1000; // Convert to milliseconds
       const now = Date.now();
-      
+
       return {
         token,
         expiresAt,
         isExpired: now >= expiresAt,
-        timeUntilExpiry: expiresAt - now
+        timeUntilExpiry: expiresAt - now,
       };
     } catch (error) {
       console.error('Failed to parse token:', error);
@@ -76,7 +76,7 @@ class TokenManager {
    */
   public needsRefresh(): boolean {
     const tokenInfo = this.getTokenInfo();
-    
+
     if (!tokenInfo) {
       return false;
     }
@@ -122,14 +122,14 @@ class TokenManager {
   private async performTokenRefresh(): Promise<boolean> {
     try {
       console.log('🔄 Refreshing access token...');
-      
+
       const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/refresh`, {
         method: 'POST',
         credentials: 'include', // Include HTTP-only cookies
         headers: {
           'Content-Type': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest'
-        }
+          'X-Requested-With': 'XMLHttpRequest',
+        },
       });
 
       if (!response.ok) {
@@ -142,16 +142,18 @@ class TokenManager {
       if (data.success && data.accessToken) {
         // Store new token
         localStorage.setItem(
-          import.meta.env.VITE_JWT_STORAGE_KEY || 'asp_cranes_jwt', 
+          import.meta.env.VITE_JWT_STORAGE_KEY || 'asp_cranes_jwt',
           data.accessToken
         );
 
         console.log('✅ Token refreshed successfully');
-        
+
         // Dispatch custom event for other components to update
-        window.dispatchEvent(new CustomEvent('tokenRefreshed', {
-          detail: { accessToken: data.accessToken }
-        }));
+        window.dispatchEvent(
+          new CustomEvent('tokenRefreshed', {
+            detail: { accessToken: data.accessToken },
+          })
+        );
 
         return true;
       } else {
@@ -169,7 +171,7 @@ class TokenManager {
    */
   private scheduleNextRefresh(): void {
     const tokenInfo = this.getTokenInfo();
-    
+
     if (!tokenInfo) {
       console.log('No token found, stopping refresh schedule');
       return;
@@ -193,7 +195,7 @@ class TokenManager {
    */
   private async checkAndRefreshToken(): Promise<void> {
     const tokenInfo = this.getTokenInfo();
-    
+
     if (!tokenInfo) {
       console.log('No token found during check');
       return;
@@ -216,19 +218,21 @@ class TokenManager {
    */
   private handleRefreshFailure(): void {
     console.error('Token refresh failed completely, logging out user');
-    
+
     // Clear stored tokens
     localStorage.removeItem(import.meta.env.VITE_JWT_STORAGE_KEY || 'asp_cranes_jwt');
     localStorage.removeItem('user');
-    
+
     // Dispatch logout event
-    window.dispatchEvent(new CustomEvent('authenticationFailed', {
-      detail: { reason: 'token_refresh_failed' }
-    }));
+    window.dispatchEvent(
+      new CustomEvent('authenticationFailed', {
+        detail: { reason: 'token_refresh_failed' },
+      })
+    );
 
     // Stop auto refresh
     this.stopAutoRefresh();
-    
+
     // Redirect to login (if we're not already there)
     if (!window.location.pathname.includes('/login')) {
       window.location.href = '/login?reason=session_expired';
@@ -240,10 +244,10 @@ class TokenManager {
    */
   public initialize(): void {
     console.log('🚀 Initializing token manager');
-    
+
     // Check if we have a valid token
     const tokenInfo = this.getTokenInfo();
-    
+
     if (tokenInfo && !tokenInfo.isExpired) {
       this.startAutoRefresh();
     } else if (tokenInfo && tokenInfo.isExpired) {
@@ -261,7 +265,7 @@ class TokenManager {
     });
 
     // Listen for storage changes (multi-tab support)
-    window.addEventListener('storage', (e) => {
+    window.addEventListener('storage', e => {
       if (e.key === (import.meta.env.VITE_JWT_STORAGE_KEY || 'asp_cranes_jwt')) {
         if (e.newValue) {
           // Token updated in another tab
@@ -280,7 +284,7 @@ class TokenManager {
    */
   public async ensureValidToken(): Promise<string | null> {
     const tokenInfo = this.getTokenInfo();
-    
+
     if (!tokenInfo) {
       return null;
     }
@@ -290,7 +294,7 @@ class TokenManager {
       if (!refreshed) {
         return null;
       }
-      
+
       // Get the new token
       const newTokenInfo = this.getTokenInfo();
       return newTokenInfo?.token || null;
@@ -304,13 +308,13 @@ class TokenManager {
    */
   public async getAuthHeader(): Promise<Record<string, string>> {
     const token = await this.ensureValidToken();
-    
+
     if (!token) {
       return {};
     }
 
     return {
-      'Authorization': `Bearer ${token}`
+      Authorization: `Bearer ${token}`,
     };
   }
 }

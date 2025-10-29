@@ -15,10 +15,10 @@ const router = express.Router();
 // Debug route to check if routes are loaded
 router.get('/debug', (req, res) => {
   console.log('Customer routes debug endpoint hit');
-  res.json({ 
-    status: 'ok', 
+  res.json({
+    status: 'ok',
     message: 'Customer routes are loaded',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 });
 
@@ -31,9 +31,9 @@ try {
     database: process.env.DB_NAME || 'asp_crm',
     user: process.env.DB_USER || 'postgres',
     password: process.env.DB_PASSWORD || 'crmdb@21',
-    ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false
+    ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
   });
-  
+
   console.log('Customer routes: PostgreSQL connection pool created');
 } catch (error) {
   console.error('Customer routes: Failed to create PostgreSQL connection pool:', error);
@@ -42,33 +42,35 @@ try {
 // Import authentication middleware from central file
 // CORS support for all customer endpoints
 import cors from 'cors';
-router.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}));
+router.use(
+  cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
 
 // Helper function to convert snake_case to camelCase
 function snakeToCamel(obj) {
   if (obj === null || obj === undefined) return obj;
-  
+
   // Handle arrays
   if (Array.isArray(obj)) {
     return obj.map(item => snakeToCamel(item));
   }
-  
+
   // Handle non-objects
   if (typeof obj !== 'object') return obj;
-  
+
   // Handle special cases like date objects
   if (obj instanceof Date) return obj;
-  
+
   // Handle the conversion
   const newObj = {};
   Object.keys(obj).forEach(key => {
     // Convert key from snake_case to camelCase
     const newKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
-    
+
     // Handle JSON data stored in PostgreSQL
     if (typeof obj[key] === 'string' && (key.endsWith('_json') || key.includes('contact'))) {
       try {
@@ -82,7 +84,7 @@ function snakeToCamel(obj) {
       newObj[newKey] = snakeToCamel(obj[key]);
     }
   });
-  
+
   return newObj;
 }
 
@@ -90,7 +92,7 @@ function snakeToCamel(obj) {
 async function ensureTables(client) {
   try {
     console.log('🏗️ Ensuring customers table exists...');
-    
+
     // Check if customers table exists
     const customersTableCheck = await client.query(`
       SELECT EXISTS (
@@ -99,10 +101,10 @@ async function ensureTables(client) {
         AND table_name = 'customers'
       ) as exists
     `);
-    
+
     const customersTableExists = customersTableCheck.rows[0].exists;
     console.log(`📊 Customers table exists: ${customersTableExists}`);
-    
+
     // Create customers table if it doesn't exist
     if (!customersTableExists) {
       console.log('🔧 Creating customers table...');
@@ -122,9 +124,9 @@ async function ensureTables(client) {
       `);
       console.log('✅ Customers table created successfully');
     }
-    
+
     console.log('🏗️ Ensuring customer_contacts table exists...');
-    
+
     // Check if customer_contacts table exists
     const contactsTableCheck = await client.query(`
       SELECT EXISTS (
@@ -133,10 +135,10 @@ async function ensureTables(client) {
         AND table_name = 'customer_contacts'
       ) as exists
     `);
-    
+
     const contactsTableExists = contactsTableCheck.rows[0].exists;
     console.log(`📊 Customer contacts table exists: ${contactsTableExists}`);
-    
+
     // Create customer_contacts table if it doesn't exist
     if (!contactsTableExists) {
       console.log('🔧 Creating customer_contacts table...');
@@ -155,22 +157,22 @@ async function ensureTables(client) {
       `);
       console.log('✅ Customer contacts table created successfully');
     }
-    
+
     // Check if tables have data
     console.log('🔍 Checking if customers table has data...');
     const customersDataCheck = await client.query('SELECT COUNT(*) FROM customers');
     const customersCount = parseInt(customersDataCheck.rows[0].count);
     console.log(`📊 Customers table has ${customersCount} records`);
-    
-    return { 
-      success: true, 
+
+    return {
+      success: true,
       tablesCreated: {
         customers: !customersTableExists,
-        customer_contacts: !contactsTableExists
+        customer_contacts: !contactsTableExists,
       },
       recordCounts: {
-        customers: customersCount
-      }
+        customers: customersCount,
+      },
     };
   } catch (error) {
     console.error('❌ Error ensuring tables exist:', error);
@@ -252,14 +254,15 @@ router.get('/:id', async (req, res) => {
   if (!pool) {
     return res.status(500).json({ error: 'Database connection not available' });
   }
-  
+
   try {
     const { id } = req.params;
     const client = await pool.connect();
-    
+
     try {
       // Get customer by ID
-      const result = await client.query(`
+      const result = await client.query(
+        `
         SELECT 
           c.*,
           (
@@ -280,15 +283,17 @@ router.get('/:id', async (req, res) => {
           ) as contacts
         FROM customers c
         WHERE c.id = $1
-      `, [id]);
-      
+      `,
+        [id]
+      );
+
       if (result.rows.length === 0) {
         return res.status(404).json({ error: 'Customer not found' });
       }
-      
+
       // Convert snake_case to camelCase
       const customer = snakeToCamel(result.rows[0]);
-      
+
       res.status(200).json(customer);
     } finally {
       client.release();
@@ -304,80 +309,91 @@ router.post('/', async (req, res) => {
   if (!pool) {
     return res.status(500).json({ error: 'Database connection not available' });
   }
-  
+
   try {
     const customerData = req.body;
     const userId = req.user?.userId || 'unknown';
-    
+
     // Validate required fields
     if (!customerData.name) {
       return res.status(400).json({ error: 'Customer name is required' });
     }
-    
+
     const client = await pool.connect();
-    
+
     try {
       // Ensure tables exist
       await ensureTables(client);
-      
+
       // Generate a unique ID
       const customerId = `customer-${Date.now()}`;
       const now = new Date().toISOString();
-      
+
       // Start transaction
       await client.query('BEGIN');
-      
+
       // Insert customer
-      await client.query(`
+      await client.query(
+        `
         INSERT INTO customers (
           id, name, company_name, contact_name, email, phone, address, type, notes, created_at, updated_at
         ) VALUES (
           $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
         )
-      `, [
-        customerId,
-        customerData.name,
-        customerData.company_name || customerData.companyName || customerData.name, // Default to name if no company name
-        customerData.contactName || customerData.contact_name || customerData.name,
-        customerData.email || null,
-        customerData.phone || null,
-        customerData.address || null,
-        customerData.type || 'other',
-        customerData.notes || null,
-        now,
-        now
-      ]);
-      
+      `,
+        [
+          customerId,
+          customerData.name,
+          customerData.company_name || customerData.companyName || customerData.name, // Default to name if no company name
+          customerData.contactName || customerData.contact_name || customerData.name,
+          customerData.email || null,
+          customerData.phone || null,
+          customerData.address || null,
+          customerData.type || 'other',
+          customerData.notes || null,
+          now,
+          now,
+        ]
+      );
+
       // Insert contacts if provided
-      if (customerData.contacts && Array.isArray(customerData.contacts) && customerData.contacts.length > 0) {
+      if (
+        customerData.contacts &&
+        Array.isArray(customerData.contacts) &&
+        customerData.contacts.length > 0
+      ) {
         for (const contact of customerData.contacts) {
           const contactId = `contact-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-          
-          await client.query(`
+
+          await client.query(
+            `
             INSERT INTO customer_contacts (
               id, customer_id, name, email, phone, position, is_primary, created_at, updated_at
             ) VALUES (
               $1, $2, $3, $4, $5, $6, $7, $8, $9
             )
-          `, [
-            contactId,
-            customerId,
-            contact.name,
-            contact.email || null,
-            contact.phone || null,
-            contact.position || null,
-            contact.isPrimary || false,
-            now,
-            now
-          ]);
+          `,
+            [
+              contactId,
+              customerId,
+              contact.name,
+              contact.email || null,
+              contact.phone || null,
+              contact.position || null,
+              contact.isPrimary || false,
+              now,
+              now,
+            ]
+          );
         }
       }
-      
+
       // Commit transaction
       await client.query('COMMIT');
-      
+
       // Return the created customer
-      const result = await client.query(`
+      const result = await client.query(
+        `
         SELECT 
           c.*,
           (
@@ -398,10 +414,12 @@ router.post('/', async (req, res) => {
           ) as contacts
         FROM customers c
         WHERE c.id = $1
-      `, [customerId]);
-      
+      `,
+        [customerId]
+      );
+
       const customer = snakeToCamel(result.rows[0]);
-      
+
       res.status(201).json(customer);
     } catch (error) {
       // Rollback transaction on error
@@ -421,27 +439,28 @@ router.put('/:id', async (req, res) => {
   if (!pool) {
     return res.status(500).json({ error: 'Database connection not available' });
   }
-  
+
   try {
     const { id } = req.params;
     const customerData = req.body;
     const now = new Date().toISOString();
-    
+
     const client = await pool.connect();
-    
+
     try {
       // Check if customer exists
       const checkResult = await client.query('SELECT id FROM customers WHERE id = $1', [id]);
-      
+
       if (checkResult.rows.length === 0) {
         return res.status(404).json({ error: 'Customer not found' });
       }
-      
+
       // Start transaction
       await client.query('BEGIN');
-      
+
       // Update customer
-      await client.query(`
+      await client.query(
+        `
         UPDATE customers
         SET
           name = COALESCE($2, name),
@@ -453,18 +472,20 @@ router.put('/:id', async (req, res) => {
           notes = COALESCE($8, notes),
           updated_at = $9
         WHERE id = $1
-      `, [
-        id,
-        customerData.name,
-        customerData.contactName,
-        customerData.email,
-        customerData.phone,
-        customerData.address,
-        customerData.type,
-        customerData.notes,
-        now
-      ]);
-      
+      `,
+        [
+          id,
+          customerData.name,
+          customerData.contactName,
+          customerData.email,
+          customerData.phone,
+          customerData.address,
+          customerData.type,
+          customerData.notes,
+          now,
+        ]
+      );
+
       // Update contacts if provided
       if (customerData.contacts && Array.isArray(customerData.contacts)) {
         // Get existing contact IDs
@@ -472,15 +493,16 @@ router.put('/:id', async (req, res) => {
           'SELECT id FROM customer_contacts WHERE customer_id = $1',
           [id]
         );
-        
+
         const existingContactIds = new Set(existingContactsResult.rows.map(row => row.id));
         const updatedContactIds = new Set();
-        
+
         // Update or insert contacts
         for (const contact of customerData.contacts) {
           if (contact.id && existingContactIds.has(contact.id)) {
             // Update existing contact
-            await client.query(`
+            await client.query(
+              `
               UPDATE customer_contacts
               SET
                 name = $2,
@@ -490,43 +512,49 @@ router.put('/:id', async (req, res) => {
                 is_primary = $6,
                 updated_at = $7
               WHERE id = $1
-            `, [
-              contact.id,
-              contact.name,
-              contact.email || null,
-              contact.phone || null,
-              contact.position || null,
-              contact.isPrimary || false,
-              now
-            ]);
-            
+            `,
+              [
+                contact.id,
+                contact.name,
+                contact.email || null,
+                contact.phone || null,
+                contact.position || null,
+                contact.isPrimary || false,
+                now,
+              ]
+            );
+
             updatedContactIds.add(contact.id);
           } else {
             // Insert new contact
-            const contactId = contact.id || `contact-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-            
-            await client.query(`
+            const contactId =
+              contact.id || `contact-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
+            await client.query(
+              `
               INSERT INTO customer_contacts (
                 id, customer_id, name, email, phone, position, is_primary, created_at, updated_at
               ) VALUES (
                 $1, $2, $3, $4, $5, $6, $7, $8, $9
               )
-            `, [
-              contactId,
-              id,
-              contact.name,
-              contact.email || null,
-              contact.phone || null,
-              contact.position || null,
-              contact.isPrimary || false,
-              now,
-              now
-            ]);
-            
+            `,
+              [
+                contactId,
+                id,
+                contact.name,
+                contact.email || null,
+                contact.phone || null,
+                contact.position || null,
+                contact.isPrimary || false,
+                now,
+                now,
+              ]
+            );
+
             updatedContactIds.add(contactId);
           }
         }
-        
+
         // Delete contacts that were not updated
         for (const existingId of existingContactIds) {
           if (!updatedContactIds.has(existingId)) {
@@ -534,12 +562,13 @@ router.put('/:id', async (req, res) => {
           }
         }
       }
-      
+
       // Commit transaction
       await client.query('COMMIT');
-      
+
       // Return the updated customer
-      const result = await client.query(`
+      const result = await client.query(
+        `
         SELECT 
           c.*,
           (
@@ -560,10 +589,12 @@ router.put('/:id', async (req, res) => {
           ) as contacts
         FROM customers c
         WHERE c.id = $1
-      `, [id]);
-      
+      `,
+        [id]
+      );
+
       const customer = snakeToCamel(result.rows[0]);
-      
+
       res.status(200).json(customer);
     } catch (error) {
       // Rollback transaction on error
@@ -583,31 +614,31 @@ router.delete('/:id', async (req, res) => {
   if (!pool) {
     return res.status(500).json({ error: 'Database connection not available' });
   }
-  
+
   try {
     const { id } = req.params;
     const client = await pool.connect();
-    
+
     try {
       // Check if customer exists
       const checkResult = await client.query('SELECT id FROM customers WHERE id = $1', [id]);
-      
+
       if (checkResult.rows.length === 0) {
         return res.status(404).json({ error: 'Customer not found' });
       }
-      
+
       // Start transaction
       await client.query('BEGIN');
-      
+
       // Delete customer contacts (cascade should handle this, but just to be safe)
       await client.query('DELETE FROM customer_contacts WHERE customer_id = $1', [id]);
-      
+
       // Delete customer
       await client.query('DELETE FROM customers WHERE id = $1', [id]);
-      
+
       // Commit transaction
       await client.query('COMMIT');
-      
+
       res.status(200).json({ message: 'Customer deleted successfully' });
     } catch (error) {
       // Rollback transaction on error
@@ -627,21 +658,24 @@ router.get('/:customerId/contacts', authenticateToken, async (req, res) => {
   if (!pool) {
     return res.status(500).json({ error: 'Database connection not available' });
   }
-  
+
   try {
     const { customerId } = req.params;
     const client = await pool.connect();
-    
+
     try {
       // Check if customer exists
-      const checkResult = await client.query('SELECT id FROM customers WHERE id = $1', [customerId]);
-      
+      const checkResult = await client.query('SELECT id FROM customers WHERE id = $1', [
+        customerId,
+      ]);
+
       if (checkResult.rows.length === 0) {
         return res.status(404).json({ error: 'Customer not found' });
       }
-      
+
       // Get contacts
-      const result = await client.query(`
+      const result = await client.query(
+        `
         SELECT
           id,
           name,
@@ -654,10 +688,12 @@ router.get('/:customerId/contacts', authenticateToken, async (req, res) => {
         FROM customer_contacts
         WHERE customer_id = $1
         ORDER BY is_primary DESC, name ASC
-      `, [customerId]);
-      
+      `,
+        [customerId]
+      );
+
       const contacts = result.rows;
-      
+
       res.status(200).json(contacts);
     } finally {
       client.release();
@@ -673,51 +709,57 @@ router.post('/:customerId/contacts', async (req, res) => {
   if (!pool) {
     return res.status(500).json({ error: 'Database connection not available' });
   }
-  
+
   try {
     const { customerId } = req.params;
     const contactData = req.body;
-    
+
     // Validate required fields
     if (!contactData.name) {
       return res.status(400).json({ error: 'Contact name is required' });
     }
-    
+
     const client = await pool.connect();
-    
+
     try {
       // Check if customer exists
-      const checkResult = await client.query('SELECT id FROM customers WHERE id = $1', [customerId]);
-      
+      const checkResult = await client.query('SELECT id FROM customers WHERE id = $1', [
+        customerId,
+      ]);
+
       if (checkResult.rows.length === 0) {
         return res.status(404).json({ error: 'Customer not found' });
       }
-      
+
       // Generate a unique ID and timestamps
       const contactId = `contact-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
       const now = new Date().toISOString();
-      
+
       // Insert contact
-      await client.query(`
+      await client.query(
+        `
         INSERT INTO customer_contacts (
           id, customer_id, name, email, phone, position, is_primary, created_at, updated_at
         ) VALUES (
           $1, $2, $3, $4, $5, $6, $7, $8, $9
         )
-      `, [
-        contactId,
-        customerId,
-        contactData.name,
-        contactData.email || null,
-        contactData.phone || null,
-        contactData.position || null,
-        contactData.isPrimary || false,
-        now,
-        now
-      ]);
-      
+      `,
+        [
+          contactId,
+          customerId,
+          contactData.name,
+          contactData.email || null,
+          contactData.phone || null,
+          contactData.position || null,
+          contactData.isPrimary || false,
+          now,
+          now,
+        ]
+      );
+
       // Return the created contact
-      const result = await client.query(`
+      const result = await client.query(
+        `
         SELECT
           id,
           name,
@@ -729,10 +771,12 @@ router.post('/:customerId/contacts', async (req, res) => {
           updated_at as "updatedAt"
         FROM customer_contacts
         WHERE id = $1
-      `, [contactId]);
-      
+      `,
+        [contactId]
+      );
+
       const contact = result.rows[0];
-      
+
       res.status(201).json(contact);
     } finally {
       client.release();

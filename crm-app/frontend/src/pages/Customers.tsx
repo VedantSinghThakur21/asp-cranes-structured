@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { 
-  Plus, 
-  Search, 
-  Edit2, 
+import {
+  Plus,
+  Search,
+  Edit2,
   Trash2,
   Building2,
   Users,
@@ -16,7 +16,7 @@ import {
   List,
   ChevronLeft,
   ChevronFirst,
-  ChevronLast
+  ChevronLast,
 } from 'lucide-react';
 import { Card, CardContent } from '../components/common/Card';
 import { Button } from '../components/common/Button';
@@ -26,11 +26,11 @@ import { Toast } from '../components/common/Toast';
 
 import { useAuthStore } from '../store/authStore';
 import { Customer } from '../types/customer';
-import { 
+import {
   getCustomers,
   createCustomer,
   updateCustomer,
-  deleteCustomer
+  deleteCustomer,
 } from '../services/api/customerService';
 
 export function Customers() {
@@ -42,7 +42,7 @@ export function Customers() {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [expandedCustomers, setExpandedCustomers] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
-  
+
   // Enhanced filtering and pagination state
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
   const [sortBy, setSortBy] = useState<'name' | 'company' | 'type' | 'contacts'>('company');
@@ -50,7 +50,7 @@ export function Customers() {
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(20);
-  
+
   const [toast, setToast] = useState<{
     show: boolean;
     title: string;
@@ -66,7 +66,7 @@ export function Customers() {
     address: '',
     type: 'other',
     designation: '',
-    notes: ''
+    notes: '',
   });
 
   useEffect(() => {
@@ -100,38 +100,44 @@ export function Customers() {
 
   // Group customers by company name to eliminate duplicates
   const groupedCustomers = useMemo(() => {
-    return customers.reduce((acc, customer) => {
-      const companyKey = customer.companyName || customer.name;
-      if (!acc[companyKey]) {
-        acc[companyKey] = {
-          company: companyKey,
-          type: customer.type,
-          address: customer.address,
-          contacts: []
-        };
-      }
-      acc[companyKey].contacts.push({
-        id: customer.id,
-        name: customer.contactName || customer.name,
-        email: customer.email,
-        phone: customer.phone,
-        designation: customer.designation,
-        notes: customer.notes
-      });
-      return acc;
-    }, {} as Record<string, {
-      company: string;
-      type: string;
-      address: string;
-      contacts: Array<{
-        id: string;
-        name: string;
-        email: string;
-        phone: string;
-        designation?: string;
-        notes?: string;
-      }>;
-    }>);
+    return customers.reduce(
+      (acc, customer) => {
+        const companyKey = customer.companyName || customer.name;
+        if (!acc[companyKey]) {
+          acc[companyKey] = {
+            company: companyKey,
+            type: customer.type,
+            address: customer.address,
+            contacts: [],
+          };
+        }
+        acc[companyKey].contacts.push({
+          id: customer.id,
+          name: customer.contactName || customer.name,
+          email: customer.email,
+          phone: customer.phone,
+          designation: customer.designation,
+          notes: customer.notes,
+        });
+        return acc;
+      },
+      {} as Record<
+        string,
+        {
+          company: string;
+          type: string;
+          address: string;
+          contacts: Array<{
+            id: string;
+            name: string;
+            email: string;
+            phone: string;
+            designation?: string;
+            notes?: string;
+          }>;
+        }
+      >
+    );
   }, [customers]);
 
   // Enhanced filtering and sorting
@@ -140,12 +146,14 @@ export function Customers() {
 
     // Apply search filter
     if (searchTerm) {
-      companies = companies.filter(company =>
-        company.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        company.contacts.some(contact => 
-          contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          contact.email.toLowerCase().includes(searchTerm.toLowerCase())
-        )
+      companies = companies.filter(
+        company =>
+          company.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          company.contacts.some(
+            contact =>
+              contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              contact.email.toLowerCase().includes(searchTerm.toLowerCase())
+          )
       );
     }
 
@@ -157,7 +165,7 @@ export function Customers() {
     // Apply sorting
     companies.sort((a, b) => {
       let aValue, bValue;
-      
+
       switch (sortBy) {
         case 'company':
           aValue = a.company.toLowerCase();
@@ -202,18 +210,25 @@ export function Customers() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.name || !formData.companyName || !formData.contactName || !formData.email || !formData.phone || !formData.address || !formData.type) {
+    if (
+      !formData.name ||
+      !formData.companyName ||
+      !formData.contactName ||
+      !formData.email ||
+      !formData.phone ||
+      !formData.address ||
+      !formData.type
+    ) {
       showToast('Please fill in all required fields', 'error');
       return;
     }
 
     try {
-      if (selectedCustomer) {        const updatedCustomer = await updateCustomer(selectedCustomer.id, formData);
+      if (selectedCustomer) {
+        const updatedCustomer = await updateCustomer(selectedCustomer.id, formData);
         if (updatedCustomer) {
           setCustomers(prev =>
-            prev.map(customer =>
-              customer.id === selectedCustomer.id ? updatedCustomer : customer
-            )
+            prev.map(customer => (customer.id === selectedCustomer.id ? updatedCustomer : customer))
           );
         }
         showToast('Customer updated successfully', 'success');
@@ -254,15 +269,12 @@ export function Customers() {
       address: '',
       type: 'other' as const,
       designation: '',
-      notes: ''
+      notes: '',
     });
     setSelectedCustomer(null);
   };
 
-  const showToast = (
-    title: string,
-    variant: 'success' | 'error' | 'warning' = 'success'
-  ) => {
+  const showToast = (title: string, variant: 'success' | 'error' | 'warning' = 'success') => {
     setToast({ show: true, title, variant });
     setTimeout(() => setToast({ show: false, title: '' }), 3000);
   };
@@ -288,19 +300,19 @@ export function Customers() {
                 Customer Management
               </h1>
               <p className="text-gray-600 mt-1">
-                {totalItems} {totalItems === 1 ? 'company' : 'companies'} • 
-                {customers.length} total contacts
+                {totalItems} {totalItems === 1 ? 'company' : 'companies'} •{customers.length} total
+                contacts
               </p>
             </div>
-            
+
             <div className="flex flex-col sm:flex-row gap-3">
               {/* View Mode Toggle */}
               <div className="flex rounded-lg border border-gray-200 p-1">
                 <button
                   onClick={() => setViewMode('cards')}
                   className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    viewMode === 'cards' 
-                      ? 'bg-blue-500 text-white' 
+                    viewMode === 'cards'
+                      ? 'bg-blue-500 text-white'
                       : 'text-gray-500 hover:text-gray-700'
                   }`}
                 >
@@ -310,8 +322,8 @@ export function Customers() {
                 <button
                   onClick={() => setViewMode('table')}
                   className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    viewMode === 'table' 
-                      ? 'bg-blue-500 text-white' 
+                    viewMode === 'table'
+                      ? 'bg-blue-500 text-white'
                       : 'text-gray-500 hover:text-gray-700'
                   }`}
                 >
@@ -319,7 +331,7 @@ export function Customers() {
                   Table
                 </button>
               </div>
-              
+
               <Button
                 onClick={() => {
                   resetForm();
@@ -341,19 +353,19 @@ export function Customers() {
               <FormInput
                 placeholder="Search companies, contacts, or emails..."
                 value={searchTerm}
-                onChange={(e) => {
+                onChange={e => {
                   setSearchTerm(e.target.value);
                   setCurrentPage(1); // Reset to first page when searching
                 }}
                 className="pl-10 w-full"
               />
             </div>
-            
+
             <div className="flex gap-2">
               {/* Type Filter */}
               <select
                 value={typeFilter}
-                onChange={(e) => {
+                onChange={e => {
                   setTypeFilter(e.target.value);
                   setCurrentPage(1);
                 }}
@@ -370,7 +382,7 @@ export function Customers() {
               {/* Sort Options */}
               <select
                 value={`${sortBy}-${sortOrder}`}
-                onChange={(e) => {
+                onChange={e => {
                   const [field, order] = e.target.value.split('-');
                   setSortBy(field as typeof sortBy);
                   setSortOrder(order as 'asc' | 'desc');
@@ -387,7 +399,7 @@ export function Customers() {
               {/* Items per page */}
               <select
                 value={itemsPerPage}
-                onChange={(e) => {
+                onChange={e => {
                   setItemsPerPage(Number(e.target.value));
                   setCurrentPage(1);
                 }}
@@ -432,9 +444,7 @@ export function Customers() {
                   <>
                     <Building2 size={48} className="mx-auto text-gray-300 mb-4" />
                     <h3 className="text-lg font-medium text-gray-900 mb-2">No customers yet</h3>
-                    <p className="text-gray-500 mb-4">
-                      Get started by adding your first customer.
-                    </p>
+                    <p className="text-gray-500 mb-4">Get started by adding your first customer.</p>
                     <Button
                       onClick={() => {
                         resetForm();
@@ -454,8 +464,11 @@ export function Customers() {
           ) : (
             <>
               <div className="space-y-4">
-                {paginatedCompanies.map((company) => (
-                  <div key={company.company} className="border border-gray-200 rounded-lg bg-white shadow-sm">
+                {paginatedCompanies.map(company => (
+                  <div
+                    key={company.company}
+                    className="border border-gray-200 rounded-lg bg-white shadow-sm"
+                  >
                     {/* Company Header */}
                     <div className="p-4 border-b border-gray-100 bg-gray-50">
                       <div className="flex items-center justify-between">
@@ -479,7 +492,8 @@ export function Customers() {
                               </span>
                               <span className="flex items-center">
                                 <Users size={14} className="mr-1" />
-                                {company.contacts.length} contact{company.contacts.length !== 1 ? 's' : ''}
+                                {company.contacts.length} contact
+                                {company.contacts.length !== 1 ? 's' : ''}
                               </span>
                               {company.address && (
                                 <span className="flex items-center">
@@ -509,7 +523,7 @@ export function Customers() {
                                     address: customer.address,
                                     type: customer.type,
                                     designation: customer.designation || '',
-                                    notes: customer.notes || ''
+                                    notes: customer.notes || '',
                                   });
                                   setIsModalOpen(true);
                                 }
@@ -526,21 +540,28 @@ export function Customers() {
                     {/* Contacts List (Expandable) */}
                     {expandedCustomers.has(company.company) && (
                       <div className="p-4 space-y-3">
-                        {company.contacts.map((contact) => (
-                          <div key={contact.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        {company.contacts.map(contact => (
+                          <div
+                            key={contact.id}
+                            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                          >
                             <div className="flex items-center space-x-3">
                               <User size={16} className="text-gray-400" />
                               <div>
                                 <h4 className="font-medium text-gray-900">{contact.name}</h4>
                                 <div className="flex items-center space-x-4 text-sm text-gray-500">
-                                  {contact.designation && (
-                                    <span>{contact.designation}</span>
-                                  )}
-                                  <a href={`mailto:${contact.email}`} className="flex items-center hover:text-blue-600 transition-colors">
+                                  {contact.designation && <span>{contact.designation}</span>}
+                                  <a
+                                    href={`mailto:${contact.email}`}
+                                    className="flex items-center hover:text-blue-600 transition-colors"
+                                  >
                                     <Mail size={14} className="mr-1" />
                                     {contact.email}
                                   </a>
-                                  <a href={`tel:${contact.phone}`} className="flex items-center hover:text-blue-600 transition-colors">
+                                  <a
+                                    href={`tel:${contact.phone}`}
+                                    className="flex items-center hover:text-blue-600 transition-colors"
+                                  >
                                     <Phone size={14} className="mr-1" />
                                     {contact.phone}
                                   </a>
@@ -564,7 +585,7 @@ export function Customers() {
                                       address: customer.address,
                                       type: customer.type,
                                       designation: customer.designation || '',
-                                      notes: customer.notes || ''
+                                      notes: customer.notes || '',
                                     });
                                     setIsModalOpen(true);
                                   }
@@ -601,9 +622,10 @@ export function Customers() {
               {totalPages > 1 && (
                 <div className="mt-6 flex items-center justify-between border-t border-gray-200 pt-4">
                   <div className="text-sm text-gray-700">
-                    Showing {startIndex + 1} to {Math.min(endIndex, totalItems)} of {totalItems} companies
+                    Showing {startIndex + 1} to {Math.min(endIndex, totalItems)} of {totalItems}{' '}
+                    companies
                   </div>
-                  
+
                   <div className="flex items-center space-x-2">
                     <Button
                       variant="outline"
@@ -614,7 +636,7 @@ export function Customers() {
                     >
                       <ChevronFirst size={16} />
                     </Button>
-                    
+
                     <Button
                       variant="outline"
                       size="sm"
@@ -624,7 +646,7 @@ export function Customers() {
                     >
                       <ChevronLeft size={16} />
                     </Button>
-                    
+
                     <div className="flex space-x-1">
                       {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                         let pageNum;
@@ -637,11 +659,11 @@ export function Customers() {
                         } else {
                           pageNum = currentPage - 2 + i;
                         }
-                        
+
                         return (
                           <Button
                             key={pageNum}
-                            variant={currentPage === pageNum ? "accent" : "outline"}
+                            variant={currentPage === pageNum ? 'accent' : 'outline'}
                             size="sm"
                             onClick={() => handlePageChange(pageNum)}
                             className="w-10"
@@ -651,7 +673,7 @@ export function Customers() {
                         );
                       })}
                     </div>
-                    
+
                     <Button
                       variant="outline"
                       size="sm"
@@ -661,7 +683,7 @@ export function Customers() {
                     >
                       <ChevronRight size={16} />
                     </Button>
-                    
+
                     <Button
                       variant="outline"
                       size="sm"
@@ -694,14 +716,18 @@ export function Customers() {
             <FormInput
               label="Customer Name"
               value={formData.name}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setFormData(prev => ({ ...prev, name: e.target.value }))
+              }
               required
               placeholder="Enter customer name"
             />
             <FormInput
               label="Company Name"
               value={formData.companyName}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData(prev => ({ ...prev, companyName: e.target.value }))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setFormData(prev => ({ ...prev, companyName: e.target.value }))
+              }
               required
               placeholder="Enter company name"
             />
@@ -711,14 +737,18 @@ export function Customers() {
             <FormInput
               label="Contact Name"
               value={formData.contactName}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData(prev => ({ ...prev, contactName: e.target.value }))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setFormData(prev => ({ ...prev, contactName: e.target.value }))
+              }
               required
               placeholder="Enter contact person name"
             />
             <FormInput
               label="Designation"
               value={formData.designation}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData(prev => ({ ...prev, designation: e.target.value }))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setFormData(prev => ({ ...prev, designation: e.target.value }))
+              }
               placeholder="e.g., Project Manager, CEO"
             />
           </div>
@@ -728,14 +758,18 @@ export function Customers() {
               label="Email"
               type="email"
               value={formData.email}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setFormData(prev => ({ ...prev, email: e.target.value }))
+              }
               required
               placeholder="contact@company.com"
             />
             <FormInput
               label="Phone"
               value={formData.phone}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setFormData(prev => ({ ...prev, phone: e.target.value }))
+              }
               required
               placeholder="+1-555-0123"
             />
@@ -743,12 +777,10 @@ export function Customers() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Company Type
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Company Type</label>
               <select
                 value={formData.type}
-                onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value as any }))}
+                onChange={e => setFormData(prev => ({ ...prev, type: e.target.value as any }))}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 required
               >
@@ -762,19 +794,19 @@ export function Customers() {
             <FormInput
               label="Address"
               value={formData.address}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData(prev => ({ ...prev, address: e.target.value }))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setFormData(prev => ({ ...prev, address: e.target.value }))
+              }
               required
               placeholder="Company address"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Notes (Optional)
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Notes (Optional)</label>
             <textarea
               value={formData.notes}
-              onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+              onChange={e => setFormData(prev => ({ ...prev, notes: e.target.value }))}
               rows={3}
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="Additional notes about this customer..."
@@ -824,10 +856,7 @@ export function Customers() {
             >
               Cancel
             </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDelete}
-            >
+            <Button variant="destructive" onClick={handleDelete}>
               Delete
             </Button>
           </div>

@@ -4,7 +4,11 @@
  */
 
 import { CrewAICloudService } from '../services/CrewAICloudService.js';
-import { authenticateToken, authorize, AuthenticatedRequest } from '../middleware/authMiddleware.js';
+import {
+  authenticateToken,
+  authorize,
+  AuthenticatedRequest,
+} from '../middleware/authMiddleware.js';
 import express from 'express';
 
 /**
@@ -17,11 +21,11 @@ export class SecureAISystemManager {
     this.startTime = null;
     this.requestCount = 0;
     this.lastRequestTime = null;
-    
+
     // Security configuration
     this.maxRequestsPerMinute = parseInt(process.env.AI_MAX_REQUESTS_PER_MINUTE) || 60;
     this.requestHistory = [];
-    
+
     console.log('🔐 Secure AI System Manager initialized');
   }
 
@@ -38,25 +42,24 @@ export class SecureAISystemManager {
 
       // Initialize CrewAI service securely
       this.crewAIService = new CrewAICloudService();
-      
+
       if (this.crewAIService.isConfigured) {
         await this.testConnectivitySecurely();
       } else {
         throw new Error('CrewAI service not properly configured');
       }
-      
+
       this.isInitialized = true;
       const initTime = Date.now() - this.startTime;
-      
+
       console.log(`✅ Secure AI system initialized in ${initTime}ms`);
-      
+
       return {
         success: true,
         initializationTime: initTime,
         platform: 'CrewAI Hosted Platform (Secure)',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
-      
     } catch (error) {
       console.error('❌ Secure AI system initialization failed:', error.message);
       this.isInitialized = false;
@@ -68,13 +71,10 @@ export class SecureAISystemManager {
    * Validate environment configuration
    */
   validateEnvironment() {
-    const requiredEnvVars = [
-      'CREWAI_API_ENDPOINT',
-      'CREWAI_API_KEY'
-    ];
+    const requiredEnvVars = ['CREWAI_API_ENDPOINT', 'CREWAI_API_KEY'];
 
     const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
-    
+
     if (missingVars.length > 0) {
       throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`);
     }
@@ -99,19 +99,19 @@ export class SecureAISystemManager {
    */
   async testConnectivitySecurely() {
     console.log('🧪 Testing secure CrewAI connectivity...');
-    
+
     const testPayload = {
       query: 'Security test - respond with "OK"',
       timestamp: new Date().toISOString(),
-      testId: Math.random().toString(36).substring(7)
+      testId: Math.random().toString(36).substring(7),
     };
-    
+
     try {
-      const testResult = await this.crewAIService.processChat(
-        testPayload.query, 
-        { test: true, id: testPayload.testId }
-      );
-      
+      const testResult = await this.crewAIService.processChat(testPayload.query, {
+        test: true,
+        id: testPayload.testId,
+      });
+
       if (testResult.success) {
         console.log('✅ Secure CrewAI connectivity verified');
       } else {
@@ -129,10 +129,10 @@ export class SecureAISystemManager {
   checkRateLimit(userRole) {
     const now = Date.now();
     const oneMinuteAgo = now - 60000;
-    
+
     // Clean old requests
     this.requestHistory = this.requestHistory.filter(time => time > oneMinuteAgo);
-    
+
     // Different limits for different roles
     let limit = this.maxRequestsPerMinute;
     if (userRole === 'admin') {
@@ -140,11 +140,13 @@ export class SecureAISystemManager {
     } else if (userRole === 'operator') {
       limit = Math.floor(limit / 2); // Operators get half the limit
     }
-    
+
     if (this.requestHistory.length >= limit) {
-      throw new Error(`Rate limit exceeded. Max ${limit} requests per minute for role: ${userRole}`);
+      throw new Error(
+        `Rate limit exceeded. Max ${limit} requests per minute for role: ${userRole}`
+      );
     }
-    
+
     this.requestHistory.push(now);
     return true;
   }
@@ -162,7 +164,7 @@ export class SecureAISystemManager {
     this.validateInteractionInput(interaction);
 
     console.log(`💬 [SECURE] User ${userId} (${userRole}) requesting AI interaction`);
-    
+
     try {
       // Add security context to the interaction
       const secureContext = {
@@ -170,13 +172,10 @@ export class SecureAISystemManager {
         userId,
         userRole,
         timestamp: new Date().toISOString(),
-        sessionId: this.generateSessionId(userId)
+        sessionId: this.generateSessionId(userId),
       };
 
-      const result = await this.crewAIService.processChat(
-        interaction.query, 
-        secureContext
-      );
+      const result = await this.crewAIService.processChat(interaction.query, secureContext);
 
       // Log for audit trail
       this.logInteraction(userId, userRole, interaction.query, result.success);
@@ -186,15 +185,14 @@ export class SecureAISystemManager {
         response: result.response,
         platform: 'CrewAI Hosted Platform (Secure)',
         processingTime: result.responseTime || 0,
-        sessionId: secureContext.sessionId
+        sessionId: secureContext.sessionId,
       };
-      
     } catch (error) {
       console.error(`❌ [SECURE] Interaction failed for user ${userId}:`, error.message);
-      
+
       // Log security incident
       this.logSecurityIncident(userId, userRole, error.message);
-      
+
       throw error;
     }
   }
@@ -222,7 +220,7 @@ export class SecureAISystemManager {
       /data:/i,
       /vbscript:/i,
       /onload=/i,
-      /onerror=/i
+      /onerror=/i,
     ];
 
     if (suspiciousPatterns.some(pattern => pattern.test(interaction.query))) {
@@ -251,7 +249,7 @@ export class SecureAISystemManager {
       userRole,
       queryLength: query.length,
       success,
-      ip: this.getCurrentIP()
+      ip: this.getCurrentIP(),
     };
 
     // In production, this should go to a secure audit log
@@ -268,7 +266,7 @@ export class SecureAISystemManager {
       userId,
       userRole,
       error,
-      ip: this.getCurrentIP()
+      ip: this.getCurrentIP(),
     };
 
     // In production, this should trigger security alerts
@@ -294,9 +292,9 @@ export class SecureAISystemManager {
       lastRequestTime: this.lastRequestTime,
       rateLimit: {
         maxRequestsPerMinute: this.maxRequestsPerMinute,
-        currentRequests: this.requestHistory.length
+        currentRequests: this.requestHistory.length,
       },
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 
@@ -305,11 +303,11 @@ export class SecureAISystemManager {
    */
   async secureCleanup() {
     console.log('🧹 [SECURE] Cleaning up AI system...');
-    
+
     // Clear sensitive data
     this.requestHistory = [];
     this.lastRequestTime = null;
-    
+
     this.isInitialized = false;
     console.log('✅ [SECURE] AI system cleanup completed');
   }
@@ -335,38 +333,37 @@ export const createSecureAIRouter = () => {
   /**
    * Protected AI Chat Endpoint
    */
-  router.post('/chat', 
-    authenticateToken, 
+  router.post(
+    '/chat',
+    authenticateToken,
     authorize(['admin', 'sales_agent', 'operations_manager']),
     async (req, res) => {
       try {
         await ensureInitialized();
 
         const { query, context = {} } = req.body;
-        
+
         if (!query) {
           return res.status(400).json({
             error: 'MISSING_QUERY',
-            message: 'Query is required'
+            message: 'Query is required',
           });
         }
 
-        const result = await secureAI.handleSecureInteraction(
-          req.user.id,
-          req.user.role,
-          { query, context }
-        );
+        const result = await secureAI.handleSecureInteraction(req.user.id, req.user.role, {
+          query,
+          context,
+        });
 
         res.status(200).json({
           success: true,
-          data: result
+          data: result,
         });
-
       } catch (error) {
         console.error('AI Chat error:', error);
         res.status(400).json({
           error: 'AI_PROCESSING_ERROR',
-          message: error.message
+          message: error.message,
         });
       }
     }
@@ -375,21 +372,17 @@ export const createSecureAIRouter = () => {
   /**
    * AI System Status (Admin only)
    */
-  router.get('/status',
-    authenticateToken,
-    authorize(['admin']),
-    async (req, res) => {
-      try {
-        const status = secureAI.getSecureSystemStatus();
-        res.status(200).json(status);
-      } catch (error) {
-        res.status(500).json({
-          error: 'STATUS_ERROR',
-          message: 'Failed to get system status'
-        });
-      }
+  router.get('/status', authenticateToken, authorize(['admin']), async (req, res) => {
+    try {
+      const status = secureAI.getSecureSystemStatus();
+      res.status(200).json(status);
+    } catch (error) {
+      res.status(500).json({
+        error: 'STATUS_ERROR',
+        message: 'Failed to get system status',
+      });
     }
-  );
+  });
 
   return router;
 };

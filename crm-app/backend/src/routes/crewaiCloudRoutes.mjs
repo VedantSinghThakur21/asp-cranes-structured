@@ -21,7 +21,7 @@ router.get('/health', async (req, res) => {
     res.status(503).json({
       success: false,
       error: 'CrewAI platform unavailable',
-      details: error.message
+      details: error.message,
     });
   }
 });
@@ -32,16 +32,16 @@ router.get('/health', async (req, res) => {
 router.post('/chat', async (req, res) => {
   try {
     const { message, context } = req.body;
-    
+
     if (!message) {
       return res.status(400).json({
         success: false,
-        error: 'Message is required'
+        error: 'Message is required',
       });
     }
 
     console.log('🌐 Processing chat via CrewAI Cloud:', message);
-    
+
     const result = await crewaiCloudService.processChat(message, context);
 
     res.json({
@@ -51,16 +51,15 @@ router.post('/chat', async (req, res) => {
       metadata: {
         agentId: result.agentId,
         confidence: result.confidence,
-        timestamp: new Date().toISOString()
-      }
+        timestamp: new Date().toISOString(),
+      },
     });
-
   } catch (error) {
     console.error('❌ Chat processing error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to process chat',
-      details: error.message
+      details: error.message,
     });
   }
 });
@@ -71,9 +70,9 @@ router.post('/chat', async (req, res) => {
 router.post('/leads/process', async (req, res) => {
   try {
     const leadData = req.body;
-    
+
     console.log('🎯 Processing lead via CrewAI Cloud:', leadData.customerName);
-    
+
     const result = await crewaiCloudService.analyzeLead(leadData);
 
     res.json({
@@ -82,15 +81,14 @@ router.post('/leads/process', async (req, res) => {
       qualification: result.qualification,
       recommendations: result.recommendations,
       nextActions: result.nextActions,
-      source: 'crewai-cloud'
+      source: 'crewai-cloud',
     });
-
   } catch (error) {
     console.error('❌ Lead processing error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to process lead',
-      details: error.message
+      details: error.message,
     });
   }
 });
@@ -101,9 +99,9 @@ router.post('/leads/process', async (req, res) => {
 router.post('/quotations/generate', async (req, res) => {
   try {
     const quotationData = req.body;
-    
+
     console.log('💰 Generating quotation via CrewAI Cloud:', quotationData.equipmentType);
-    
+
     const result = await crewaiCloudService.generateQuotation(quotationData);
 
     res.json({
@@ -112,15 +110,14 @@ router.post('/quotations/generate', async (req, res) => {
       pricing: result.pricing,
       terms: result.terms,
       validUntil: result.validUntil,
-      source: 'crewai-cloud'
+      source: 'crewai-cloud',
     });
-
   } catch (error) {
     console.error('❌ Quotation generation error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to generate quotation',
-      details: error.message
+      details: error.message,
     });
   }
 });
@@ -131,9 +128,9 @@ router.post('/quotations/generate', async (req, res) => {
 router.post('/intelligence/research-company', async (req, res) => {
   try {
     const companyData = req.body;
-    
+
     console.log('🔍 Researching company via CrewAI Cloud:', companyData.companyName);
-    
+
     const result = await crewaiCloudService.researchCompany(companyData);
 
     res.json({
@@ -143,15 +140,14 @@ router.post('/intelligence/research-company', async (req, res) => {
       industryInsights: result.industryInsights,
       riskAssessment: result.riskAssessment,
       opportunities: result.opportunities,
-      source: 'crewai-cloud'
+      source: 'crewai-cloud',
     });
-
   } catch (error) {
     console.error('❌ Company research error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to research company',
-      details: error.message
+      details: error.message,
     });
   }
 });
@@ -162,24 +158,23 @@ router.post('/intelligence/research-company', async (req, res) => {
 router.get('/agents/:agentId/metrics', async (req, res) => {
   try {
     const { agentId } = req.params;
-    
+
     const result = await crewaiCloudService.getAgentMetrics(agentId);
-    
+
     res.json({
       success: true,
       agentId,
       metrics: result.metrics,
       performance: result.performance,
       usage: result.usage,
-      source: 'crewai-cloud'
+      source: 'crewai-cloud',
     });
-
   } catch (error) {
     console.error('❌ Agent metrics error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to get agent metrics',
-      details: error.message
+      details: error.message,
     });
   }
 });
@@ -190,23 +185,22 @@ router.get('/agents/:agentId/metrics', async (req, res) => {
 router.post('/initialize', async (req, res) => {
   try {
     console.log('🚀 Initializing CrewAI cloud platform...');
-    
+
     const result = await crewaiCloudService.initializeAgents();
-    
+
     res.json({
       success: result.success,
       message: `Initialized ${result.initialized}/${result.total} agents on CrewAI platform`,
       details: result.details,
       platform: 'CrewAI Cloud',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
     console.error('❌ CrewAI initialization error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to initialize CrewAI platform',
-      details: error.message
+      details: error.message,
     });
   }
 });
@@ -218,36 +212,36 @@ router.post('/webhook', async (req, res) => {
   try {
     const signature = req.headers['x-crewai-signature'];
     const payload = JSON.stringify(req.body);
-    
+
     // Verify webhook signature for security
     if (!crewaiCloudService.verifyWebhookSignature(payload, signature)) {
       return res.status(401).json({
         success: false,
-        error: 'Invalid webhook signature'
+        error: 'Invalid webhook signature',
       });
     }
 
     const { event, data } = req.body;
-    
+
     console.log('📨 CrewAI webhook received:', event);
-    
+
     // Handle different webhook events
     switch (event) {
       case 'agent.completed':
         // Agent task completed
         await handleAgentCompletion(data);
         break;
-        
+
       case 'agent.error':
         // Agent encountered error
         await handleAgentError(data);
         break;
-        
+
       case 'workflow.status':
         // Workflow status update
         await handleWorkflowStatus(data);
         break;
-        
+
       default:
         console.log('🤷 Unknown webhook event:', event);
     }
@@ -255,15 +249,14 @@ router.post('/webhook', async (req, res) => {
     res.json({
       success: true,
       message: 'Webhook processed successfully',
-      event
+      event,
     });
-
   } catch (error) {
     console.error('❌ Webhook processing error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to process webhook',
-      details: error.message
+      details: error.message,
     });
   }
 });
@@ -275,7 +268,7 @@ router.get('/status', async (req, res) => {
   try {
     const health = await crewaiCloudService.healthCheck();
     const metrics = await crewaiCloudService.getMetrics();
-    
+
     res.json({
       success: true,
       platform: 'CrewAI Cloud',
@@ -283,22 +276,21 @@ router.get('/status', async (req, res) => {
       agents: {
         total: 6,
         active: metrics.agents?.active || 0,
-        healthy: metrics.agents?.healthy || 0
+        healthy: metrics.agents?.healthy || 0,
       },
       performance: {
         latency: health.latency,
         uptime: metrics.uptime || 'N/A',
-        requestsToday: metrics.requestsToday || 0
+        requestsToday: metrics.requestsToday || 0,
       },
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
     console.error('❌ Status check error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to get platform status',
-      details: error.message
+      details: error.message,
     });
   }
 });

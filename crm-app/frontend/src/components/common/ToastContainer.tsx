@@ -23,20 +23,24 @@ function Toast({ toast, onRemove }: ToastProps) {
   }, [toast.id, toast.duration, onRemove]);
 
   return (
-    <div className={`
+    <div
+      className={`
       fixed top-4 right-4 z-50 flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg
       ${toast.type === 'success' ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}
-    `}>
+    `}
+    >
       {toast.type === 'success' ? (
         <CheckCircle size={20} className="text-green-600" />
       ) : (
         <XCircle size={20} className="text-red-600" />
       )}
-      
-      <span className={`text-sm font-medium ${toast.type === 'success' ? 'text-green-800' : 'text-red-800'}`}>
+
+      <span
+        className={`text-sm font-medium ${toast.type === 'success' ? 'text-green-800' : 'text-red-800'}`}
+      >
         {toast.message}
       </span>
-      
+
       <button
         onClick={() => onRemove(toast.id)}
         className={`ml-2 ${toast.type === 'success' ? 'text-green-600 hover:text-green-800' : 'text-red-600 hover:text-red-800'}`}

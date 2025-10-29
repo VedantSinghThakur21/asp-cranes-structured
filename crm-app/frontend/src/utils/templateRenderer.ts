@@ -49,7 +49,7 @@ export function renderTemplate(quotation: QuotationData, template: TemplateData)
   if (template.elements && template.elements.length > 0) {
     return renderModernTemplate(quotation, template);
   }
-  
+
   // If template has legacy content, use legacy renderer
   if (template.content) {
     return renderLegacyTemplate(quotation, template);
@@ -61,7 +61,7 @@ export function renderTemplate(quotation: QuotationData, template: TemplateData)
 
 function renderModernTemplate(quotation: QuotationData, template: TemplateData): string {
   console.log('🆕 Using modern template renderer');
-  
+
   let html = `
     <style>
       body { 
@@ -233,25 +233,40 @@ function renderModernTemplate(quotation: QuotationData, template: TemplateData):
 
 function renderLegacyTemplate(quotation: QuotationData, template: TemplateData): string {
   console.log('📰 Using legacy template renderer');
-  
+
   let content = template.content || '';
-  
+
   // Replace common placeholders
-  content = content.replace(/\{\{customer_name\}\}/g, quotation.customerContact?.name || quotation.customerName || 'Valued Customer');
-  content = content.replace(/\{\{customer_company\}\}/g, quotation.customerContact?.company || 'Customer Company');
+  content = content.replace(
+    /\{\{customer_name\}\}/g,
+    quotation.customerContact?.name || quotation.customerName || 'Valued Customer'
+  );
+  content = content.replace(
+    /\{\{customer_company\}\}/g,
+    quotation.customerContact?.company || 'Customer Company'
+  );
   content = content.replace(/\{\{customer_phone\}\}/g, quotation.customerContact?.phone || '');
   content = content.replace(/\{\{customer_email\}\}/g, quotation.customerContact?.email || '');
-  content = content.replace(/\{\{equipment_name\}\}/g, quotation.selectedEquipment?.name || 'Equipment');
-  content = content.replace(/\{\{total_amount\}\}/g, `₹${quotation.totalRent?.toLocaleString('en-IN') || '0'}`);
-  content = content.replace(/\{\{project_duration\}\}/g, `${quotation.numberOfDays} ${quotation.numberOfDays === 1 ? 'Day' : 'Days'}`);
+  content = content.replace(
+    /\{\{equipment_name\}\}/g,
+    quotation.selectedEquipment?.name || 'Equipment'
+  );
+  content = content.replace(
+    /\{\{total_amount\}\}/g,
+    `₹${quotation.totalRent?.toLocaleString('en-IN') || '0'}`
+  );
+  content = content.replace(
+    /\{\{project_duration\}\}/g,
+    `${quotation.numberOfDays} ${quotation.numberOfDays === 1 ? 'Day' : 'Days'}`
+  );
   content = content.replace(/\{\{quote_date\}\}/g, new Date().toLocaleDateString('en-IN'));
-  
+
   return content;
 }
 
 function renderDefaultTemplate(quotation: QuotationData): string {
   console.log('🎯 Using default template renderer');
-  
+
   return `
     <style>
       body { 
@@ -377,7 +392,7 @@ function generateHeader(quotation: QuotationData): string {
         <h2>QUOTATION</h2>
         <p><strong>Date:</strong> ${new Date().toLocaleDateString('en-IN')}</p>
         <p><strong>Quote ID:</strong> ${quotation.id}</p>
-        <p><strong>Valid Until:</strong> ${new Date(Date.now() + 30*24*60*60*1000).toLocaleDateString('en-IN')}</p>
+        <p><strong>Valid Until:</strong> ${new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN')}</p>
       </div>
     </div>
   `;
@@ -399,13 +414,13 @@ function generateCustomerSection(quotation: QuotationData): string {
 function generateEquipmentTable(quotation: QuotationData): string {
   const machines = quotation.selectedMachines || [];
   const singleEquipment = quotation.selectedEquipment;
-  
+
   // If no machines but single equipment, create a machine entry
   if (machines.length === 0 && singleEquipment) {
     machines.push({
       name: singleEquipment.name,
       baseRate: quotation.totalRent / quotation.numberOfDays,
-      quantity: 1
+      quantity: 1,
     });
   }
 
@@ -413,7 +428,7 @@ function generateEquipmentTable(quotation: QuotationData): string {
   machines.forEach((machine, index) => {
     const rate = machine.baseRate || 0;
     const amount = rate * quotation.numberOfDays * machine.quantity;
-    
+
     tableRows += `
       <tr>
         <td>${index + 1}</td>
@@ -458,18 +473,26 @@ function generateTotalSection(quotation: QuotationData): string {
         <span style="font-weight: 600;">Subtotal:</span>
         <span style="float: right;">₹${subtotal.toLocaleString('en-IN')}</span>
       </div>
-      ${quotation.mobDemob ? `
+      ${
+        quotation.mobDemob
+          ? `
       <div style="margin-bottom: 10px;">
         <span style="font-weight: 600;">Mobilization/Demobilization:</span>
         <span style="float: right;">₹${quotation.mobDemob.toLocaleString('en-IN')}</span>
       </div>
-      ` : ''}
-      ${gst > 0 ? `
+      `
+          : ''
+      }
+      ${
+        gst > 0
+          ? `
       <div style="margin-bottom: 10px;">
         <span style="font-weight: 600;">GST (18%):</span>
         <span style="float: right;">₹${gst.toLocaleString('en-IN')}</span>
       </div>
-      ` : ''}
+      `
+          : ''
+      }
       <hr style="margin: 15px 0; border: 1px solid #2563eb;">
       <div class="total-amount">
         <span>Total Amount: ₹${grandTotal.toLocaleString('en-IN')}</span>

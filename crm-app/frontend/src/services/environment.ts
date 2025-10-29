@@ -1,6 +1,6 @@
 /**
  * Environment Detection Service
- * 
+ *
  * This service helps detect whether code is running in a browser or server environment
  * and provides utilities for safely handling code that may run in either context.
  */

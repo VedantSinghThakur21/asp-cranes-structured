@@ -8,16 +8,16 @@ import notificationEngine from './notificationEngine.js';
 /**
  * Create a simple notification
  */
-export const createNotification = async (notification) => {
+export const createNotification = async notification => {
   try {
     console.log('📧 Creating notification:', notification);
-    
+
     const result = await notificationEngine.sendNotification({
       type: notification.type || 'general',
       recipients: notification.recipients || [],
       data: notification.data || {},
       channels: notification.channels || ['in_app'],
-      priority: notification.priority || 'medium'
+      priority: notification.priority || 'medium',
     });
 
     return { id: Date.now(), ...notification, createdAt: new Date(), result };
@@ -30,7 +30,7 @@ export const createNotification = async (notification) => {
 /**
  * Send lead created notification
  */
-export const sendLeadCreatedNotification = async (leadData) => {
+export const sendLeadCreatedNotification = async leadData => {
   return await notificationEngine.sendNotification({
     type: 'lead_created',
     data: {
@@ -38,16 +38,16 @@ export const sendLeadCreatedNotification = async (leadData) => {
       companyName: leadData.company_name,
       serviceNeeded: leadData.service_needed,
       siteLocation: leadData.site_location,
-      leadUrl: `${process.env.FRONTEND_URL}/leads/${leadData.id}`
+      leadUrl: `${process.env.FRONTEND_URL}/leads/${leadData.id}`,
     },
-    priority: 'high'
+    priority: 'high',
   });
 };
 
 /**
  * Send quotation created notification
  */
-export const sendQuotationCreatedNotification = async (quotationData) => {
+export const sendQuotationCreatedNotification = async quotationData => {
   return await notificationEngine.sendNotification({
     type: 'quotation_created',
     data: {
@@ -56,9 +56,9 @@ export const sendQuotationCreatedNotification = async (quotationData) => {
       totalCost: quotationData.total_cost?.toLocaleString('en-IN'),
       machineType: quotationData.machine_type,
       numberOfDays: quotationData.number_of_days,
-      quotationUrl: `${process.env.FRONTEND_URL}/quotations/${quotationData.id}`
+      quotationUrl: `${process.env.FRONTEND_URL}/quotations/${quotationData.id}`,
     },
-    priority: 'medium'
+    priority: 'medium',
   });
 };
 
@@ -67,7 +67,7 @@ export const sendQuotationCreatedNotification = async (quotationData) => {
  */
 export const sendJobAssignedNotification = async (jobData, operatorIds) => {
   const recipients = operatorIds.map(id => ({ id }));
-  
+
   return await notificationEngine.sendNotification({
     type: 'job_assigned',
     recipients,
@@ -76,33 +76,33 @@ export const sendJobAssignedNotification = async (jobData, operatorIds) => {
       customerName: jobData.customer_name,
       location: jobData.location,
       startDate: new Date(jobData.scheduled_start_date).toLocaleDateString(),
-      jobUrl: `${process.env.FRONTEND_URL}/jobs/${jobData.id}`
+      jobUrl: `${process.env.FRONTEND_URL}/jobs/${jobData.id}`,
     },
     channels: ['in_app', 'email', 'sms'],
-    priority: 'high'
+    priority: 'high',
   });
 };
 
 /**
  * Send deal won notification
  */
-export const sendDealWonNotification = async (dealData) => {
+export const sendDealWonNotification = async dealData => {
   return await notificationEngine.sendNotification({
     type: 'deal_won',
     data: {
       dealTitle: dealData.title,
       dealValue: dealData.value?.toLocaleString('en-IN'),
       customerName: dealData.customer_name,
-      dealUrl: `${process.env.FRONTEND_URL}/deals/${dealData.id}`
+      dealUrl: `${process.env.FRONTEND_URL}/deals/${dealData.id}`,
     },
-    priority: 'high'
+    priority: 'high',
   });
 };
 
 /**
  * Send follow-up reminder notification
  */
-export const sendFollowUpReminderNotification = async (leadData) => {
+export const sendFollowUpReminderNotification = async leadData => {
   return await notificationEngine.sendNotification({
     type: 'followup_reminder',
     data: {
@@ -110,32 +110,32 @@ export const sendFollowUpReminderNotification = async (leadData) => {
       lastContact: new Date(leadData.updated_at).toLocaleDateString(),
       status: leadData.status,
       serviceNeeded: leadData.service_needed,
-      leadUrl: `${process.env.FRONTEND_URL}/leads/${leadData.id}`
+      leadUrl: `${process.env.FRONTEND_URL}/leads/${leadData.id}`,
     },
-    priority: 'medium'
+    priority: 'medium',
   });
 };
 
 /**
  * Send job completed notification
  */
-export const sendJobCompletedNotification = async (jobData) => {
+export const sendJobCompletedNotification = async jobData => {
   return await notificationEngine.sendNotification({
     type: 'job_completed',
     data: {
       jobTitle: jobData.title,
       customerName: jobData.customer_name,
       completedDate: new Date(jobData.actual_end_date).toLocaleDateString(),
-      jobUrl: `${process.env.FRONTEND_URL}/jobs/${jobData.id}`
+      jobUrl: `${process.env.FRONTEND_URL}/jobs/${jobData.id}`,
     },
-    priority: 'medium'
+    priority: 'medium',
   });
 };
 
 /**
  * Send payment overdue notification
  */
-export const sendPaymentOverdueNotification = async (invoiceData) => {
+export const sendPaymentOverdueNotification = async invoiceData => {
   return await notificationEngine.sendNotification({
     type: 'payment_overdue',
     data: {
@@ -143,9 +143,9 @@ export const sendPaymentOverdueNotification = async (invoiceData) => {
       amount: invoiceData.amount?.toLocaleString('en-IN'),
       dueDate: new Date(invoiceData.due_date).toLocaleDateString(),
       customerName: invoiceData.customer_name,
-      invoiceUrl: `${process.env.FRONTEND_URL}/invoices/${invoiceData.id}`
+      invoiceUrl: `${process.env.FRONTEND_URL}/invoices/${invoiceData.id}`,
     },
-    priority: 'high'
+    priority: 'high',
   });
 };
 
@@ -158,10 +158,10 @@ export const scheduleFollowUpReminder = async (leadData, reminderDate) => {
     data: {
       customerName: leadData.customer_name,
       serviceNeeded: leadData.service_needed,
-      leadUrl: `${process.env.FRONTEND_URL}/leads/${leadData.id}`
+      leadUrl: `${process.env.FRONTEND_URL}/leads/${leadData.id}`,
     },
     scheduleAt: reminderDate,
-    priority: 'medium'
+    priority: 'medium',
   });
 };
 
@@ -170,12 +170,12 @@ export const scheduleFollowUpReminder = async (leadData, reminderDate) => {
  */
 export const sendBulkNotification = async ({ type, message, userIds, priority = 'medium' }) => {
   const recipients = userIds.map(id => ({ id }));
-  
+
   return await notificationEngine.sendNotification({
     type: type || 'general',
     recipients,
     data: { message },
-    priority
+    priority,
   });
 };
 
@@ -186,7 +186,7 @@ export const sendRoleBasedNotification = async ({ type, message, roles, priority
   return await notificationEngine.sendNotification({
     type: type || 'general',
     data: { message },
-    priority
+    priority,
   });
 };
 
@@ -201,5 +201,5 @@ export default {
   sendPaymentOverdueNotification,
   scheduleFollowUpReminder,
   sendBulkNotification,
-  sendRoleBasedNotification
+  sendRoleBasedNotification,
 };

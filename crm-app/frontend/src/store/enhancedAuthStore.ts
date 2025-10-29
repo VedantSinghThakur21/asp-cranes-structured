@@ -30,13 +30,13 @@ let refreshTimer: NodeJS.Timeout | null = null;
  */
 const apiCallWithRefresh = async (url: string, options: RequestInit = {}): Promise<Response> => {
   const store = useAuthStore.getState();
-  
+
   // Add auth header if token exists
   if (store.token) {
     options.headers = {
       ...options.headers,
       'Authorization': `Bearer ${store.token}`,
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     };
   }
 
@@ -45,15 +45,15 @@ const apiCallWithRefresh = async (url: string, options: RequestInit = {}): Promi
   // If token expired, try to refresh and retry
   if (response.status === 401 && store.token) {
     console.log('🔄 Token expired, attempting refresh...');
-    
+
     const refreshSuccessful = await store.refreshToken();
-    
+
     if (refreshSuccessful) {
       // Retry original request with new token
       const newToken = useAuthStore.getState().token;
       options.headers = {
         ...options.headers,
-        'Authorization': `Bearer ${newToken}`
+        Authorization: `Bearer ${newToken}`,
       };
       response = await fetch(url, options);
     }
@@ -84,7 +84,7 @@ export const useAuthStore = create<AuthStore>()(
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include', // Include cookies for refresh token
-            body: JSON.stringify({ email, password, remember })
+            body: JSON.stringify({ email, password, remember }),
           });
 
           if (!response.ok) {
@@ -93,7 +93,7 @@ export const useAuthStore = create<AuthStore>()(
           }
 
           const data = await response.json();
-          
+
           // Validate response structure
           if (!data.accessToken || !data.user) {
             throw new Error('Invalid login response format');
@@ -104,21 +104,20 @@ export const useAuthStore = create<AuthStore>()(
             user: data.user,
             token: data.accessToken,
             isAuthenticated: true,
-            error: null
+            error: null,
           });
 
           // Schedule automatic token refresh
           get().scheduleTokenRefresh();
 
           console.log('✅ Login successful:', data.user.name);
-
         } catch (error) {
           const errorMessage = (error as Error).message;
-          set({ 
+          set({
             error: errorMessage,
             user: null,
             token: null,
-            isAuthenticated: false 
+            isAuthenticated: false,
           });
           throw error;
         }
@@ -132,7 +131,7 @@ export const useAuthStore = create<AuthStore>()(
           const response = await fetch(`${API_BASE}/auth/refresh`, {
             method: 'POST',
             credentials: 'include', // Include refresh token cookie
-            headers: { 'Content-Type': 'application/json' }
+            headers: { 'Content-Type': 'application/json' },
           });
 
           if (!response.ok) {
@@ -142,13 +141,13 @@ export const useAuthStore = create<AuthStore>()(
           }
 
           const data = await response.json();
-          
+
           // Update token and user data
           set({
             token: data.accessToken,
             user: data.user,
             isAuthenticated: true,
-            error: null
+            error: null,
           });
 
           // Schedule next refresh
@@ -156,7 +155,6 @@ export const useAuthStore = create<AuthStore>()(
 
           console.log('🔄 Token refreshed successfully');
           return true;
-
         } catch (error) {
           console.error('Token refresh error:', error);
           get().clearUser();
@@ -183,11 +181,10 @@ export const useAuthStore = create<AuthStore>()(
               credentials: 'include',
               headers: {
                 'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-              }
+                'Content-Type': 'application/json',
+              },
             });
           }
-
         } catch (error) {
           console.error('Logout error:', error);
         } finally {
@@ -207,9 +204,9 @@ export const useAuthStore = create<AuthStore>()(
           // Decode JWT payload (without verification - just to check expiry)
           const payload = JSON.parse(atob(token.split('.')[1]));
           const currentTime = Math.floor(Date.now() / 1000);
-          
+
           // Check if token expires in the next 2 minutes
-          return payload.exp > (currentTime + 120);
+          return payload.exp > currentTime + 120;
         } catch {
           return false;
         }
@@ -227,7 +224,7 @@ export const useAuthStore = create<AuthStore>()(
         // Set new refresh timer
         refreshTimer = setTimeout(() => {
           const { isAuthenticated, isTokenValid } = get();
-          
+
           if (isAuthenticated && !isTokenValid()) {
             console.log('🔄 Scheduled token refresh triggered');
             get().refreshToken();
@@ -238,11 +235,11 @@ export const useAuthStore = create<AuthStore>()(
       /**
        * Set user data
        */
-      setUser: (user) => {
-        set({ 
-          user, 
-          isAuthenticated: !!user, 
-          error: null 
+      setUser: user => {
+        set({
+          user,
+          isAuthenticated: !!user,
+          error: null,
         });
       },
 
@@ -254,21 +251,21 @@ export const useAuthStore = create<AuthStore>()(
           clearTimeout(refreshTimer);
           refreshTimer = null;
         }
-        
-        set({ 
-          user: null, 
-          token: null, 
-          isAuthenticated: false, 
-          error: null 
+
+        set({
+          user: null,
+          token: null,
+          isAuthenticated: false,
+          error: null,
         });
-      }
+      },
     }),
     {
       name: 'asp-cranes-auth',
       // Only persist user data, not sensitive tokens
-      partialize: (state) => ({ 
+      partialize: state => ({
         user: state.user,
-        isAuthenticated: state.isAuthenticated 
+        isAuthenticated: state.isAuthenticated,
       }),
     }
   )
@@ -283,14 +280,13 @@ export const hydrateAuthStore = async (): Promise<void> => {
 
     // Try to refresh token on app start
     const refreshSuccessful = await useAuthStore.getState().refreshToken();
-    
+
     if (refreshSuccessful) {
       console.log('✅ Auth store hydrated successfully');
     } else {
       console.log('❌ Auth hydration failed, user needs to login');
       useAuthStore.getState().clearUser();
     }
-
   } catch (error) {
     console.error('Auth hydration error:', error);
     useAuthStore.getState().clearUser();
@@ -312,7 +308,7 @@ export const authApiService = {
   async post(endpoint: string, data: any) {
     const response = await apiCallWithRefresh(`${API_BASE}${endpoint}`, {
       method: 'POST',
-      body: JSON.stringify(data)
+      body: JSON.stringify(data),
     });
     if (!response.ok) {
       throw new Error(`API Error: ${response.status}`);
@@ -323,7 +319,7 @@ export const authApiService = {
   async put(endpoint: string, data: any) {
     const response = await apiCallWithRefresh(`${API_BASE}${endpoint}`, {
       method: 'PUT',
-      body: JSON.stringify(data)
+      body: JSON.stringify(data),
     });
     if (!response.ok) {
       throw new Error(`API Error: ${response.status}`);
@@ -333,13 +329,13 @@ export const authApiService = {
 
   async delete(endpoint: string) {
     const response = await apiCallWithRefresh(`${API_BASE}${endpoint}`, {
-      method: 'DELETE'
+      method: 'DELETE',
     });
     if (!response.ok) {
       throw new Error(`API Error: ${response.status}`);
     }
     return response.json();
-  }
+  },
 };
 
 // Auto-start token refresh on store initialization

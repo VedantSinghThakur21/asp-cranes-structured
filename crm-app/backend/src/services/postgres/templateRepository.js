@@ -14,19 +14,19 @@ export class TemplateRepository {
         isDefault: template.is_default,
         createdAt: template.created_at,
         updatedAt: template.updated_at,
-        createdBy: template.created_by
+        createdBy: template.created_by,
       }));
     } catch (error) {
       console.error('Error fetching templates:', error);
       return [];
     }
   }
-  
+
   async getTemplateById(id) {
     try {
       const template = await db.oneOrNone('SELECT * FROM quotation_templates WHERE id = $1', [id]);
       if (!template) return null;
-      
+
       return {
         id: template.id,
         name: template.name,
@@ -37,14 +37,14 @@ export class TemplateRepository {
         isDefault: template.is_default,
         createdAt: template.created_at,
         updatedAt: template.updated_at,
-        createdBy: template.created_by
+        createdBy: template.created_by,
       };
     } catch (error) {
       console.error('Error fetching template by ID:', error);
       return null;
     }
   }
-  
+
   async createTemplate(template) {
     try {
       const { name, description, content, styles, elements, isDefault, createdBy } = template;
@@ -64,14 +64,14 @@ export class TemplateRepository {
         isDefault: result.is_default,
         createdAt: result.created_at,
         updatedAt: result.updated_at,
-        createdBy: result.created_by
+        createdBy: result.created_by,
       };
     } catch (error) {
       console.error('Error creating template:', error);
       throw error;
     }
   }
-  
+
   async updateTemplate(id, template) {
     try {
       const { name, description, content, styles, elements, isDefault } = template;
@@ -98,14 +98,14 @@ export class TemplateRepository {
         isDefault: result.is_default,
         createdAt: result.created_at,
         updatedAt: result.updated_at,
-        createdBy: result.created_by
+        createdBy: result.created_by,
       };
     } catch (error) {
       console.error('Error updating template:', error);
       throw error;
     }
   }
-  
+
   async deleteTemplate(id) {
     try {
       await db.none('DELETE FROM quotation_templates WHERE id = $1', [id]);
@@ -117,4 +117,3 @@ export class TemplateRepository {
 }
 
 export default new TemplateRepository();
-

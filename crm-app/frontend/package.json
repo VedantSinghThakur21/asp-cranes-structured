@@ -7,7 +7,12 @@
     "test": "echo \"No tests yet\"",
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"./src/**/*.{js,jsx,ts,tsx,mjs,cjs,css,scss,sass,md,html,json,yml}\"",
+    "format-check": "prettier --check \"./src/**/*.{js,jsx,ts,tsx,mjs,cjs,css,scss,sass,md,html,json,yml}\""
   },
   "dependencies": {
     "@headlessui/react": "^1.7.17",
@@ -44,6 +49,7 @@
     "@vitejs/plugin-react": "^4.3.1",
     "autoprefixer": "^10.4.18",
     "postcss": "^8.4.35",
+    "prettier": "^3.6.2",
     "tailwindcss": "^3.4.1",
     "typescript": "^5.5.3",
     "vite": "^5.4.19"

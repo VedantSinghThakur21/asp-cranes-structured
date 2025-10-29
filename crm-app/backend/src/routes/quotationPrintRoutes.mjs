@@ -22,10 +22,10 @@ async function getDefaultTemplateConfig() {
       WHERE config_key = 'defaultQuotationTemplate'
     `);
     client.release();
-    
+
     if (result.rows.length > 0) {
       return {
-        defaultTemplateId: result.rows[0].config_value
+        defaultTemplateId: result.rows[0].config_value,
       };
     }
     return null;
@@ -40,15 +40,15 @@ async function getDefaultTemplateConfig() {
  */
 router.get('/health', (req, res) => {
   console.log('🏥 [PrintRoutes] Health check requested');
-  res.json({ 
-    success: true, 
+  res.json({
+    success: true,
     message: 'Print services are operational',
     timestamp: new Date().toISOString(),
     services: {
       templateService: 'loaded',
-      htmlGeneratorService: 'loaded', 
-      pdfService: 'loaded'
-    }
+      htmlGeneratorService: 'loaded',
+      pdfService: 'loaded',
+    },
   });
 });
 
@@ -57,13 +57,12 @@ router.get('/health', (req, res) => {
  */
 router.get('/ping', (req, res) => {
   console.log('🏓 [PrintRoutes] Ping endpoint called');
-  res.json({ 
-    success: true, 
+  res.json({
+    success: true,
     message: 'Print routes are working!',
-    architecture: 'Professional Twenty CRM inspired'
+    architecture: 'Professional Twenty CRM inspired',
   });
 });
-
 
 /**
  * POST /api/quotations/print/pdf - Generate PDF for download
@@ -71,8 +70,13 @@ router.get('/ping', (req, res) => {
 router.post('/pdf', optionalAuth, async (req, res) => {
   try {
     const { quotationId, templateId } = req.body;
-    console.log('📄 [PDF Route] Generating PDF for quotation:', quotationId, 'with template:', templateId);
-    
+    console.log(
+      '📄 [PDF Route] Generating PDF for quotation:',
+      quotationId,
+      'with template:',
+      templateId
+    );
+
     if (!quotationId) {
       return res.status(400).json({ success: false, error: 'Quotation ID is required' });
     }
@@ -80,11 +84,11 @@ router.post('/pdf', optionalAuth, async (req, res) => {
     // Use the same preview system to generate HTML
     console.log('🎯 [PDF Route] Using preview system for consistent output');
     console.log('🎯 [PDF Route] Selected template:', templateId);
-    
+
     // Build preview URL with correct endpoint and template handling
     const base = `http://localhost:3001/api/quotations-preview/${quotationId}/preview/iframe`;
     const params = new URLSearchParams();
-    
+
     // Only add templateId if it's not 'default' (same logic as frontend)
     if (templateId && templateId !== 'default') {
       params.set('templateId', templateId);
@@ -92,47 +96,48 @@ router.post('/pdf', optionalAuth, async (req, res) => {
     } else {
       console.log('🎨 [PDF Route] Using default template (no templateId parameter)');
     }
-    
+
     const previewUrl = params.toString() ? `${base}?${params.toString()}` : base;
     console.log('🔗 [PDF Route] Preview URL:', previewUrl);
-    
+
     try {
       const fetch = (await import('node-fetch')).default;
       const previewResponse = await fetch(previewUrl);
-      
+
       if (!previewResponse.ok) {
         throw new Error(`Preview fetch failed: ${previewResponse.status}`);
       }
-      
+
       const html = await previewResponse.text();
       console.log('✅ [PDF Route] Got HTML from preview system, length:', html.length);
-      
+
       // Generate PDF with proper error handling
-      const pdfResult = await pdfService.generateFromHTML(html, { 
+      const pdfResult = await pdfService.generateFromHTML(html, {
         format: 'A4',
         quality: 'HIGH',
-        margins: { top: '15mm', right: '15mm', bottom: '15mm', left: '15mm' }
+        margins: { top: '15mm', right: '15mm', bottom: '15mm', left: '15mm' },
       });
 
       // Handle PDF result based on whether Puppeteer is available
       if (pdfResult.fallback) {
         console.log('⚠️ Using HTML fallback due to PDF generation issues');
-        
+
         // Return HTML that can be printed or converted to PDF on frontend
         res.setHeader('Content-Type', 'text/html');
         res.setHeader('Content-Disposition', `inline; filename=quotation_${quotationId}.html`);
         return res.send(html);
       } else {
         // Return proper PDF
-        const buffer = Buffer.isBuffer(pdfResult.data) ? pdfResult.data : Buffer.from(pdfResult.data, 'base64');
+        const buffer = Buffer.isBuffer(pdfResult.data)
+          ? pdfResult.data
+          : Buffer.from(pdfResult.data, 'base64');
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `attachment; filename=quotation_${quotationId}.pdf`);
         return res.send(buffer);
       }
-      
     } catch (fetchError) {
       console.error('❌ [PDF Route] Preview fetch failed:', fetchError);
-      
+
       // Fallback: Load data and generate directly using same system as preview
       const quotationData = await getQuotationWithDetailsPreviewFormat(quotationId);
       if (!quotationData) {
@@ -142,7 +147,7 @@ router.post('/pdf', optionalAuth, async (req, res) => {
       // Use EnhancedTemplateBuilder (same as preview)
       const { EnhancedTemplateBuilder } = await import('../services/EnhancedTemplateBuilder.mjs');
       const templateBuilder = new EnhancedTemplateBuilder();
-      
+
       let template;
       if (templateId && templateId !== 'default') {
         console.log('🎨 [PDF Route Fallback] Loading specific template:', templateId);
@@ -155,12 +160,12 @@ router.post('/pdf', optionalAuth, async (req, res) => {
 
       const previewData = mapQuotationToTemplateData(quotationData);
       const html = templateBuilder.generatePreviewHTML(previewData);
-      
+
       // Generate PDF
-      const pdfResult = await pdfService.generateFromHTML(html, { 
+      const pdfResult = await pdfService.generateFromHTML(html, {
         format: 'A4',
         quality: 'HIGH',
-        margins: { top: '15mm', right: '15mm', bottom: '15mm', left: '15mm' }
+        margins: { top: '15mm', right: '15mm', bottom: '15mm', left: '15mm' },
       });
 
       if (pdfResult.fallback) {
@@ -168,7 +173,9 @@ router.post('/pdf', optionalAuth, async (req, res) => {
         res.setHeader('Content-Disposition', `inline; filename=quotation_${quotationId}.html`);
         return res.send(html);
       } else {
-        const buffer = Buffer.isBuffer(pdfResult.data) ? pdfResult.data : Buffer.from(pdfResult.data, 'base64');
+        const buffer = Buffer.isBuffer(pdfResult.data)
+          ? pdfResult.data
+          : Buffer.from(pdfResult.data, 'base64');
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `attachment; filename=quotation_${quotationId}.pdf`);
         return res.send(buffer);
@@ -177,10 +184,10 @@ router.post('/pdf', optionalAuth, async (req, res) => {
   } catch (error) {
     console.error('❌ [PDF Route] PDF generation failed:', error);
     console.error('❌ [PDF Route] Error stack:', error.stack);
-    return res.status(500).json({ 
-      success: false, 
+    return res.status(500).json({
+      success: false,
       error: 'Failed to generate PDF',
-      message: error.message 
+      message: error.message,
     });
   }
 });
@@ -193,12 +200,14 @@ router.post('/email-pdf', optionalAuth, async (req, res) => {
   try {
     const { quotationId, templateId, emailTo, subject, message } = req.body;
     if (!quotationId || !emailTo) {
-      return res.status(400).json({ success: false, error: 'quotationId and emailTo are required' });
+      return res
+        .status(400)
+        .json({ success: false, error: 'quotationId and emailTo are required' });
     }
 
     // Load data and generate PDF (same as /pdf)
     const quotationData = await getQuotationWithDetails(quotationId);
-    const template = templateId 
+    const template = templateId
       ? await templateService.getTemplateById(templateId)
       : await templateService.getDefaultTemplate();
     const html = await htmlGeneratorService.generateBasicHTML(template, quotationData);
@@ -220,19 +229,19 @@ router.post('/email-pdf', optionalAuth, async (req, res) => {
 router.post('/print', optionalAuth, async (req, res) => {
   try {
     const { quotationId, templateId, format = 'html' } = req.body;
-    
+
     console.log('🖨️ [PrintRoutes] Print request:', {
       quotationId,
       templateId,
       format,
-      userId: req.user?.id
+      userId: req.user?.id,
     });
 
     // Validate required parameters
     if (!quotationId) {
       return res.status(400).json({
         success: false,
-        error: 'Quotation ID is required'
+        error: 'Quotation ID is required',
       });
     }
 
@@ -241,12 +250,12 @@ router.post('/print', optionalAuth, async (req, res) => {
     if (!quotationData) {
       return res.status(404).json({
         success: false,
-        error: 'Quotation not found'
+        error: 'Quotation not found',
       });
     }
 
     // Step 2: Get template
-    const template = templateId 
+    const template = templateId
       ? await templateService.getTemplateById(templateId)
       : await templateService.getDefaultTemplate();
 
@@ -261,15 +270,14 @@ router.post('/print', optionalAuth, async (req, res) => {
       template: template,
       quotationData: quotationData,
       mappedData: mappedData,
-      renderMode: 'frontend' // Signal to frontend to use its renderer
+      renderMode: 'frontend', // Signal to frontend to use its renderer
     });
-
   } catch (error) {
     console.error('❌ [PrintRoutes] Print generation failed:', error);
     res.status(500).json({
       success: false,
       error: 'Print generation failed',
-      message: error.message
+      message: error.message,
     });
   }
 });
@@ -284,46 +292,51 @@ function generateSimpleQuotationHTML(quotationData) {
       name: 'ASP Cranes Pvt. Ltd.',
       address: 'Industrial Area, Pune, Maharashtra 411019',
       phone: '+91 99999 88888',
-      email: 'sales@aspcranes.com'
+      email: 'sales@aspcranes.com',
     },
     client: quotationData.customer || {
       name: quotationData.customer_name || 'Client Name',
       company: quotationData.customer?.company || 'Client Company',
       address: quotationData.customer?.address || 'Client Address',
       phone: quotationData.customer?.phone || 'Client Phone',
-      email: quotationData.customer?.email || 'client@email.com'
+      email: quotationData.customer?.email || 'client@email.com',
     },
     quotation: {
       number: quotationData.quotation_number || quotationData.id,
       date: new Date(quotationData.created_at).toLocaleDateString('en-IN'),
-      validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN')
+      validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN'),
     },
-    items: quotationData.items?.length > 0 ? quotationData.items.map((item, index) => ({
-      no: index + 1,
-      description: `${item.equipment_name || quotationData.machine_type} ${item.equipment_id || ''}`,
-      jobType: quotationData.order_type || 'Standard',
-      quantity: item.quantity || 1,
-      duration: `${quotationData.number_of_days || 1} days`,
-      rate: `₹${(item.base_rate || 1000).toLocaleString('en-IN')}/day`,
-      rental: `₹${Math.round(quotationData.total_rent || 0).toLocaleString('en-IN')}`,
-      mobDemob: `₹15,000`,
-      riskUsage: `₹10,000`
-    })) : [{
-      no: 1,
-      description: `${quotationData.machine_type || 'Telescopic Mobile Crane'} XCMG QY 130K`,
-      jobType: quotationData.order_type || 'micro',
-      quantity: 1,
-      duration: `${quotationData.number_of_days || 1} day`,
-      rate: `₹1,000/day`,
-      rental: `₹${Math.round(quotationData.total_rent || 1000).toLocaleString('en-IN')}`,
-      mobDemob: `₹${Math.round(quotationData.mob_demob_cost || 600).toLocaleString('en-IN')}`,
-      riskUsage: `₹0`
-    }],
+    items:
+      quotationData.items?.length > 0
+        ? quotationData.items.map((item, index) => ({
+            no: index + 1,
+            description: `${item.equipment_name || quotationData.machine_type} ${item.equipment_id || ''}`,
+            jobType: quotationData.order_type || 'Standard',
+            quantity: item.quantity || 1,
+            duration: `${quotationData.number_of_days || 1} days`,
+            rate: `₹${(item.base_rate || 1000).toLocaleString('en-IN')}/day`,
+            rental: `₹${Math.round(quotationData.total_rent || 0).toLocaleString('en-IN')}`,
+            mobDemob: `₹15,000`,
+            riskUsage: `₹10,000`,
+          }))
+        : [
+            {
+              no: 1,
+              description: `${quotationData.machine_type || 'Telescopic Mobile Crane'} XCMG QY 130K`,
+              jobType: quotationData.order_type || 'micro',
+              quantity: 1,
+              duration: `${quotationData.number_of_days || 1} day`,
+              rate: `₹1,000/day`,
+              rental: `₹${Math.round(quotationData.total_rent || 1000).toLocaleString('en-IN')}`,
+              mobDemob: `₹${Math.round(quotationData.mob_demob_cost || 600).toLocaleString('en-IN')}`,
+              riskUsage: `₹0`,
+            },
+          ],
     totals: {
       subtotal: `₹${Math.round((quotationData.total_cost || 0) - (quotationData.gst_amount || 0)).toLocaleString('en-IN')}`,
       tax: `₹${Math.round(quotationData.gst_amount || 0).toLocaleString('en-IN')}`,
-      total: `₹${Math.round(quotationData.total_cost || 0).toLocaleString('en-IN')}`
-    }
+      total: `₹${Math.round(quotationData.total_cost || 0).toLocaleString('en-IN')}`,
+    },
   };
 
   return `
@@ -490,7 +503,9 @@ function generateSimpleQuotationHTML(quotationData) {
                 </tr>
             </thead>
             <tbody>
-                ${data.items.map(item => `
+                ${data.items
+                  .map(
+                    item => `
                     <tr>
                         <td>${item.no}</td>
                         <td>${item.description}</td>
@@ -502,7 +517,9 @@ function generateSimpleQuotationHTML(quotationData) {
                         <td>${item.riskUsage}</td>
                         <td>${item.rental}</td>
                     </tr>
-                `).join('')}
+                `
+                  )
+                  .join('')}
             </tbody>
         </table>
 
@@ -543,10 +560,10 @@ function generateQuotationNumber(quotationId) {
   const idParts = quotationId.split('_');
   if (idParts.length >= 2) {
     const hashCode = idParts[1].split('').reduce((a, b) => {
-      a = ((a << 5) - a) + b.charCodeAt(0);
+      a = (a << 5) - a + b.charCodeAt(0);
       return a & a;
     }, 0);
-    const num = Math.abs(hashCode) % 9999 + 1;
+    const num = (Math.abs(hashCode) % 9999) + 1;
     return `ASP-Q-${num.toString().padStart(3, '0')}`;
   }
   return `ASP-Q-${quotationId.substring(5, 8).toUpperCase()}`;
@@ -556,7 +573,7 @@ function generateQuotationNumber(quotationId) {
 async function getDefaultTemplate(templateBuilder) {
   try {
     const client = await pool.connect();
-    
+
     try {
       const result = await client.query(`
         SELECT id FROM enhanced_templates 
@@ -564,21 +581,23 @@ async function getDefaultTemplate(templateBuilder) {
         ORDER BY updated_at DESC
         LIMIT 1
       `);
-      
+
       if (result.rows.length > 0) {
         await templateBuilder.loadTemplate(result.rows[0].id);
         console.log('📋 [Helper] Loaded existing default template:', result.rows[0].id);
         return templateBuilder.template;
       }
     } catch (dbError) {
-      console.warn('⚠️ [Helper] Database query failed, creating fallback template:', dbError.message);
+      console.warn(
+        '⚠️ [Helper] Database query failed, creating fallback template:',
+        dbError.message
+      );
     } finally {
       client.release();
     }
-    
+
     console.log('📋 [Helper] No default template found, creating fallback template');
     return createDefaultQuotationTemplate(templateBuilder);
-    
   } catch (error) {
     console.error('❌ [Helper] Error getting default template:', error);
     console.log('📋 [Helper] Creating emergency fallback template');
@@ -594,18 +613,19 @@ function createDefaultQuotationTemplate(templateBuilder) {
       description: 'Professional quotation template for ASP Cranes',
       theme: 'PROFESSIONAL',
       isDefault: true,
-      isActive: true
+      isActive: true,
     };
-    
-    templateBuilder.createTemplate(templateData)
+
+    templateBuilder
+      .createTemplate(templateData)
       .addElement('header', {
         content: {
           title: 'ASP CRANES',
           subtitle: 'QUOTATION',
           showDate: true,
           showQuotationNumber: true,
-          alignment: 'center'
-        }
+          alignment: 'center',
+        },
       })
       .addElement('company_info', {
         content: {
@@ -613,11 +633,11 @@ function createDefaultQuotationTemplate(templateBuilder) {
             '{{company.name}}',
             '{{company.address}}',
             '{{company.phone}}',
-            '{{company.email}}'
+            '{{company.email}}',
           ],
           layout: 'vertical',
-          alignment: 'left'
-        }
+          alignment: 'left',
+        },
       })
       .addElement('client_info', {
         content: {
@@ -627,11 +647,11 @@ function createDefaultQuotationTemplate(templateBuilder) {
             '{{client.company}}',
             '{{client.address}}',
             '{{client.phone}}',
-            '{{client.email}}'
+            '{{client.email}}',
           ],
           layout: 'vertical',
-          alignment: 'left'
-        }
+          alignment: 'left',
+        },
       })
       .addElement('quotation_info', {
         content: {
@@ -639,11 +659,11 @@ function createDefaultQuotationTemplate(templateBuilder) {
             { label: 'Quotation #', value: '{{quotation.number}}' },
             { label: 'Date', value: '{{quotation.date}}' },
             { label: 'Machine Type', value: '{{quotation.machineType}}' },
-            { label: 'Duration', value: '{{quotation.duration}}' }
+            { label: 'Duration', value: '{{quotation.duration}}' },
           ],
           layout: 'table',
-          alignment: 'right'
-        }
+          alignment: 'right',
+        },
       })
       .addElement('items_table')
       .addElement('totals')
@@ -651,15 +671,14 @@ function createDefaultQuotationTemplate(templateBuilder) {
         content: {
           title: 'Terms & Conditions',
           text: 'Payment Terms: 50% advance, balance on completion. Equipment delivery within 2-3 working days from advance payment. Fuel charges extra as per actual consumption. All rates are subject to site conditions and accessibility. This quotation is valid for 15 days from date of issue.',
-          showTitle: true
-        }
+          showTitle: true,
+        },
       });
-    
+
     return templateBuilder.template;
-    
   } catch (error) {
     console.error('❌ [Helper] Error creating template:', error);
-    
+
     const emergencyTemplate = {
       id: 'emergency-default',
       name: 'Emergency Default Template',
@@ -670,12 +689,12 @@ function createDefaultQuotationTemplate(templateBuilder) {
         { type: 'company_info', content: { fields: ['{{company.name}}', '{{company.address}}'] } },
         { type: 'client_info', content: { title: 'Bill To:', fields: ['{{client.name}}'] } },
         { type: 'items_table', content: {} },
-        { type: 'totals', content: {} }
+        { type: 'totals', content: {} },
       ],
       isDefault: true,
-      isActive: true
+      isActive: true,
     };
-    
+
     templateBuilder.template = emergencyTemplate;
     return emergencyTemplate;
   }
@@ -684,8 +703,8 @@ function createDefaultQuotationTemplate(templateBuilder) {
 // Map quotation data to template format (same as preview)
 function mapQuotationToTemplateData(quotationData) {
   const gstRate = 18;
-  const numberOrZero = v => (typeof v === 'number' && !isNaN(v)) ? v : (parseFloat(v) || 0);
-  
+  const numberOrZero = v => (typeof v === 'number' && !isNaN(v) ? v : parseFloat(v) || 0);
+
   let riskAdjustmentCalculated = numberOrZero(quotationData.risk_adjustment);
   let usageLoadFactorCalculated = numberOrZero(quotationData.usage_load_factor);
   let riskUsageTotalCalculated = riskAdjustmentCalculated + usageLoadFactorCalculated;
@@ -705,10 +724,10 @@ function mapQuotationToTemplateData(quotationData) {
       rate: baseRate.toFixed(2),
       rental: rental.toFixed(2),
       mobDemob: numberOrZero(quotationData.mob_demob_cost).toFixed(2),
-      riskUsage: (riskUsageTotalCalculated).toFixed(2)
+      riskUsage: riskUsageTotalCalculated.toFixed(2),
     };
   });
-  
+
   if (items.length === 0) {
     items.push({
       no: 1,
@@ -719,7 +738,7 @@ function mapQuotationToTemplateData(quotationData) {
       rate: '0.00',
       rental: numberOrZero(quotationData.total_rent), // Use total_rent for rental column (keep as number for proper formatting)
       mobDemob: numberOrZero(quotationData.mob_demob_cost).toFixed(2),
-      riskUsage: riskUsageTotalCalculated.toFixed(2)
+      riskUsage: riskUsageTotalCalculated.toFixed(2),
     });
   }
 
@@ -728,12 +747,16 @@ function mapQuotationToTemplateData(quotationData) {
     client: quotationData.customer,
     quotation: {
       number: quotationData.quotation_number,
-      date: quotationData.created_at ? new Date(quotationData.created_at).toLocaleDateString('en-IN') : new Date().toLocaleDateString('en-IN'),
+      date: quotationData.created_at
+        ? new Date(quotationData.created_at).toLocaleDateString('en-IN')
+        : new Date().toLocaleDateString('en-IN'),
       machineType: quotationData.machine_type,
       duration: `${durationDays} days`,
-      validUntil: quotationData.valid_until || new Date(Date.now() + 15*24*60*60*1000).toLocaleDateString('en-IN'),
+      validUntil:
+        quotationData.valid_until ||
+        new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN'),
       paymentTerms: '50% advance, balance on completion',
-      taxRate: gstRate
+      taxRate: gstRate,
     },
     tax: { rate: gstRate },
     items,
@@ -746,8 +769,8 @@ function mapQuotationToTemplateData(quotationData) {
       foodAccomCost: formatCurrency(quotationData.food_accom_cost || 0),
       riskAdjustment: formatCurrency(riskAdjustmentCalculated),
       usageLoadFactor: formatCurrency(usageLoadFactorCalculated),
-      riskUsageTotal: formatCurrency(riskUsageTotalCalculated)
-    }
+      riskUsageTotal: formatCurrency(riskUsageTotalCalculated),
+    },
   };
 }
 
@@ -757,7 +780,7 @@ function formatCurrency(amount) {
     style: 'currency',
     currency: 'INR',
     minimumFractionDigits: 0,
-    maximumFractionDigits: 0
+    maximumFractionDigits: 0,
   }).format(amount || 0);
 }
 
@@ -765,7 +788,7 @@ function formatCurrency(amount) {
 async function getQuotationWithDetailsPreviewFormat(quotationId) {
   try {
     console.log('🔍 [Helper] Fetching quotation:', quotationId);
-    
+
     const query = `
       SELECT 
         q.id,
@@ -804,15 +827,15 @@ async function getQuotationWithDetailsPreviewFormat(quotationId) {
       LEFT JOIN customers c ON q.customer_id = c.id
       WHERE q.id = $1
     `;
-    
+
     const result = await pool.query(query, [quotationId]);
-    
+
     if (!result.rows || result.rows.length === 0) {
       return null;
     }
 
     const row = result.rows[0];
-    
+
     // Get quotation machines/items
     const itemsQuery = `
       SELECT 
@@ -828,9 +851,9 @@ async function getQuotationWithDetailsPreviewFormat(quotationId) {
       WHERE qm.quotation_id = $1
       ORDER BY qm.created_at ASC
     `;
-    
+
     const itemsResult = await pool.query(itemsQuery, [quotationId]);
-    
+
     // Parse customer contact JSON
     let customerContact = {};
     try {
@@ -840,7 +863,7 @@ async function getQuotationWithDetailsPreviewFormat(quotationId) {
     } catch (e) {
       console.warn('Could not parse customer_contact JSON:', e);
     }
-    
+
     // Structure the quotation data (same as preview)
     const quotation = {
       id: row.id,
@@ -869,35 +892,35 @@ async function getQuotationWithDetailsPreviewFormat(quotationId) {
       accom_resources: row.accom_resources,
       created_at: row.created_at,
       updated_at: row.updated_at,
-      
+
       customer: {
-        name: customerContact.name || row.customer_name || row.customer_db_name || 'Unknown Customer',
+        name:
+          customerContact.name || row.customer_name || row.customer_db_name || 'Unknown Customer',
         email: customerContact.email || row.customer_email || '',
         phone: customerContact.phone || row.customer_phone || '',
         address: customerContact.address || row.customer_address || '',
-        company: customerContact.company || row.customer_company || ''
+        company: customerContact.company || row.customer_company || '',
       },
-      
+
       items: itemsResult.rows.map(item => ({
         description: item.equipment_name || 'Equipment',
         quantity: item.quantity || 1,
         unit: 'Days',
         rate: item.base_rate || 0,
-        amount: (item.quantity || 1) * (item.base_rate || 0)
+        amount: (item.quantity || 1) * (item.base_rate || 0),
       })),
-      
+
       company: {
         name: 'ASP Cranes Pvt. Ltd.',
         address: 'Industrial Area, Pune, Maharashtra 411019',
         phone: '+91 99999 88888',
         email: 'sales@aspcranes.com',
-        website: 'www.aspcranes.com'
-      }
+        website: 'www.aspcranes.com',
+      },
     };
 
     console.log('✅ [Helper] Quotation fetched successfully');
     return quotation;
-    
   } catch (error) {
     console.error('❌ [Helper] Error fetching quotation:', error);
     throw new Error(`Failed to fetch quotation: ${error.message}`);
@@ -910,7 +933,7 @@ async function getQuotationWithDetailsPreviewFormat(quotationId) {
 async function getQuotationWithDetails(quotationId) {
   try {
     console.log('🔍 [Helper] Fetching quotation:', quotationId, 'Type:', typeof quotationId);
-    
+
     const query = `
       SELECT 
         q.id,
@@ -934,17 +957,17 @@ async function getQuotationWithDetails(quotationId) {
       LEFT JOIN customers c ON q.customer_id = c.id
       WHERE q.id = $1
     `;
-    
+
     console.log('🔍 [Helper] Executing query with ID:', quotationId);
     const result = await pool.query(query, [quotationId]);
     console.log('🔍 [Helper] Query result rows count:', result.rows.length);
-    
+
     if (!result.rows || result.rows.length === 0) {
       return null;
     }
 
     const row = result.rows[0];
-    
+
     // Get quotation machines
     const itemsQuery = `
       SELECT 
@@ -960,9 +983,9 @@ async function getQuotationWithDetails(quotationId) {
       WHERE qm.quotation_id = $1
       ORDER BY qm.created_at ASC
     `;
-    
+
     const itemsResult = await pool.query(itemsQuery, [quotationId]);
-    
+
     // Structure the data
     const quotation = {
       id: row.id,
@@ -979,28 +1002,27 @@ async function getQuotationWithDetails(quotationId) {
       total_rent: row.total_rent,
       created_at: row.created_at,
       updated_at: row.updated_at,
-      
+
       customer: {
         name: row.customer_name,
         email: row.customer_email,
         phone: row.customer_phone,
         address: row.customer_address,
-        company: row.customer_company
+        company: row.customer_company,
       },
-      
+
       items: itemsResult.rows || [],
-      
+
       company: {
         name: 'ASP Cranes',
         address: 'Industrial Area, New Delhi, India',
         phone: '+91-XXXX-XXXX',
-        email: 'info@aspcranes.com'
-      }
+        email: 'info@aspcranes.com',
+      },
     };
 
     console.log('✅ [Helper] Quotation fetched successfully');
     return quotation;
-    
   } catch (error) {
     console.error('❌ [Helper] Error fetching quotation:', error);
     throw new Error(`Failed to fetch quotation: ${error.message}`);
@@ -1146,13 +1168,13 @@ router.get('/preview', async (req, res) => {
  */
 router.post('/preview', async (req, res) => {
   console.log('⚠️ [Preview Route] Route disabled - frontend handles template generation locally');
-  
-  return res.status(200).json({ 
-    success: true, 
+
+  return res.status(200).json({
+    success: true,
     html: '<div style="padding: 20px; text-align: center;"><h2>Preview generated by frontend</h2><p>This route is disabled. Template generation is handled locally by the frontend.</p></div>',
-    message: 'Template generation handled by frontend'
+    message: 'Template generation handled by frontend',
   });
-  
+
   // Original code disabled to prevent database errors
   /*
   try {
@@ -1264,17 +1286,17 @@ router.post('/preview', async (req, res) => {
 router.post('/print/print', async (req, res) => {
   try {
     const { quotationId, templateId } = req.body;
-    
+
     console.log('🖨️ [PrintRoutes] Print request:', {
       quotationId,
-      templateId
+      templateId,
     });
 
     // Validate required parameters
     if (!quotationId) {
       return res.status(400).json({
         success: false,
-        error: 'Quotation ID is required'
+        error: 'Quotation ID is required',
       });
     }
 
@@ -1283,14 +1305,14 @@ router.post('/print/print', async (req, res) => {
     if (!quotationData) {
       return res.status(404).json({
         success: false,
-        error: 'Quotation not found'
+        error: 'Quotation not found',
       });
     }
 
     // Step 2: Use Enhanced Template System for proper template rendering
     const { EnhancedTemplateBuilder } = await import('../services/EnhancedTemplateBuilder.mjs');
     const templateBuilder = new EnhancedTemplateBuilder();
-    
+
     let template;
     if (templateId) {
       console.log('🎨 [PrintRoutes] Loading specific template:', templateId);
@@ -1304,7 +1326,10 @@ router.post('/print/print', async (req, res) => {
         if (defaultConfig?.template_id) {
           await templateBuilder.loadTemplate(defaultConfig.template_id);
           template = templateBuilder.template;
-          console.log('📋 [PrintRoutes] Using configured default template:', defaultConfig.template_id);
+          console.log(
+            '📋 [PrintRoutes] Using configured default template:',
+            defaultConfig.template_id
+          );
         } else {
           throw new Error('No configured default template');
         }
@@ -1322,7 +1347,7 @@ router.post('/print/print', async (req, res) => {
       hasCompany: !!mappedData.company,
       hasClient: !!mappedData.client,
       hasQuotation: !!mappedData.quotation,
-      itemsCount: mappedData.items?.length || 0
+      itemsCount: mappedData.items?.length || 0,
     });
 
     // Step 4: Generate HTML using EnhancedTemplateBuilder
@@ -1334,16 +1359,15 @@ router.post('/print/print', async (req, res) => {
       html: html,
       template: {
         id: template.id,
-        name: template.name
-      }
+        name: template.name,
+      },
     });
-
   } catch (error) {
     console.error('❌ [PrintRoutes] Print generation failed:', error);
     res.status(500).json({
       success: false,
       error: 'Print generation failed',
-      message: error.message
+      message: error.message,
     });
   }
 });

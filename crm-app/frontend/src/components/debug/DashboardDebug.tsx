@@ -13,7 +13,7 @@ export function DashboardDebug() {
   useEffect(() => {
     const fetchDebugData = async () => {
       console.log('🔍 DashboardDebug: Starting data fetch...');
-      
+
       // Test leads
       try {
         console.log('Fetching leads...');
@@ -21,13 +21,13 @@ export function DashboardDebug() {
         console.log('Leads data:', leadsData);
         setDebugInfo(prev => ({
           ...prev,
-          leads: { loading: false, data: leadsData, error: null }
+          leads: { loading: false, data: leadsData, error: null },
         }));
       } catch (error) {
         console.error('Leads error:', error);
         setDebugInfo(prev => ({
           ...prev,
-          leads: { loading: false, data: null, error: error.message }
+          leads: { loading: false, data: null, error: error.message },
         }));
       }
 
@@ -38,13 +38,13 @@ export function DashboardDebug() {
         console.log('Deals data:', dealsData);
         setDebugInfo(prev => ({
           ...prev,
-          deals: { loading: false, data: dealsData, error: null }
+          deals: { loading: false, data: dealsData, error: null },
         }));
       } catch (error) {
         console.error('Deals error:', error);
         setDebugInfo(prev => ({
           ...prev,
-          deals: { loading: false, data: null, error: (error as any)?.message || String(error) }
+          deals: { loading: false, data: null, error: (error as any)?.message || String(error) },
         }));
       }
 
@@ -55,13 +55,13 @@ export function DashboardDebug() {
         console.log('Jobs data:', jobsData);
         setDebugInfo(prev => ({
           ...prev,
-          jobs: { loading: false, data: jobsData, error: null }
+          jobs: { loading: false, data: jobsData, error: null },
         }));
       } catch (error) {
         console.error('Jobs error:', error);
         setDebugInfo(prev => ({
           ...prev,
-          jobs: { loading: false, data: null, error: (error as any)?.message || String(error) }
+          jobs: { loading: false, data: null, error: (error as any)?.message || String(error) },
         }));
       }
     };
@@ -72,7 +72,7 @@ export function DashboardDebug() {
   return (
     <div className="p-6 bg-white rounded-lg shadow-md">
       <h2 className="text-2xl font-bold mb-4">Dashboard Debug Info</h2>
-      
+
       <div className="space-y-4">
         <div className="border p-4 rounded">
           <h3 className="font-semibold text-lg">Leads</h3>

@@ -29,11 +29,18 @@ export default function TemplatePreviewModal({
   isOpen,
   onClose,
   elements,
-  templateName = 'Template Preview'
+  templateName = 'Template Preview',
 }: TemplatePreviewModalProps) {
-  console.log('🖥️ TemplatePreviewModal render:', { isOpen, elementsCount: elements?.length, templateName });
-  console.log('📊 Elements to preview:', elements?.map(el => ({ id: el.id, type: el.type })));
-  
+  console.log('🖥️ TemplatePreviewModal render:', {
+    isOpen,
+    elementsCount: elements?.length,
+    templateName,
+  });
+  console.log(
+    '📊 Elements to preview:',
+    elements?.map(el => ({ id: el.id, type: el.type }))
+  );
+
   if (!isOpen) return null;
 
   const replacePlaceholders = (text: string): string => {
@@ -64,21 +71,21 @@ export default function TemplatePreviewModal({
             </h1>
           </div>
         );
-      
+
       case 'text':
         return (
           <div key={index} style={elementStyle} className="mb-4">
             {replacePlaceholders(element.content || 'Text content')}
           </div>
         );
-      
+
       case 'field':
         return (
           <div key={index} style={elementStyle} className="mb-2">
             <strong>{replacePlaceholders(element.content || '{{field_name}}')}</strong>
           </div>
         );
-      
+
       case 'table':
         return (
           <div key={index} className="mb-6 overflow-hidden rounded-lg border border-gray-300">
@@ -105,31 +112,37 @@ export default function TemplatePreviewModal({
                   <td className="border border-gray-300 p-3">₹45,000</td>
                 </tr>
                 <tr>
-                  <td className="border border-gray-300 p-3 font-semibold" colSpan={3}>Total</td>
+                  <td className="border border-gray-300 p-3 font-semibold" colSpan={3}>
+                    Total
+                  </td>
                   <td className="border border-gray-300 p-3 font-semibold">₹8,30,000</td>
                 </tr>
               </tbody>
             </table>
           </div>
         );
-      
+
       case 'image':
         return (
           <div key={index} className="mb-4 text-center">
             <div className="border-2 border-dashed border-gray-300 rounded p-6 bg-gray-50">
-              <div className="text-gray-500">
-                📷 {element.content || 'Company Logo'}
-              </div>
+              <div className="text-gray-500">📷 {element.content || 'Company Logo'}</div>
             </div>
           </div>
         );
-      
+
       case 'terms':
         return (
-          <div key={index} className="mb-6 bg-gray-50 border border-gray-200 rounded p-4" style={elementStyle}>
+          <div
+            key={index}
+            className="mb-6 bg-gray-50 border border-gray-200 rounded p-4"
+            style={elementStyle}
+          >
             <h3 className="font-semibold mb-3 text-lg">Terms & Conditions</h3>
             <div className="text-sm leading-relaxed">
-              {element.content ? replacePlaceholders(element.content) : (
+              {element.content ? (
+                replacePlaceholders(element.content)
+              ) : (
                 <div className="space-y-2">
                   <p>1. Payment terms: 30% advance, 70% on delivery</p>
                   <p>2. Delivery timeline: 15-20 business days</p>
@@ -141,13 +154,11 @@ export default function TemplatePreviewModal({
             </div>
           </div>
         );
-      
+
       case 'spacer':
         const spacerHeight = element.content || '20px';
-        return (
-          <div key={index} style={{ height: spacerHeight }} className="mb-2" />
-        );
-      
+        return <div key={index} style={{ height: spacerHeight }} className="mb-2" />;
+
       default:
         return <div key={index}>Unknown element type</div>;
     }
@@ -172,7 +183,7 @@ export default function TemplatePreviewModal({
             <h2 className="text-xl font-semibold text-gray-900">Template Preview</h2>
             <p className="text-sm text-gray-600">{templateName}</p>
           </div>
-          
+
           <div className="flex gap-2">
             <Button
               variant="ghost"
@@ -183,7 +194,7 @@ export default function TemplatePreviewModal({
               <Download size={16} />
               Download PDF
             </Button>
-            
+
             <Button
               variant="ghost"
               size="sm"
@@ -193,13 +204,8 @@ export default function TemplatePreviewModal({
               <Printer size={16} />
               Print
             </Button>
-            
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="p-2"
-            >
+
+            <Button variant="ghost" size="sm" onClick={onClose} className="p-2">
               <X size={20} />
             </Button>
           </div>
@@ -230,7 +236,10 @@ export default function TemplatePreviewModal({
             <div className="border-t border-gray-200 p-4 bg-gray-50 rounded-b-lg">
               <div className="text-center text-sm text-gray-600">
                 <p>Generated by ASP Cranes CRM System</p>
-                <p>Date: {new Date().toLocaleDateString('en-IN')} | Quotation: {sampleData.quotation_number}</p>
+                <p>
+                  Date: {new Date().toLocaleDateString('en-IN')} | Quotation:{' '}
+                  {sampleData.quotation_number}
+                </p>
               </div>
             </div>
           </div>

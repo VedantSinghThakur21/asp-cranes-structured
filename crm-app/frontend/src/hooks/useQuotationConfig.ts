@@ -47,16 +47,17 @@ interface QuotationConfigHookReturn {
       day: number;
       night: number;
     };
-
   } | null;
-  
+
   // State
   isLoading: boolean;
   errors: Record<string, string>;
-  
+
   // Actions
   refreshConfigurations: () => Promise<void>;
-  refreshSpecificConfig: (configType: 'quotation' | 'resourceRates' | 'additionalParams') => Promise<void>;
+  refreshSpecificConfig: (
+    configType: 'quotation' | 'resourceRates' | 'additionalParams'
+  ) => Promise<void>;
 }
 
 /**
@@ -75,7 +76,7 @@ export const useQuotationConfig = (): QuotationConfigHookReturn => {
     fetchResourceRatesConfig,
     fetchAdditionalParamsConfig,
     subscribeToConfigChanges,
-    isConfigStale
+    isConfigStale,
   } = useConfigStore();
 
   // Refresh all configurations
@@ -84,19 +85,22 @@ export const useQuotationConfig = (): QuotationConfigHookReturn => {
   }, [fetchAllConfigs]);
 
   // Refresh specific configuration
-  const refreshSpecificConfig = useCallback(async (configType: 'quotation' | 'resourceRates' | 'additionalParams') => {
-    switch (configType) {
-      case 'quotation':
-        await fetchQuotationConfig();
-        break;
-      case 'resourceRates':
-        await fetchResourceRatesConfig();
-        break;
-      case 'additionalParams':
-        await fetchAdditionalParamsConfig();
-        break;
-    }
-  }, [fetchQuotationConfig, fetchResourceRatesConfig, fetchAdditionalParamsConfig]);
+  const refreshSpecificConfig = useCallback(
+    async (configType: 'quotation' | 'resourceRates' | 'additionalParams') => {
+      switch (configType) {
+        case 'quotation':
+          await fetchQuotationConfig();
+          break;
+        case 'resourceRates':
+          await fetchResourceRatesConfig();
+          break;
+        case 'additionalParams':
+          await fetchAdditionalParamsConfig();
+          break;
+      }
+    },
+    [fetchQuotationConfig, fetchResourceRatesConfig, fetchAdditionalParamsConfig]
+  );
 
   // Initial fetch and subscription setup
   useEffect(() => {
@@ -116,13 +120,17 @@ export const useQuotationConfig = (): QuotationConfigHookReturn => {
     fetchIfNeeded();
 
     // Subscribe to configuration changes
-    const unsubscribe = subscribeToConfigChanges((configType) => {
-      console.log(`Configuration changed: ${configType}. Quotation components will use updated values.`);
-      
+    const unsubscribe = subscribeToConfigChanges(configType => {
+      console.log(
+        `Configuration changed: ${configType}. Quotation components will use updated values.`
+      );
+
       // You could dispatch a custom event here to notify other parts of the app
-      window.dispatchEvent(new CustomEvent('configurationChanged', { 
-        detail: { configType } 
-      }));
+      window.dispatchEvent(
+        new CustomEvent('configurationChanged', {
+          detail: { configType },
+        })
+      );
     });
 
     return unsubscribe;
@@ -134,20 +142,21 @@ export const useQuotationConfig = (): QuotationConfigHookReturn => {
     fetchResourceRatesConfig,
     fetchAdditionalParamsConfig,
     subscribeToConfigChanges,
-    isConfigStale
+    isConfigStale,
   ]);
 
   return {
     quotationConfig,
     resourceRates: resourceRatesConfig,
-    additionalParams: additionalParamsConfig ? {
-      ...additionalParamsConfig,
-
-    } : null,
+    additionalParams: additionalParamsConfig
+      ? {
+          ...additionalParamsConfig,
+        }
+      : null,
     isLoading,
     errors,
     refreshConfigurations,
-    refreshSpecificConfig
+    refreshSpecificConfig,
   };
 };
 
@@ -165,59 +174,74 @@ export const useConfigManagement = () => {
     updateQuotationConfig,
     updateResourceRatesConfig,
     updateAdditionalParamsConfig,
-    fetchAllConfigs
+    fetchAllConfigs,
   } = useConfigStore();
 
   // Update quotation configuration and notify dependents
-  const updateQuotationConfigWithNotification = useCallback(async (orderTypeLimits: any) => {
-    try {
-      await updateQuotationConfig(orderTypeLimits);
-      
-      // Dispatch event to notify quotation forms to recalculate
-      window.dispatchEvent(new CustomEvent('quotationConfigUpdated', {
-        detail: { orderTypeLimits }
-      }));
-      
-      return true;
-    } catch (error) {
-      console.error('Failed to update quotation config:', error);
-      return false;
-    }
-  }, [updateQuotationConfig]);
+  const updateQuotationConfigWithNotification = useCallback(
+    async (orderTypeLimits: any) => {
+      try {
+        await updateQuotationConfig(orderTypeLimits);
+
+        // Dispatch event to notify quotation forms to recalculate
+        window.dispatchEvent(
+          new CustomEvent('quotationConfigUpdated', {
+            detail: { orderTypeLimits },
+          })
+        );
+
+        return true;
+      } catch (error) {
+        console.error('Failed to update quotation config:', error);
+        return false;
+      }
+    },
+    [updateQuotationConfig]
+  );
 
   // Update resource rates and notify dependents
-  const updateResourceRatesWithNotification = useCallback(async (rates: any) => {
-    try {
-      await updateResourceRatesConfig(rates);
-      
-      // Dispatch event to notify quotation forms to recalculate
-      window.dispatchEvent(new CustomEvent('resourceRatesUpdated', {
-        detail: { rates }
-      }));
-      
-      return true;
-    } catch (error) {
-      console.error('Failed to update resource rates:', error);
-      return false;
-    }
-  }, [updateResourceRatesConfig]);
+  const updateResourceRatesWithNotification = useCallback(
+    async (rates: any) => {
+      try {
+        await updateResourceRatesConfig(rates);
+
+        // Dispatch event to notify quotation forms to recalculate
+        window.dispatchEvent(
+          new CustomEvent('resourceRatesUpdated', {
+            detail: { rates },
+          })
+        );
+
+        return true;
+      } catch (error) {
+        console.error('Failed to update resource rates:', error);
+        return false;
+      }
+    },
+    [updateResourceRatesConfig]
+  );
 
   // Update additional parameters and notify dependents
-  const updateAdditionalParamsWithNotification = useCallback(async (params: any) => {
-    try {
-      await updateAdditionalParamsConfig(params);
-      
-      // Dispatch event to notify quotation forms to recalculate
-      window.dispatchEvent(new CustomEvent('additionalParamsUpdated', {
-        detail: { params }
-      }));
-      
-      return true;
-    } catch (error) {
-      console.error('Failed to update additional params:', error);
-      return false;
-    }
-  }, [updateAdditionalParamsConfig]);
+  const updateAdditionalParamsWithNotification = useCallback(
+    async (params: any) => {
+      try {
+        await updateAdditionalParamsConfig(params);
+
+        // Dispatch event to notify quotation forms to recalculate
+        window.dispatchEvent(
+          new CustomEvent('additionalParamsUpdated', {
+            detail: { params },
+          })
+        );
+
+        return true;
+      } catch (error) {
+        console.error('Failed to update additional params:', error);
+        return false;
+      }
+    },
+    [updateAdditionalParamsConfig]
+  );
 
   return {
     quotationConfig,
@@ -228,7 +252,7 @@ export const useConfigManagement = () => {
     updateQuotationConfig: updateQuotationConfigWithNotification,
     updateResourceRatesConfig: updateResourceRatesWithNotification,
     updateAdditionalParamsConfig: updateAdditionalParamsWithNotification,
-    refreshAllConfigs: fetchAllConfigs
+    refreshAllConfigs: fetchAllConfigs,
   };
 };
 
@@ -237,7 +261,11 @@ export const useConfigManagement = () => {
  * Components can use this to react to configuration updates
  */
 export const useConfigChangeListener = (
-  eventType: 'configurationChanged' | 'quotationConfigUpdated' | 'resourceRatesUpdated' | 'additionalParamsUpdated',
+  eventType:
+    | 'configurationChanged'
+    | 'quotationConfigUpdated'
+    | 'resourceRatesUpdated'
+    | 'additionalParamsUpdated',
   callback: (detail: any) => void
 ) => {
   useEffect(() => {
@@ -246,7 +274,7 @@ export const useConfigChangeListener = (
     };
 
     window.addEventListener(eventType, handleConfigChange as EventListener);
-    
+
     return () => {
       window.removeEventListener(eventType, handleConfigChange as EventListener);
     };

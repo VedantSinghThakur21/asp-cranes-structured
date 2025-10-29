@@ -1,11 +1,8 @@
-
-
 // ...existing code...
-
 
 /**
  * Client-side Auth Service
- * 
+ *
  * This service provides authentication functionality using API calls.
  * It serves as a frontend-only replacement for the postgresAuthService.
  */
@@ -21,18 +18,17 @@ function decodeJwt(token: string): any {
   }
 }
 
-
 // API request headers
 const getHeaders = () => {
   const headers: HeadersInit = {
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
   };
-  
+
   const authToken = localStorage.getItem('jwt-token');
   if (authToken) {
     headers['Authorization'] = `Bearer ${authToken}`;
   }
-  
+
   return headers;
 };
 
@@ -51,7 +47,7 @@ export const signIn = async (email: string, password: string): Promise<User> => 
     const response = await fetch(loginUrl, {
       method: 'POST',
       headers: getHeaders(),
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify({ email, password }),
     });
     if (!response.ok) {
       let errorMessage = 'Authentication failed';
@@ -73,7 +69,10 @@ export const signIn = async (email: string, password: string): Promise<User> => 
     if (!user || !user.id || !user.email || !token) {
       throw new Error('Invalid user data received from server');
     }
-    if (!user.role || !['admin', 'sales_agent', 'operations_manager', 'operator', 'support'].includes(user.role)) {
+    if (
+      !user.role ||
+      !['admin', 'sales_agent', 'operations_manager', 'operator', 'support'].includes(user.role)
+    ) {
       console.warn('⚠️ User role missing or invalid, assigning default role');
       user.role = 'admin';
     }
@@ -94,14 +93,14 @@ export const signOutUser = async (): Promise<void> => {
     // Call logout endpoint
     await fetch('/api/auth/logout', {
       method: 'POST',
-      headers: getHeaders()
+      headers: getHeaders(),
     });
-    
+
     // Clear local storage
     localStorage.removeItem('jwt-token');
   } catch (error) {
     console.error('Error signing out:', error);
-    
+
     // Still clear token even if API call fails
     localStorage.removeItem('jwt-token');
   }
@@ -113,40 +112,40 @@ export const signOutUser = async (): Promise<void> => {
 export const getCurrentUser = async (): Promise<User | null> => {
   try {
     const token = localStorage.getItem('jwt-token');
-    
+
     if (!token) {
       return null;
     }
 
     // First try to decode the token without verification
     const decoded = decodeJwt(token);
-    
+
     // Check if token is expired
     if (decoded.exp && decoded.exp * 1000 < Date.now()) {
       localStorage.removeItem('jwt-token');
       return null;
     }
-    
+
     // Since /api/auth/me doesn't exist, we'll decode the JWT directly
     // This is safe because we trust our own backend-generated tokens
     console.log('🔍 getCurrentUser: Decoding JWT token directly');
-    
+
     const user = {
       id: decoded.id,
       email: decoded.email,
       name: decoded.name,
-      role: decoded.role
+      role: decoded.role,
     };
-    
+
     console.log('✅ getCurrentUser: User from JWT:', JSON.stringify(user, null, 2));
-    
+
     // Validate user object
     if (!user.id || !user.email || !user.role) {
       console.error('❌ getCurrentUser: Invalid user data in JWT');
       localStorage.removeItem('jwt-token');
       return null;
     }
-    
+
     return user;
   } catch (error) {
     console.error('Error getting current user:', error);
@@ -163,13 +162,13 @@ export const updateUserPassword = async (userId: string, newPassword: string): P
     const response = await fetch(`/api/auth/users/${userId}/password`, {
       method: 'PUT',
       headers: getHeaders(),
-      body: JSON.stringify({ newPassword })
+      body: JSON.stringify({ newPassword }),
     });
-    
+
     if (!response.ok) {
       throw new Error('Failed to update password');
     }
-    
+
     return true;
   } catch (error) {
     console.error('Error updating password:', error);

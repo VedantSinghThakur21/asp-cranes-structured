@@ -33,7 +33,7 @@ router.get('/', authenticateToken, async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 10;
     const userId = req.user?.id;
-    
+
     // Get user-specific notifications first
     const userNotificationsQuery = `
       SELECT 
@@ -52,9 +52,9 @@ router.get('/', authenticateToken, async (req, res) => {
       ORDER BY created_at DESC 
       LIMIT $2
     `;
-    
+
     const userNotifications = await pool.query(userNotificationsQuery, [userId, limit]);
-    
+
     // Transform to expected format
     const notifications = userNotifications.rows.map(notification => ({
       id: notification.id,
@@ -66,7 +66,7 @@ router.get('/', authenticateToken, async (req, res) => {
       priority: notification.priority,
       isRead: notification.is_read,
       referenceId: notification.reference_id,
-      referenceType: notification.reference_type
+      referenceType: notification.reference_type,
     }));
 
     // If no user notifications, generate dynamic notifications based on recent activities
@@ -74,19 +74,18 @@ router.get('/', authenticateToken, async (req, res) => {
       const dynamicNotifications = await generateDynamicNotifications(limit);
       notifications.push(...dynamicNotifications);
     }
-    
-    res.json({ 
-      success: true, 
+
+    res.json({
+      success: true,
       data: notifications,
-      total: notifications.length
+      total: notifications.length,
     });
-    
   } catch (error) {
     console.error('Error fetching notifications:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Failed to fetch notifications',
-      error: process.env.NODE_ENV !== 'production' ? error.message : 'Internal server error'
+      error: process.env.NODE_ENV !== 'production' ? error.message : 'Internal server error',
     });
   }
 });
@@ -94,19 +93,19 @@ router.get('/', authenticateToken, async (req, res) => {
 // POST /api/notifications/send - Send notification manually
 router.post('/send', authenticateToken, async (req, res) => {
   try {
-    const { 
-      type, 
-      recipients = [], 
-      data = {}, 
-      channels = ['in_app'], 
+    const {
+      type,
+      recipients = [],
+      data = {},
+      channels = ['in_app'],
       priority = 'medium',
-      scheduleAt = null 
+      scheduleAt = null,
     } = req.body;
 
     if (!type) {
       return res.status(400).json({
         success: false,
-        message: 'Notification type is required'
+        message: 'Notification type is required',
       });
     }
 
@@ -116,21 +115,20 @@ router.post('/send', authenticateToken, async (req, res) => {
       data,
       channels,
       priority,
-      scheduleAt
+      scheduleAt,
     });
 
     res.json({
       success: true,
       message: 'Notification sent successfully',
-      data: result
+      data: result,
     });
-
   } catch (error) {
     console.error('Error sending notification:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to send notification',
-      error: process.env.NODE_ENV !== 'production' ? error.message : 'Internal server error'
+      error: process.env.NODE_ENV !== 'production' ? error.message : 'Internal server error',
     });
   }
 });
@@ -147,28 +145,27 @@ router.patch('/:id/read', authenticateToken, async (req, res) => {
       WHERE id = $1 AND user_id = $2
       RETURNING *
     `;
-    
+
     const result = await pool.query(query, [id, userId]);
-    
+
     if (result.rows.length === 0) {
       return res.status(404).json({
         success: false,
-        message: 'Notification not found'
+        message: 'Notification not found',
       });
     }
 
     res.json({
       success: true,
       message: 'Notification marked as read',
-      data: result.rows[0]
+      data: result.rows[0],
     });
-
   } catch (error) {
     console.error('Error marking notification as read:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to mark notification as read',
-      error: process.env.NODE_ENV !== 'production' ? error.message : 'Internal server error'
+      error: process.env.NODE_ENV !== 'production' ? error.message : 'Internal server error',
     });
   }
 });
@@ -183,20 +180,19 @@ router.post('/mark-all-read', authenticateToken, async (req, res) => {
       SET is_read = TRUE 
       WHERE user_id = $1 AND is_read = FALSE
     `;
-    
+
     const result = await pool.query(query, [userId]);
 
     res.json({
       success: true,
-      message: `${result.rowCount} notifications marked as read`
+      message: `${result.rowCount} notifications marked as read`,
     });
-
   } catch (error) {
     console.error('Error marking all notifications as read:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to mark notifications as read',
-      error: process.env.NODE_ENV !== 'production' ? error.message : 'Internal server error'
+      error: process.env.NODE_ENV !== 'production' ? error.message : 'Internal server error',
     });
   }
 });
@@ -213,20 +209,19 @@ router.get('/preferences', authenticateToken, async (req, res) => {
       FROM user_notification_preferences 
       WHERE user_id = $1
     `;
-    
+
     const result = await pool.query(query, [userId]);
 
     res.json({
       success: true,
-      data: result.rows
+      data: result.rows,
     });
-
   } catch (error) {
     console.error('Error fetching notification preferences:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to fetch notification preferences',
-      error: process.env.NODE_ENV !== 'production' ? error.message : 'Internal server error'
+      error: process.env.NODE_ENV !== 'production' ? error.message : 'Internal server error',
     });
   }
 });
@@ -240,7 +235,7 @@ router.put('/preferences', authenticateToken, async (req, res) => {
     if (!preferences || !Array.isArray(preferences)) {
       return res.status(400).json({
         success: false,
-        message: 'Preferences array is required'
+        message: 'Preferences array is required',
       });
     }
 
@@ -259,7 +254,7 @@ router.put('/preferences', authenticateToken, async (req, res) => {
           timezone = EXCLUDED.timezone,
           updated_at = CURRENT_TIMESTAMP
       `;
-      
+
       await pool.query(query, [
         userId,
         pref.notification_type,
@@ -267,21 +262,20 @@ router.put('/preferences', authenticateToken, async (req, res) => {
         pref.is_enabled,
         pref.quiet_hours_start,
         pref.quiet_hours_end,
-        pref.timezone || 'Asia/Kolkata'
+        pref.timezone || 'Asia/Kolkata',
       ]);
     }
 
     res.json({
       success: true,
-      message: 'Notification preferences updated successfully'
+      message: 'Notification preferences updated successfully',
     });
-
   } catch (error) {
     console.error('Error updating notification preferences:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to update notification preferences',
-      error: process.env.NODE_ENV !== 'production' ? error.message : 'Internal server error'
+      error: process.env.NODE_ENV !== 'production' ? error.message : 'Internal server error',
     });
   }
 });
@@ -335,16 +329,15 @@ router.get('/analytics', authenticateToken, async (req, res) => {
       success: true,
       data: {
         notificationStats: stats.rows,
-        deliveryStats: deliveryStats.rows
-      }
+        deliveryStats: deliveryStats.rows,
+      },
     });
-
   } catch (error) {
     console.error('Error fetching notification analytics:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to fetch notification analytics',
-      error: process.env.NODE_ENV !== 'production' ? error.message : 'Internal server error'
+      error: process.env.NODE_ENV !== 'production' ? error.message : 'Internal server error',
     });
   }
 });
@@ -354,7 +347,7 @@ router.get('/analytics', authenticateToken, async (req, res) => {
 // Generate dynamic notifications based on recent activities (fallback)
 async function generateDynamicNotifications(limit) {
   const notifications = [];
-  
+
   try {
     // Check for recently won deals
     const recentDealsQuery = `
@@ -365,7 +358,7 @@ async function generateDynamicNotifications(limit) {
       ORDER BY updated_at DESC 
       LIMIT 3
     `;
-    
+
     // Check for new leads that need follow-up
     const followUpLeadsQuery = `
       SELECT COUNT(*) as count
@@ -373,7 +366,7 @@ async function generateDynamicNotifications(limit) {
       WHERE status = 'new' 
         AND created_at >= NOW() - INTERVAL '24 hours'
     `;
-    
+
     // Check for leads that need follow-up (older than 24 hours without contact)
     const overDueLeadsQuery = `
       SELECT COUNT(*) as count
@@ -381,7 +374,7 @@ async function generateDynamicNotifications(limit) {
       WHERE status IN ('new', 'contacted') 
         AND updated_at <= NOW() - INTERVAL '24 hours'
     `;
-    
+
     // Check for new customers
     const newCustomersQuery = `
       SELECT id, company_name, created_at
@@ -390,14 +383,14 @@ async function generateDynamicNotifications(limit) {
       ORDER BY created_at DESC 
       LIMIT 2
     `;
-    
+
     const [recentDeals, followUpLeads, overDueLeads, newCustomers] = await Promise.all([
       pool.query(recentDealsQuery),
       pool.query(followUpLeadsQuery),
       pool.query(overDueLeadsQuery),
-      pool.query(newCustomersQuery)
+      pool.query(newCustomersQuery),
     ]);
-    
+
     // Create notifications for recent deals
     recentDeals.rows.forEach((deal, index) => {
       notifications.push({
@@ -407,10 +400,10 @@ async function generateDynamicNotifications(limit) {
         message: `${deal.title} worth ₹${parseFloat(deal.value).toLocaleString()} just closed`,
         time: getTimeAgo(deal.updated_at),
         icon: 'trophy',
-        priority: 'high'
+        priority: 'high',
       });
     });
-    
+
     // Create notification for follow-up leads
     const followUpCount = parseInt(followUpLeads.rows[0].count);
     if (followUpCount > 0) {
@@ -421,10 +414,10 @@ async function generateDynamicNotifications(limit) {
         message: `${followUpCount} new lead${followUpCount > 1 ? 's' : ''} need${followUpCount === 1 ? 's' : ''} attention`,
         time: 'Today',
         icon: 'clock',
-        priority: 'medium'
+        priority: 'medium',
       });
     }
-    
+
     // Create notification for overdue leads
     const overDueCount = parseInt(overDueLeads.rows[0].count);
     if (overDueCount > 0) {
@@ -435,10 +428,10 @@ async function generateDynamicNotifications(limit) {
         message: `${overDueCount} lead${overDueCount > 1 ? 's' : ''} haven't been contacted in 24+ hours`,
         time: 'Overdue',
         icon: 'alert-circle',
-        priority: 'high'
+        priority: 'high',
       });
     }
-    
+
     // Create notifications for new customers
     newCustomers.rows.forEach((customer, index) => {
       notifications.push({
@@ -448,10 +441,9 @@ async function generateDynamicNotifications(limit) {
         message: `${customer.company_name} was added to the system`,
         time: getTimeAgo(customer.created_at),
         icon: 'users',
-        priority: 'low'
+        priority: 'low',
       });
     });
-    
   } catch (error) {
     console.error('Error generating dynamic notifications:', error);
   }
@@ -470,7 +462,7 @@ function getTimeAgo(date) {
   const minutes = Math.floor(diff / 60000);
   const hours = Math.floor(diff / 3600000);
   const days = Math.floor(diff / 86400000);
-  
+
   if (minutes < 1) return 'Just now';
   if (minutes < 60) return `${minutes} min ago`;
   if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
@@ -482,25 +474,29 @@ function getTimeAgo(date) {
 function getPriorityType(priority) {
   switch (priority) {
     case 'urgent':
-    case 'high': return 'error';
-    case 'medium': return 'warning';
-    case 'low': return 'info';
-    default: return 'info';
+    case 'high':
+      return 'error';
+    case 'medium':
+      return 'warning';
+    case 'low':
+      return 'info';
+    default:
+      return 'info';
   }
 }
 
 // Helper function to get icon for notification type
 function getIconForType(type) {
   const iconMap = {
-    'lead_created': 'users',
-    'quotation_created': 'file-text',
-    'job_assigned': 'briefcase',
-    'deal_won': 'trophy',
-    'followup_reminder': 'clock',
-    'job_completed': 'check-circle',
-    'payment_overdue': 'alert-circle'
+    lead_created: 'users',
+    quotation_created: 'file-text',
+    job_assigned: 'briefcase',
+    deal_won: 'trophy',
+    followup_reminder: 'clock',
+    job_completed: 'check-circle',
+    payment_overdue: 'alert-circle',
   };
-  
+
   return iconMap[type] || 'bell';
 }
 

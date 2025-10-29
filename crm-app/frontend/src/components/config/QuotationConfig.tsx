@@ -24,7 +24,7 @@ export function QuotationConfig() {
     micro: { minDays: 1, maxDays: 10 },
     small: { minDays: 11, maxDays: 25 },
     monthly: { minDays: 26, maxDays: 365 },
-    yearly: { minDays: 366, maxDays: 3650 }
+    yearly: { minDays: 366, maxDays: 3650 },
   });
   const [toast, setToast] = useState<{
     show: boolean;
@@ -56,7 +56,7 @@ export function QuotationConfig() {
   const handleSave = async () => {
     try {
       setIsSaving(true);
-      
+
       // Validate the configuration
       const orderTypes = ['micro', 'small', 'monthly', 'yearly'] as const;
       let isValid = true;
@@ -65,12 +65,18 @@ export function QuotationConfig() {
       for (const type of orderTypes) {
         const config = orderTypeLimits[type];
         if (config.minDays <= previousMax) {
-          showToast(`${type.charAt(0).toUpperCase() + type.slice(1)} minimum days must be greater than previous maximum`, 'error');
+          showToast(
+            `${type.charAt(0).toUpperCase() + type.slice(1)} minimum days must be greater than previous maximum`,
+            'error'
+          );
           isValid = false;
           break;
         }
         if (config.maxDays <= config.minDays) {
-          showToast(`${type.charAt(0).toUpperCase() + type.slice(1)} maximum days must be greater than minimum days`, 'error');
+          showToast(
+            `${type.charAt(0).toUpperCase() + type.slice(1)} maximum days must be greater than minimum days`,
+            'error'
+          );
           isValid = false;
           break;
         }
@@ -82,9 +88,9 @@ export function QuotationConfig() {
       }
 
       await updateQuotationConfig({
-        orderTypeLimits
+        orderTypeLimits,
       });
-      
+
       showToast('Configuration saved successfully');
     } catch (error) {
       showToast('Error saving configuration', 'error');
@@ -103,8 +109,8 @@ export function QuotationConfig() {
       ...prev,
       [orderType]: {
         ...prev[orderType],
-        [field]: numValue
-      }
+        [field]: numValue,
+      },
     }));
   };
 
@@ -119,21 +125,19 @@ export function QuotationConfig() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {(['micro', 'small', 'monthly', 'yearly'] as const).map((type) => (
+        {(['micro', 'small', 'monthly', 'yearly'] as const).map(type => (
           <div
             key={type}
             className="p-4 rounded-lg border border-gray-200 bg-white shadow-sm space-y-4"
           >
-            <h3 className="text-lg font-semibold capitalize text-gray-900">
-              {type} Order
-            </h3>
+            <h3 className="text-lg font-semibold capitalize text-gray-900">{type} Order</h3>
             <div className="space-y-4">
               <div>
                 <Input
                   type="number"
                   label="Minimum Days"
                   value={orderTypeLimits[type].minDays}
-                  onChange={(e) => handleInputChange(type, 'minDays', e.target.value)}
+                  onChange={e => handleInputChange(type, 'minDays', e.target.value)}
                   min="1"
                 />
               </div>
@@ -142,7 +146,7 @@ export function QuotationConfig() {
                   type="number"
                   label="Maximum Days"
                   value={orderTypeLimits[type].maxDays}
-                  onChange={(e) => handleInputChange(type, 'maxDays', e.target.value)}
+                  onChange={e => handleInputChange(type, 'maxDays', e.target.value)}
                   min={orderTypeLimits[type].minDays + 1}
                 />
               </div>
@@ -171,4 +175,4 @@ export function QuotationConfig() {
       )}
     </div>
   );
-} 
+}

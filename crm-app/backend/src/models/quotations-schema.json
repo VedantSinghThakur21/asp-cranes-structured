@@ -1,18 +1,27 @@
 {
   "timestamp": "2025-06-23T07:12:48.299Z",
-  "count": 0,
-  "quotations": []
-}
-{
-  "timestamp": "2025-06-23T07:12:48.299Z",
-  "count": 0,
-  "quotations": []
+  "count": 2,
+  "quotations": [
+    {
+      "id": "2",
+      "customerId": "cust-456",
+      "customerName": "Skyline Constructions",
+      "customerContact": {
+        "name": "Rajesh Mehta",
+        "email": "rajesh@skylineconstructions.com",
+        "phone": "555-987-6543",
+        "designation": "Project Manager"
+      },
+      "selectedEquipment": {
+        "id": "eq-456",
+        "name": "Tower Crane 50T",
+        "type": "tower-crane",
         "specifications": {
           "capacity": "50T",
           "height": "200ft",
           "reach": "180ft"
         },
-        "rentalRate": 5800.00
+        "rentalRate": 5800.0
       },
       "selectedMachines": [],
       "service": {
@@ -22,7 +31,7 @@
         "durationUnit": "days"
       },
       "status": "sent",
-      "totalAmount": 174000.00,
+      "totalAmount": 174000.0,
       "validUntil": "2025-08-01T00:00:00.000Z",
       "notes": "Includes initial setup and dismantling",
       "createdAt": "2025-06-18T14:15:00.000Z",
@@ -47,20 +56,20 @@
           "height": "110ft",
           "reach": "95ft"
         },
-        "rentalRate": 4200.00
+        "rentalRate": 4200.0
       },
       "selectedMachines": [
         {
           "id": "mach-123",
           "name": "Forklift 10T",
           "type": "forklift",
-          "rentalRate": 650.00
+          "rentalRate": 650.0
         },
         {
           "id": "mach-456",
           "name": "Scissor Lift 30ft",
           "type": "scissor-lift",
-          "rentalRate": 450.00
+          "rentalRate": 450.0
         }
       ],
       "service": {
@@ -70,7 +79,7 @@
         "durationUnit": "days"
       },
       "status": "accepted",
-      "totalAmount": 37100.00,
+      "totalAmount": 37100.0,
       "validUntil": "2025-07-30T00:00:00.000Z",
       "notes": "Customer has requested early morning operation",
       "createdAt": "2025-06-15T11:20:00.000Z",

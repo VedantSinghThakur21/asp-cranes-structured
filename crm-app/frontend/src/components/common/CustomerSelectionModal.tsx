@@ -26,7 +26,7 @@ export function CustomerSelectionModal({
   isOpen,
   onClose,
   onSelect,
-  initialCustomerData
+  initialCustomerData,
 }: CustomerSelectionModalProps) {
   const [mode, setMode] = useState<ModalMode>('select');
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -38,7 +38,7 @@ export function CustomerSelectionModal({
     phone: initialCustomerData?.phone || '',
     address: initialCustomerData?.address || '',
     companyName: initialCustomerData?.companyName || '',
-    designation: initialCustomerData?.designation || ''
+    designation: initialCustomerData?.designation || '',
   });
 
   useEffect(() => {
@@ -92,24 +92,20 @@ export function CustomerSelectionModal({
     onSelect(customer);
   };
 
-  const filteredCustomers = customers.filter(customer =>
-    customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    customer.id?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredCustomers = customers.filter(
+    customer =>
+      customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customer.id?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Select or Create Customer"
-      size="md"
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title="Select or Create Customer" size="md">
       <div className="space-y-4">
         {/* Always show the selection buttons */}
         <div className="flex flex-col sm:flex-row gap-3">
           <Button
-            variant={mode === 'select' ? "default" : "outline"}
+            variant={mode === 'select' ? 'default' : 'outline'}
             onClick={() => setMode('select')}
             className="flex-1"
             size="sm"
@@ -117,7 +113,7 @@ export function CustomerSelectionModal({
             Select Existing
           </Button>
           <Button
-            variant={mode === 'create' ? "default" : "outline"}
+            variant={mode === 'create' ? 'default' : 'outline'}
             onClick={() => {
               setMode('create');
               // Reset form with initial data when switching to create mode
@@ -127,7 +123,7 @@ export function CustomerSelectionModal({
                 phone: initialCustomerData?.phone || '',
                 address: initialCustomerData?.address || '',
                 companyName: initialCustomerData?.companyName || '',
-                designation: initialCustomerData?.designation || ''
+                designation: initialCustomerData?.designation || '',
               });
             }}
             className="flex-1"
@@ -138,7 +134,9 @@ export function CustomerSelectionModal({
         </div>
 
         {mode === 'select' ? (
-          <>            <div className="relative mb-2">
+          <>
+            {' '}
+            <div className="relative mb-2">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4 sm:h-5 sm:w-5" />
               <FormInput
                 placeholder="Search customers..."
@@ -147,32 +145,60 @@ export function CustomerSelectionModal({
                 className="pl-10"
               />
               {searchTerm && (
-                <button 
+                <button
                   type="button"
                   onClick={() => setSearchTerm('')}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   </svg>
                   <span className="sr-only">Clear search</span>
                 </button>
               )}
-            </div><div className="max-h-[60vh] sm:max-h-96 overflow-y-auto border rounded-lg divide-y">
+            </div>
+            <div className="max-h-[60vh] sm:max-h-96 overflow-y-auto border rounded-lg divide-y">
               {isLoading ? (
                 <div className="p-3 sm:p-4 text-center text-gray-500 flex items-center justify-center h-20">
-                  <svg className="animate-spin h-5 w-5 text-primary-500 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  <svg
+                    className="animate-spin h-5 w-5 text-primary-500 mr-2"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
                   </svg>
                   Loading customers...
                 </div>
               ) : filteredCustomers.length === 0 ? (
                 <div className="p-3 sm:p-4 text-center text-gray-500">
-                  {searchTerm ? `No customers matching "${searchTerm}"` : "No customers found"}
+                  {searchTerm ? `No customers matching "${searchTerm}"` : 'No customers found'}
                 </div>
               ) : (
-                filteredCustomers.map((customer) => (
+                filteredCustomers.map(customer => (
                   <div
                     key={customer.id}
                     className="p-3 sm:p-4 hover:bg-gray-50 active:bg-gray-100 cursor-pointer transition-colors"
@@ -182,17 +208,25 @@ export function CustomerSelectionModal({
                       <div className="font-semibold text-base text-gray-900">{customer.name}</div>
                       <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
                         {customer.companyName && (
-                          <div className="text-xs sm:text-sm text-gray-800">{customer.companyName}</div>
+                          <div className="text-xs sm:text-sm text-gray-800">
+                            {customer.companyName}
+                          </div>
                         )}
                         {customer.designation && customer.companyName && (
                           <div className="hidden sm:inline-block text-gray-700">&bull;</div>
                         )}
                         {customer.designation && (
-                          <div className="text-xs sm:text-sm text-gray-800">{customer.designation}</div>
+                          <div className="text-xs sm:text-sm text-gray-800">
+                            {customer.designation}
+                          </div>
                         )}
                       </div>
-                      <div className="text-xs sm:text-sm text-gray-700 truncate">{customer.email}</div>
-                      <div className="text-xs sm:text-sm text-gray-700 mt-0.5">ID: {customer.id}</div>
+                      <div className="text-xs sm:text-sm text-gray-700 truncate">
+                        {customer.email}
+                      </div>
+                      <div className="text-xs sm:text-sm text-gray-700 mt-0.5">
+                        ID: {customer.id}
+                      </div>
                     </div>
                   </div>
                 ))
@@ -205,14 +239,18 @@ export function CustomerSelectionModal({
               <FormInput
                 label="Customer Name"
                 value={formData.name}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setFormData(prev => ({ ...prev, name: e.target.value }))
+                }
                 placeholder="Enter customer name"
                 required
               />
               <FormInput
                 label="Company Name"
                 value={formData.companyName}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData(prev => ({ ...prev, companyName: e.target.value }))}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setFormData(prev => ({ ...prev, companyName: e.target.value }))
+                }
                 placeholder="Enter company name"
                 required
               />
@@ -221,7 +259,9 @@ export function CustomerSelectionModal({
               <FormInput
                 label="Designation"
                 value={formData.designation}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData(prev => ({ ...prev, designation: e.target.value }))}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setFormData(prev => ({ ...prev, designation: e.target.value }))
+                }
                 placeholder="Enter designation"
                 required
               />
@@ -229,7 +269,9 @@ export function CustomerSelectionModal({
                 label="Email"
                 type="email"
                 value={formData.email}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setFormData(prev => ({ ...prev, email: e.target.value }))
+                }
                 placeholder="Enter email address"
                 required
               />
@@ -238,19 +280,24 @@ export function CustomerSelectionModal({
               <FormInput
                 label="Phone"
                 value={formData.phone}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setFormData(prev => ({ ...prev, phone: e.target.value }))
+                }
                 placeholder="Enter phone number"
                 required
               />
               <FormInput
                 label="Address"
                 value={formData.address}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData(prev => ({ ...prev, address: e.target.value }))}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setFormData(prev => ({ ...prev, address: e.target.value }))
+                }
                 placeholder="Enter address"
                 required
               />
-            </div>            <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 sm:gap-3 pt-3 sm:pt-2">
-              <Button 
+            </div>{' '}
+            <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 sm:gap-3 pt-3 sm:pt-2">
+              <Button
                 type="button"
                 onClick={() => setMode('select')}
                 variant="outline"
@@ -259,13 +306,26 @@ export function CustomerSelectionModal({
               >
                 Cancel
               </Button>
-              <Button 
+              <Button
                 onClick={handleCreateCustomer}
                 className="bg-blue-500 hover:bg-blue-600 text-white w-full sm:w-auto"
                 size="sm"
-                leftIcon={<svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>}
+                leftIcon={
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 4v16m8-8H4"
+                    />
+                  </svg>
+                }
               >
                 Add Customer
               </Button>

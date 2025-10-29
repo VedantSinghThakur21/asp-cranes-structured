@@ -8,12 +8,12 @@ export async function getDeals(stages?: string[]): Promise<Deal[]> {
       const stagesParam = stages.join(',');
       endpoint += `?stages=${encodeURIComponent(stagesParam)}`;
     }
-    
+
     console.log('🔧 getDeals: Making request to:', endpoint);
-    
+
     const response = await api.get<Deal[]>(endpoint);
     console.log('🔧 getDeals: Response received:', response);
-    
+
     return response || [];
   } catch (error) {
     console.error('🔧 getDeals: Error fetching deals:', error);
@@ -33,7 +33,9 @@ export async function getDealById(dealId: string): Promise<Deal> {
 }
 
 // Create a deal via backend API
-export async function createDeal(deal: Omit<Deal, 'id' | 'createdAt' | 'updatedAt'>): Promise<Deal> {
+export async function createDeal(
+  deal: Omit<Deal, 'id' | 'createdAt' | 'updatedAt'>
+): Promise<Deal> {
   try {
     const response = await api.post<Deal>('/deals', deal);
     return response;

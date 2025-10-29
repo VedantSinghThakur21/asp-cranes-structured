@@ -28,18 +28,18 @@ export const PDF_OPTIONS = {
     A5: { width: '148mm', height: '210mm' },
     LETTER: { width: '8.5in', height: '11in' },
     LEGAL: { width: '8.5in', height: '14in' },
-    CUSTOM: { width: '210mm', height: '297mm' } // Default to A4
+    CUSTOM: { width: '210mm', height: '297mm' }, // Default to A4
   },
   ORIENTATIONS: {
     PORTRAIT: 'portrait',
-    LANDSCAPE: 'landscape'
+    LANDSCAPE: 'landscape',
   },
   QUALITY: {
     DRAFT: { scale: 1, printBackground: false },
     STANDARD: { scale: 1.5, printBackground: true },
     HIGH: { scale: 2, printBackground: true },
-    PREMIUM: { scale: 3, printBackground: true }
-  }
+    PREMIUM: { scale: 3, printBackground: true },
+  },
 };
 
 /**
@@ -56,13 +56,13 @@ export class AdvancedPDFGenerator {
         top: '20mm',
         right: '20mm',
         bottom: '20mm',
-        left: '20mm'
+        left: '20mm',
       },
       displayHeaderFooter: false,
       printBackground: true,
       preferCSSPageSize: true,
       generateTaggedPDF: true,
-      timeout: 30000
+      timeout: 30000,
     };
   }
 
@@ -74,7 +74,7 @@ export class AdvancedPDFGenerator {
       console.log('⚠️ Puppeteer not available - using fallback PDF generation');
       return null;
     }
-    
+
     if (!this.browser) {
       this.browser = await puppeteer.default.launch({
         headless: 'new',
@@ -85,8 +85,8 @@ export class AdvancedPDFGenerator {
           '--disable-gpu',
           '--no-first-run',
           '--no-zygote',
-          '--single-process'
-        ]
+          '--single-process',
+        ],
       });
     }
     return this.browser;
@@ -99,10 +99,10 @@ export class AdvancedPDFGenerator {
     // Fallback if puppeteer is not available
     if (!puppeteer) {
       console.log('⚠️ Puppeteer unavailable - generating HTML-based PDF fallback');
-      
+
       // Generate a proper HTML file for PDF viewing instead of mock content
       const htmlWithStyles = this.enhanceHTMLForPDF(htmlContent, options);
-      
+
       // Return HTML that can be converted to PDF on the frontend
       return {
         success: true,
@@ -110,12 +110,12 @@ export class AdvancedPDFGenerator {
         format: options.format || 'A4',
         size: Buffer.byteLength(htmlWithStyles, 'utf8'),
         fallback: true,
-        contentType: 'text/html'
+        contentType: 'text/html',
       };
     }
-    
+
     const mergedOptions = { ...this.defaultOptions, ...options };
-    
+
     try {
       await this.initializeBrowser();
       const page = await this.browser.newPage();
@@ -124,16 +124,16 @@ export class AdvancedPDFGenerator {
       await page.setViewport({
         width: 1200,
         height: 1600,
-        deviceScaleFactor: mergedOptions.quality === 'HIGH' ? 2 : 1
+        deviceScaleFactor: mergedOptions.quality === 'HIGH' ? 2 : 1,
       });
 
       // Add enhanced HTML with PDF-specific optimizations
       const enhancedHTML = this.enhanceHTMLForPDF(htmlContent, mergedOptions);
-      
+
       // Set content and wait for rendering
       await page.setContent(enhancedHTML, {
         waitUntil: ['networkidle0', 'domcontentloaded'],
-        timeout: mergedOptions.timeout
+        timeout: mergedOptions.timeout,
       });
 
       // Wait for fonts and images to load
@@ -147,15 +147,15 @@ export class AdvancedPDFGenerator {
       const pdfBuffer = await page.pdf(pdfOptions);
 
       await page.close();
-      
+
       return pdfBuffer;
     } catch (error) {
       console.error('PDF Generation Error:', error);
-      
+
       // Fallback to HTML when PDF generation fails
       console.log('📄 Falling back to HTML generation due to PDF error');
       const htmlWithStyles = this.enhanceHTMLForPDF(htmlContent, options);
-      
+
       return {
         success: false,
         error: error.message,
@@ -163,7 +163,7 @@ export class AdvancedPDFGenerator {
         format: options.format || 'A4',
         size: Buffer.byteLength(htmlWithStyles, 'utf8'),
         fallback: true,
-        contentType: 'text/html'
+        contentType: 'text/html',
       };
     }
   }
@@ -179,7 +179,7 @@ export class AdvancedPDFGenerator {
       rotation: 45,
       position: 'center',
       color: '#000000',
-      ...watermarkOptions
+      ...watermarkOptions,
     };
 
     const watermarkedHTML = this.addWatermarkToHTML(htmlContent, watermark);
@@ -200,8 +200,8 @@ export class AdvancedPDFGenerator {
         bottom: '80px',
         left: '20mm',
         right: '20mm',
-        ...pdfOptions.margins
-      }
+        ...pdfOptions.margins,
+      },
     };
 
     return this.generatePDF(htmlContent, options);
@@ -215,20 +215,20 @@ export class AdvancedPDFGenerator {
       // Font optimization
       webFonts: optimizations.webFonts !== false,
       fontSubsetting: optimizations.fontSubsetting !== false,
-      
+
       // Image optimization
       imageCompression: optimizations.imageCompression !== false,
       backgroundImages: optimizations.backgroundImages !== false,
-      
+
       // Layout optimization
       pageBreaks: optimizations.pageBreaks !== false,
       columnBalance: optimizations.columnBalance !== false,
-      
+
       // Performance optimization
       cssMinification: optimizations.cssMinification !== false,
       removeUnusedCSS: optimizations.removeUnusedCSS !== false,
-      
-      ...optimizations
+
+      ...optimizations,
     };
 
     const optimizedHTML = this.optimizeHTMLForPDF(htmlContent, cssOptimizations);
@@ -241,10 +241,10 @@ export class AdvancedPDFGenerator {
   enhanceHTMLForPDF(htmlContent, options) {
     // Add PDF-specific CSS
     const pdfCSS = this.generatePDFOptimizedCSS(options);
-    
+
     // Inject CSS into HTML
     const cssInjection = `<style>${pdfCSS}</style>`;
-    
+
     // Add meta tags for better PDF rendering
     const metaTags = `
       <meta charset="UTF-8">
@@ -254,7 +254,7 @@ export class AdvancedPDFGenerator {
 
     // Insert enhancements
     let enhancedHTML = htmlContent;
-    
+
     if (enhancedHTML.includes('<head>')) {
       enhancedHTML = enhancedHTML.replace('<head>', `<head>${metaTags}`);
       enhancedHTML = enhancedHTML.replace('</head>', `${cssInjection}</head>`);
@@ -387,14 +387,16 @@ export class AdvancedPDFGenerator {
         margin: ${options.margins?.top || '20mm'} ${options.margins?.right || '20mm'} 
                 ${options.margins?.bottom || '20mm'} ${options.margins?.left || '20mm'};
         
-        ${options.displayHeaderFooter ? 
-          `@top-left { content: "${options.headerLeft || ''}"; }
+        ${
+          options.displayHeaderFooter
+            ? `@top-left { content: "${options.headerLeft || ''}"; }
           @top-center { content: "${options.headerCenter || ''}"; }
           @top-right { content: "${options.headerRight || ''}"; }
           @bottom-left { content: "${options.footerLeft || ''}"; }
           @bottom-center { content: "${options.footerCenter || 'Page counter(page) of counter(pages)'}"; }
           @bottom-right { content: "${options.footerRight || ''}"; }`
-          : ''}
+            : ''
+        }
       }
       
       /* Watermark styles */
@@ -478,7 +480,7 @@ export class AdvancedPDFGenerator {
         top: options.margins?.top || '20mm',
         right: options.margins?.right || '20mm',
         bottom: options.margins?.bottom || '20mm',
-        left: options.margins?.left || '20mm'
+        left: options.margins?.left || '20mm',
       },
       printBackground: options.printBackground !== false,
       displayHeaderFooter: options.displayHeaderFooter || false,
@@ -488,7 +490,7 @@ export class AdvancedPDFGenerator {
       preferCSSPageSize: options.preferCSSPageSize !== false,
       generateTaggedPDF: options.generateTaggedPDF !== false,
       tagged: options.generateTaggedPDF !== false,
-      timeout: options.timeout || 30000
+      timeout: options.timeout || 30000,
     };
   }
 
@@ -500,10 +502,13 @@ export class AdvancedPDFGenerator {
       return Promise.all(
         Array.from(document.images)
           .filter(img => !img.complete)
-          .map(img => new Promise(resolve => {
-            img.onload = img.onerror = resolve;
-            setTimeout(resolve, 5000); // 5s timeout per image
-          }))
+          .map(
+            img =>
+              new Promise(resolve => {
+                img.onload = img.onerror = resolve;
+                setTimeout(resolve, 5000); // 5s timeout per image
+              })
+          )
       );
     });
   }
@@ -578,32 +583,32 @@ export class AdvancedPDFGenerator {
    */
   async batchGeneratePDFs(htmlContents, options = {}) {
     const results = [];
-    
+
     try {
       await this.initializeBrowser();
-      
+
       for (let i = 0; i < htmlContents.length; i++) {
         try {
           const pdfBuffer = await this.generatePDF(htmlContents[i], {
             ...options,
-            filename: options.baseFilename ? `${options.baseFilename}_${i + 1}.pdf` : undefined
+            filename: options.baseFilename ? `${options.baseFilename}_${i + 1}.pdf` : undefined,
           });
-          
+
           results.push({
             success: true,
             index: i,
             buffer: pdfBuffer,
-            size: pdfBuffer.length
+            size: pdfBuffer.length,
           });
         } catch (error) {
           results.push({
             success: false,
             index: i,
-            error: error.message
+            error: error.message,
           });
         }
       }
-      
+
       return results;
     } catch (error) {
       throw new Error(`Batch PDF generation failed: ${error.message}`);
@@ -620,7 +625,7 @@ export class AdvancedPDFGenerator {
       return {
         filepath,
         size: stats.size,
-        created: stats.birthtime
+        created: stats.birthtime,
       };
     } catch (error) {
       throw new Error(`Failed to save PDF: ${error.message}`);
@@ -638,7 +643,7 @@ export class AdvancedPDFGenerator {
       format: 'PDF',
       version: '1.4',
       generated: new Date(),
-      generator: 'ASP-Cranes-Advanced-PDF'
+      generator: 'ASP-Cranes-Advanced-PDF',
     };
   }
 
@@ -670,7 +675,7 @@ export class AdvancedPDFGenerator {
       documents: metrics.Documents,
       frames: metrics.Frames,
       nodes: metrics.Nodes,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
   }
 }

@@ -1,4 +1,8 @@
-export type CraneCategory = 'mobile_crane' | 'tower_crane' | 'crawler_crane' | 'pick_and_carry_crane';
+export type CraneCategory =
+  | 'mobile_crane'
+  | 'tower_crane'
+  | 'crawler_crane'
+  | 'pick_and_carry_crane';
 
 export type OrderType = 'micro' | 'small' | 'monthly' | 'yearly';
 
@@ -28,11 +32,11 @@ export interface Equipment {
   createdAt: string;
   updatedAt: string;
   runningCost: number;
-  
+
   // Development fields for tracking data source
   _source?: 'api' | 'schema' | 'client';
   _mockFlag?: boolean;
-  
+
   // Computed property for backward compatibility
   baseRates?: BaseRates;
 }

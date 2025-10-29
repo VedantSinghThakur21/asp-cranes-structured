@@ -9,5 +9,5 @@ declare module './src/plugins/serverModuleResolver.js' {
     name: string;
     resolveId(source: string): string | null;
     load(id: string): string | null;
-  }
+  };
 }
