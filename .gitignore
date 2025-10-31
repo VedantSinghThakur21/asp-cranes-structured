@@ -8,6 +8,8 @@ yarn.lock
 
 dist/
 build/
+.env*
+!.env.example
 
 # Logs
 logs/
@@ -46,3 +48,4 @@ AWS.TXT
 ORACLE.TXT
 test.js
 test.ts
+postgres.docker.md

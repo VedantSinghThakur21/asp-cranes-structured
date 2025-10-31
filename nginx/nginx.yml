@@ -1,0 +1,20 @@
+name: crm-nginx
+
+services:
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - crm_network
+    volumes:
+      - ./nginx.prod.conf:/etc/nginx/nginx.conf:ro
+      # - ./crm-app/frontend/dist:/usr/share/nginx/html:ro
+
+networks:
+  crm_network:
+    driver: bridge

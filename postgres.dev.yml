@@ -1,4 +1,4 @@
-name: crm-postgres-database
+name: crm-postgres-database-dev
 
 services:
   postgres:
@@ -8,15 +8,15 @@ services:
     ports:
       - "5432:5432"
     env_file:
-      - .env.production # Environment variables for production
+      - .env # Environment variables for development
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     networks:
-      - postgres_network
+      - dev_postgres_network
     volumes:
-      - postgres_data:/var/lib/postgresql
+      - dev_postgres_data:/var/lib/postgresql
       # Mounting initial schema SQL file for database initialization
       - ./crm-app/database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
     healthcheck:
@@ -26,11 +26,11 @@ services:
       retries: 5
 
 networks:
-  postgres_network:
+  dev_postgres_network:
     driver: bridge
 
 volumes:
-  postgres_data:
+  dev_postgres_data:
 
 
 
