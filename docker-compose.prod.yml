@@ -17,6 +17,8 @@ services:
       NODE_ENV: production
     networks:
       - crm_network
+    depends_on:
+      - postgres
 
   frontend:
     build:

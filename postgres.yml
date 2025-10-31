@@ -28,6 +28,7 @@ services:
 networks:
   postgres_network:
     driver: bridge
+    name: crm_network   # 👈 match backend network name
 
 volumes:
   postgres_data:
