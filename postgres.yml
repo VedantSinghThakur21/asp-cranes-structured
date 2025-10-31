@@ -11,8 +11,8 @@ services:
       - .env.production # Environment variables for production
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-crmdb@21}
+      POSTGRES_DB: ${POSTGRES_DB:-asp_crm}
     networks:
       - postgres_network
     volumes:
