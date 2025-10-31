@@ -137,7 +137,7 @@ export default defineConfig(({ mode }) => {
       historyApiFallback: true,
       proxy: {
         '/api': {
-          target: import.meta.env.VITE_API_URL || 'http://backend:3001',
+          target: 'http://backend:3001',
           changeOrigin: true,
           secure: false,
           configure: proxy => {

@@ -32,6 +32,8 @@ services:
       - ./crm-app/frontend/.env.production # Environment variables for production
     environment:
       NODE_ENV: production
+      VITE_API_URL: http://80.225.224.8:3001/api
+      VITE_BACKEND_URL: http://80.225.224.8:3001
     networks:
       - crm_network
     depends_on:
