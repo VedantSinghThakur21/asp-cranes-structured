@@ -26,10 +26,32 @@ CREATE TABLE users (
     email VARCHAR(255) UNIQUE NOT NULL CHECK (email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'),
     password_hash VARCHAR(255) NOT NULL,
     display_name VARCHAR(100) NOT NULL,
-    role VARCHAR(20) NOT NULL CHECK (role IN ('admin', 'sales_agent', 'operations_manager', 'operator', 'support')),
+    role VARCHAR(20) NOT NULL CHECK (role IN ('root' ,'admin', 'sales_agent', 'operations_manager', 'operator', 'support')),
     avatar VARCHAR(255),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Insert default root and admin user
+INSERT INTO users (uid, email, display_name, role, password_hash, created_at, updated_at)
+VALUES (
+  'root_user_001',
+  'root@example.com',
+  'Root User (SuperAdmin)',
+  'root',
+  '$2b$12$2EvOlmJL1EWeVheQF9qZJ.1qy5frF8nu2j1XtmvU7yONx2qluPKOm',
+  NOW(),
+  NOW()
+);
+INSERT INTO users (uid, email, display_name, role, password_hash, created_at, updated_at)
+VALUES (
+  'admin_user_001',
+  'admin@example.com',
+  'Admin User',
+  'admin',
+  '$2b$12$2EvOlmJL1EWeVheQF9qZJ.1qy5frF8nu2j1XtmvU7yONx2qluPKOm',
+  NOW(),
+  NOW()
 );
 
 -- Create trigger for updated_at
