@@ -12,7 +12,7 @@ services:
     ports:
       - "3001:3001"
     env_file:
-      - .env.production # Environment variables for production
+      - ./crm-app/backend/.env.production # Environment variables for production
     environment:
       NODE_ENV: production
     networks:
@@ -29,7 +29,7 @@ services:
     ports:
       - "3000:3000"
     env_file:
-      - .env.production # Environment variables for production
+      - ./crm-app/frontend/.env.production # Environment variables for production
     environment:
       NODE_ENV: production
     networks:
