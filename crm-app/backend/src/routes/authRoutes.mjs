@@ -91,14 +91,20 @@ router.post('/register', async (req, res) => {
       return res.status(409).json({ message: 'User already exists' });
     }
     
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // Hash password - done in repository
+    // const hashedPassword = await bcrypt.hash(password, 10);
     
     // Generate UID that matches schema format
     const userUid = 'usr_' + Math.random().toString(36).substring(2, 10);
     
     // Create new user using repository
-    await authRepository.createUser(userUid, email, hashedPassword, role, name);
+    await authRepository.createUser({
+      uid: userUid,
+      email,
+      password, // Pass plaintext password, repository will hash it
+      name,
+      role
+    });
     
     // Generate JWT token
     const token = jwt.sign(

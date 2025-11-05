@@ -45,10 +45,10 @@ export const createUser = async (userData) => {
     console.log(`🆕 Creating new user: ${userData.email}`);
     const hashedPassword = await bcrypt.hash(userData.password, 10);
     const result = await db.one(
-      'INSERT INTO users (email, password, name, role, created_at, updated_at) VALUES ($1, $2, $3, $4, NOW(), NOW()) RETURNING *',
-      [userData.email, hashedPassword, userData.name, userData.role || 'user']
+      'INSERT INTO users (uid, email, password_hash, display_name, role, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, NOW(), NOW()) RETURNING *',
+      [userData.uid, userData.email, hashedPassword, userData.name, userData.role || 'user']
     );
-    console.log(`✅ User created successfully: ${result.id}`);
+    console.log(`✅ User created successfully: ${result.uid}`);
     return result;
   } catch (error) {
     console.error('❌ Error creating user:', error);
