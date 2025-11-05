@@ -267,6 +267,7 @@ export function UserManagement() {
           const result = await userService.createUser({
             email: formData.email,
             name: formData.name,
+            password: formData.password,
             role: formData.role,
             isActive: formData.status === 'active',
           });
